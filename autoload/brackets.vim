@@ -141,7 +141,7 @@ fu! brackets#colorscheme_lightness(more) abort "{{{1
     " do NOT use <expr>, and do NOT echo now.
 "}}}
     call timer_start(0, {-> execute('echo "[lightness]"'.level, '')})
-    let g:motion_to_repeat = (a:more ? ']' : '[').'oL'
+    let g:motion_to_repeat = (a:more ? ']' : '[').'L'
     return ''
 endfu
 
