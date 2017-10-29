@@ -3,7 +3,7 @@ if exists('g:loaded_brackets')
 endif
 let g:loaded_brackets = 1
 
-" ]a    ]b    ]l    ]q    ]t    move in lists {{{1
+" ]ablqt        move in lists {{{1
 " Data {{{2
 
 let s:mil_cmd = {
@@ -137,7 +137,7 @@ call s:mil_build_mapping('l','l')
 call s:mil_build_mapping('q','c')
 call s:mil_build_mapping('t','t')
 
-" ]e    ]E      move text {{{1
+" ]eE           move text {{{1
 
 nmap [e    <Plug>(mv_line_up)
 nmap ]e    <Plug>(mv_line_down)
