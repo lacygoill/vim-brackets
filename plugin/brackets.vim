@@ -193,10 +193,10 @@ xno <silent> [D  :<c-u>call brackets#DI_List('d', 0, 0, 1)<cr>
 nno <silent> ]D  :<c-u>call brackets#DI_List('d', 1, 1, 0)<cr>
 xno <silent> ]D  :<c-u>call brackets#DI_List('d', 0, 1, 1)<cr>
 
-" ]oL           lightness colorscheme {{{1
+" ]L           lightness colorscheme {{{1
 
-nno <silent> ]oL :<c-u>call brackets#colorscheme_lightness(1)<cr>
-nno <silent> [oL :<c-u>call brackets#colorscheme_lightness(0)<cr>
+nno <silent> ]L    :<c-u>call brackets#colorscheme_lightness(1)<cr>
+nno <silent> [L    :<c-u>call brackets#colorscheme_lightness(0)<cr>
 
 " ]p {{{1
 
