@@ -193,10 +193,11 @@ xno <silent> [D  :<c-u>call brackets#DI_List('d', 0, 0, 1)<cr>
 nno <silent> ]D  :<c-u>call brackets#DI_List('d', 1, 1, 0)<cr>
 xno <silent> ]D  :<c-u>call brackets#DI_List('d', 0, 1, 1)<cr>
 
-" ]L           lightness colorscheme {{{1
+" ]oL           lightness colorscheme {{{1
 
-nno <silent> ]L    :<c-u>call brackets#colorscheme_lightness(1)<cr>
-nno <silent> [L    :<c-u>call brackets#colorscheme_lightness(0)<cr>
+" Do NOT use `]L`: it's already taken to move to the last entry in the ll.
+nno <silent> ]oL    :<c-u>call brackets#colorscheme_lightness(1)<cr>
+nno <silent> [oL    :<c-u>call brackets#colorscheme_lightness(0)<cr>
 
 " ]p {{{1
 
