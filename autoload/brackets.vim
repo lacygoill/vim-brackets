@@ -350,7 +350,7 @@ fu! brackets#move_region(fwd, cnt) abort "{{{1
         let offset = a:fwd ? a:cnt : -a:cnt
         exe 'norm! '.(pos + offset).'|'
 
-        call s:my_moved_region_highlight(first_char, last_char, offset, char)
+        call s:moved_region_highlight(first_char, last_char, offset, char)
 
         let g:motion_to_repeat = (a:fwd ? ']r' : '[r').char
 
@@ -567,7 +567,7 @@ fu! brackets#mv_text(what) abort "{{{1
     return ''
 endfu
 
-fu! s:my_moved_region_highlight(first_char, last_char, offset, surrounding_char) abort "{{{1
+fu! s:moved_region_highlight(first_char, last_char, offset, surrounding_char) abort "{{{1
     if exists('w:my_moved_region')
         call matchdelete(w:my_moved_region)
     endif
