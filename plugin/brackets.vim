@@ -247,6 +247,20 @@ nno <silent> =p :<c-u>exe brackets#put(']p', "=']", '=p')<cr>
 
 " ]r            move region {{{1
 
+" TODO:
+" Once we've implemented  our own version of `vim-schlepp`,  we should eliminate
+" these mappings / functions. `vim-schlepp` works better.
+"
+" Watch:
+"
+"         exe 'set '.(s:hls_on ? '' : 'no').'hls'
+"
+" Try to move the region inside the parentheses to the left and repeat.
+" It breaks at one point. Because the text-object is broken at one point.
+"
+" Besides,  no need  of handling  a custom  highlight (the  visual selection  is
+" highlighted).
+
 nmap [r                                       <plug>(move_region_backward)
 nmap ]r                                       <plug>(move_region_forward)
 nno  <silent> <plug>(move_region_backward)    :<c-u>exe brackets#move_region(0, v:count1)<cr>
