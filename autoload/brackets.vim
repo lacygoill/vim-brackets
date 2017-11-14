@@ -786,7 +786,7 @@ fu! brackets#put_empty_line(below) abort "{{{1
         " They should be. So, we undo, then use  the `o` or `O` command, so that
         " Vim adds the comment leader for each line.
         norm! m'
-        undo
+        sil undo
         exe 'norm! '.cnt.(a:below ? 'o' : 'O')."\e".'``'
 
         " What is this lambda for?{{{
