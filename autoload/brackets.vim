@@ -824,7 +824,7 @@ fu! brackets#put_empty_line(below) abort "{{{1
             return 'echoerr '.string(v:exception)
         finally
             let &ve = ve_save
-            let z_save = getpos("'z")
+            call setpos("'z", z_save)
         endtry
     endif
 
