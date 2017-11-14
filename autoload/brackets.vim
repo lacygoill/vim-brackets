@@ -785,9 +785,11 @@ fu! brackets#put_empty_line(below) abort "{{{1
         " If we're in a commented diagram, the lines we've just put are not commented.
         " They should be. So, we undo, then use  the `o` or `O` command, so that
         " Vim adds the comment leader for each line.
-        norm! m'
         sil undo
-        exe 'norm! '.cnt.(a:below ? 'o' : 'O')."\e".'``'
+        let z_save = getpos("'z")
+        norm! mz
+        exe 'norm! '.cnt.(a:below ? 'o' : 'O')."\e".'g`z'
+        call setpos("'z", z_save)
 
         " What is this lambda for?{{{
         "
@@ -813,8 +815,8 @@ fu! brackets#put_empty_line(below) abort "{{{1
                 if  char ==# '│' && l:Diagram_around(a:below ? 1 : -1, i)
                 \|| index(['┌', '┐', '├', '┤'], char) >= 0 && a:below  && l:Diagram_around(1, i)
                 \|| index(['└', '┘', '├', '┤'], char) >= 0 && !a:below && l:Diagram_around(-1, i)
-                    norm! m'
-                    exe 'norm! '.i.'|'.repeat((a:below ? 'j' : 'k').'r│', cnt).'``'
+                    norm! mz
+                    exe 'norm! '.i.'|'.repeat((a:below ? 'j' : 'k').'r│', cnt).'g`z'
                 endif
                 let i += 1
             endfor
@@ -822,6 +824,7 @@ fu! brackets#put_empty_line(below) abort "{{{1
             return 'echoerr '.string(v:exception)
         finally
             let &ve = ve_save
+            let z_save = getpos("'z")
         endtry
     endif
 
