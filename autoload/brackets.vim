@@ -779,8 +779,8 @@ fu! brackets#put_empty_line(below) abort "{{{1
     " is filled with “holes“. We need to complete the diagram when needed.
 
     "                            ┌ diagram characters
-    "                     ┌──────┤
-    if getline('.') =~# '[┌┐│└┘├┤]'
+    "                    ┌───────┤
+    if getline('.') =~# '[│┌┐└┘├┤]'
 
         " If we're in a commented diagram, the lines we've just put are not commented.
         " They should be. So, we undo, then use  the `o` or `O` command, so that
