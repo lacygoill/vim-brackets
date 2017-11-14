@@ -785,8 +785,8 @@ fu! brackets#put_empty_line(below) abort "{{{1
         " If we're in a commented diagram, the lines we've just put are not commented.
         " They should be. So, we undo, then use  the `o` or `O` command, so that
         " Vim adds the comment leader for each line.
-        sil undo
         let z_save = getpos("'z")
+        sil undo
         norm! mz
         exe 'norm! '.cnt.(a:below ? 'o' : 'O')."\e".'g`z'
         call setpos("'z", z_save)
