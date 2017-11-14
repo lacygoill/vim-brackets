@@ -336,7 +336,7 @@ fu! brackets#move_region(fwd, cnt) abort "{{{1
         \                                                repeat('.', a:cnt))
         \         :      printf('(%s)(.%%''\[.*%%''\]%s)',
         \                                                repeat('.', a:cnt),
-        \                       index([ '"', "'", '`' ], char) != -1 ? '.' : '..')
+        \                       index([ '"', "'", '`' ], char) >= 0 ? '.' : '..')
 
         exe 'keepj keepp s/\v'.pat.'/\2\1/'
 
@@ -811,8 +811,8 @@ fu! brackets#put_empty_line(below) abort "{{{1
             let i = 1
             for char in split(getline('.'), '\zs')
                 if  char ==# '│' && l:Diagram_around(a:below ? 1 : -1, i)
-                \|| index(['┌', '┐', '├', '┤'], char) != -1 && a:below  && l:Diagram_around(1, i)
-                \|| index(['└', '┘', '├', '┤'], char) != -1 && !a:below && l:Diagram_around(-1, i)
+                \|| index(['┌', '┐', '├', '┤'], char) >= 0 && a:below  && l:Diagram_around(1, i)
+                \|| index(['└', '┘', '├', '┤'], char) >= 0 && !a:below && l:Diagram_around(-1, i)
                     norm! m'
                     exe 'norm! '.i.'|'.repeat((a:below ? 'j' : 'k').'r│', cnt).'``'
                 endif
