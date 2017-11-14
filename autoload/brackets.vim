@@ -372,7 +372,7 @@ fu! brackets#move_region(fwd, cnt) abort "{{{1
 endfu
 
 fu! brackets#mv_sel_hor(dir) abort "{{{1
-    let cnt    = v:count1
+    let cnt = v:count1
     let z_save = getpos("'z")
 
     try
@@ -730,6 +730,7 @@ fu! s:what_is_around(dir) abort
 endfu
 
 fu! brackets#put(where, post_indent_cmd, lhs) abort "{{{1
+    let cnt = v:count1
     " make sure the dot command will repeat the register we're using
     sil! call repeat#setreg(a:lhs, v:register)
 
@@ -754,7 +755,7 @@ fu! brackets#put(where, post_indent_cmd, lhs) abort "{{{1
         call setreg(reg_to_use, getreg(reg_to_use), 'l')
 
         " put the register (a:where can be ]p or [p)
-        exe 'norm! "'.reg_to_use.v:count1.a:where.a:post_indent_cmd
+        exe 'norm! "'.reg_to_use.cnt.a:where.a:post_indent_cmd
     catch
         return 'echoerr '.string(v:exception)
     finally
@@ -763,18 +764,69 @@ fu! brackets#put(where, post_indent_cmd, lhs) abort "{{{1
     endtry
 
     " make the edit dot repeatable
-    sil! call repeat#set(a:lhs, v:count1)
+    sil! call repeat#set(a:lhs, cnt)
 
     return ''
 endfu
 
 fu! brackets#put_empty_line(below) abort "{{{1
-    call append(line('.')+(a:below ? 0 : -1), repeat([''], v:count1))
+    let cnt = v:count1
 
-    sil! call repeat#set("\<plug>(put_empty_line_".(a:below ? 'below' : 'above').')', v:count1)
-    doautocmd CursorMoved
+    call append(line('.')+(a:below ? 0 : -1), repeat([''], cnt))
 
-    " FIXME:
+    " We've just put (an) empty line(s) below/above the current one.
+    " But if we were inside a diagram, there's a risk that now the latter
+    " is filled with “holes“. We need to complete the diagram when needed.
+
+    "                             ┌ diagram characters
+    "                     ┌───────┤
+    if getline('.') =~# '[│┌┐└┘├┤├┤]'
+
+        " If we're in a commented diagram, the lines we've just put are not commented.
+        " They should be. So, we undo, then use  the `o` or `O` command, so that
+        " Vim adds the comment leader for each line.
+        m'
+        undo
+        exe 'norm! '.cnt.(a:below ? 'o' : 'O')."\e".'``'
+
+        " What is this lambda for?{{{
+        "
+        " This lambda will be invoked every  time there's a diagram character on
+        " the line where we pressed our mapping.
+        "
+        " It will  be used to  check if  there's another diagram  character just
+        " above/below.   This is  some  kind of  heuristics  to eliminate  false
+        " positive.  We want  to expand a diagram only when  we're really inside
+        " one.
+        "}}}
+        let l:Diagram_around = { dir,vpos ->
+        \                        matchstr(getline(line('.')+dir*(cnt+1)), '\%'.vpos.'v.''\@!') =~# '[│┌┐└┘├┤├┤]' }
+        "                                                                              └───┤
+        "                             if a diagram character is followed by a single quote ┘
+        "                             it's probably used  in some code (like  in this code
+        "                             for example) ignore it
+        let ve_save = &ve
+        try
+            set ve=all
+            let i = 1
+            for char in split(getline('.'), '\zs')
+                if  char ==# '│' && l:Diagram_around(a:below ? 1 : -1, i)
+                \|| index(['┌', '┐', '├', '┤'], char) != -1 && a:below  && l:Diagram_around(1, i)
+                \|| index(['└', '┘', '├', '┤'], char) != -1 && !a:below && l:Diagram_around(-1, i)
+                    norm! m'
+                    exe 'norm! '.i.'|'.repeat((a:below ? 'j' : 'k').'r│', cnt).'``'
+                endif
+                let i += 1
+            endfor
+        catch
+            return 'echoerr '.string(v:exception)
+        finally
+            let &ve = ve_save
+        endtry
+    endif
+
+    sil! call repeat#set("\<plug>(put_empty_line_".(a:below ? 'below' : 'above').')', cnt)
+    " FIXME:{{{
     "         ] space
     "         dd
     "         .          ✘
@@ -787,4 +839,7 @@ fu! brackets#put_empty_line(below) abort "{{{1
     " Understand why this fix is needed.
     " Find whether it's needed somewhere else.
     " Document it.
+    "}}}
+    doautocmd CursorMoved
+    return ''
 endfu

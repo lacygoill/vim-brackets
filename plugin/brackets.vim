@@ -255,7 +255,7 @@ nno  <silent> <plug>(move_region_forward)     :<c-u>exe brackets#move_region(1, 
 " ] space             {{{1
 
 nmap         [<space>                      <plug>(put_empty_line_above)
-nno <silent> <plug>(put_empty_line_above)  :<c-u>call brackets#put_empty_line(0)<cr>
+nno <silent> <plug>(put_empty_line_above)  :<c-u>exe brackets#put_empty_line(0)<cr>
 
 nmap         ]<space>                      <plug>(put_empty_line_below)
-nno <silent> <plug>(put_empty_line_below)  :<c-u>call brackets#put_empty_line(1)<cr>
+nno <silent> <plug>(put_empty_line_below)  :<c-u>exe brackets#put_empty_line(1)<cr>
