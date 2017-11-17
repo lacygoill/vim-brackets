@@ -3,8 +3,26 @@ if exists('g:loaded_brackets')
 endif
 let g:loaded_brackets = 1
 
-" ]ablqt        move in lists {{{1
-" Data {{{2
+" Commands {{{1
+" Ilist {{{2
+
+"                                                     ┌─ command
+"                                                     │
+"                                                     │   ┌─ pattern is NOT word under cursor
+"                                                     │   │
+"                                                     │   │  ┌─ do NOT start searching after current line
+"                                                     │   │  │  start from beginning of file
+"                                                     │   │  │
+"                                                     │   │  │   ┌─ search in comments only if a bang is added
+"                                                     │   │  │   │
+"                                                     │   │  │   │        ┌─ pattern
+"                                                     │   │  │   │        │
+com! -bar -bang -nargs=1 Ilist call brackets#DI_List('i', 0, 0, <bang>0, <f-args>)
+com! -bar -bang -nargs=1 Dlist call brackets#DI_List('d', 0, 0, <bang>0, <f-args>)
+
+" Mappings {{{1
+" ]ablqt        move in lists {{{2
+" Data {{{3
 
 let s:mil_cmd = {
               \   '[<c-l>': [ 'lpfile', '' ],
@@ -35,8 +53,8 @@ let s:mil_cmd = {
               \   ']t': [ 'tnext',      'tfirst' ],
               \ }
 
-" Functions {{{2
-fu! s:mil(lhs) abort "{{{3
+" Functions {{{3
+fu! s:mil(lhs) abort "{{{4
     let cnt = (v:count == 0 ? '' : v:count)
 
     if a:lhs =~# '<c-q>' || a:lhs ==# '<c-l>'
@@ -88,7 +106,7 @@ fu! s:mil(lhs) abort "{{{3
     return ''
 endfu
 
-fu! s:mil_build_mapping(key, pfx) abort "{{{3
+fu! s:mil_build_mapping(key, pfx) abort "{{{4
     let prev = '['.a:key
     let next = ']'.a:key
     exe 'nno <silent> '.prev .' :<c-u>exe <sid>mil('.string(prev).')<cr>'
@@ -122,7 +140,7 @@ fu! s:mil_build_mapping(key, pfx) abort "{{{3
     endif
 endfu
 
-" Mappings {{{2
+" Installation {{{3
 "
 " Install a bunch of mappings to move in the:
 "    arglist
@@ -137,7 +155,7 @@ call s:mil_build_mapping('l','l')
 call s:mil_build_mapping('q','c')
 call s:mil_build_mapping('t','t')
 
-" ]eE           move text {{{1
+" ]eE           move text {{{2
 
 nmap [e    <Plug>(mv_line_up)
 nmap ]e    <Plug>(mv_line_down)
@@ -159,7 +177,7 @@ xmap ]E    <Plug>(mv_sel_right)
 noremap <silent> <Plug>(mv_sel_left)   :<c-u>exe brackets#mv_sel_hor('left')<cr>
 noremap <silent> <Plug>(mv_sel_right)  :<c-u>exe brackets#mv_sel_hor('right')<cr>
 
-" ]f            move in files {{{1
+" ]f            move in files {{{2
 
 nno <silent> ]f    :<c-u>let g:motion_to_repeat = ']f'
                    \ <bar> edit <c-r>=fnameescape(brackets#next_file_to_edit(v:count1))<cr><cr>
@@ -167,7 +185,7 @@ nno <silent> ]f    :<c-u>let g:motion_to_repeat = ']f'
 nno <silent> [f    :<c-u>let g:motion_to_repeat = '[f'
                    \ <bar> edit <c-r>=fnameescape(brackets#next_file_to_edit(-v:count1))<cr><cr>
 
-" ]I            [di]list {{{1
+" ]I            [di]list {{{2
 
 "                                                    ┌─ don't start to search at cursor, but at beginning of file
 "                                                    │  ┌─ don't pass a bang to the commands
@@ -193,13 +211,13 @@ xno <silent> [D  :<c-u>call brackets#DI_List('d', 0, 0, 1)<cr>
 nno <silent> ]D  :<c-u>call brackets#DI_List('d', 1, 1, 0)<cr>
 xno <silent> ]D  :<c-u>call brackets#DI_List('d', 0, 1, 1)<cr>
 
-" ]oL           lightness colorscheme {{{1
+" ]oL           lightness colorscheme {{{2
 
 " Do NOT use `]L`: it's already taken to move to the last entry in the ll.
 nno <silent> ]oL    :<c-u>call brackets#colorscheme_lightness(1)<cr>
 nno <silent> [oL    :<c-u>call brackets#colorscheme_lightness(0)<cr>
 
-" ]p {{{1
+" ]p {{{2
 
 " By default `]p` puts a copied line with the indentation of the current line.
 " But if the copied text is characterwise, `]p` puts it as a characterwise text.
@@ -245,7 +263,7 @@ nno <silent> =p :<c-u>exe brackets#put(']p', "=']", '=p')<cr>
 "
 " But with these ones, we would lose the linewise conversion.
 
-" ]r            move region {{{1
+" ]r            move region {{{2
 
 " TODO:
 " Once we've implemented  our own version of `vim-schlepp`,  we should eliminate
@@ -266,7 +284,7 @@ nmap ]r                                       <plug>(move_region_forward)
 nno  <silent> <plug>(move_region_backward)    :<c-u>exe brackets#move_region(0, v:count1)<cr>
 nno  <silent> <plug>(move_region_forward)     :<c-u>exe brackets#move_region(1, v:count1)<cr>
 
-" ] space             {{{1
+" ] space             {{{2
 
 nmap         [<space>                      <plug>(put_empty_line_above)
 nno <silent> <plug>(put_empty_line_above)  :<c-u>exe brackets#put_empty_line(0)<cr>
