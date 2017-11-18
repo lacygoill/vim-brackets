@@ -6,19 +6,19 @@ let g:loaded_brackets = 1
 " Commands {{{1
 " Ilist {{{2
 
-"                                                     ┌─ command
-"                                                     │
-"                                                     │   ┌─ pattern is NOT word under cursor
-"                                                     │   │
-"                                                     │   │  ┌─ do NOT start searching after current line
-"                                                     │   │  │  start from beginning of file
-"                                                     │   │  │
-"                                                     │   │  │   ┌─ search in comments only if a bang is added
-"                                                     │   │  │   │
-"                                                     │   │  │   │        ┌─ pattern
-"                                                     │   │  │   │        │
-com! -bar -bang -nargs=1 Ilist call brackets#DI_List('i', 0, 0, <bang>0, <f-args>)
-com! -bar -bang -nargs=1 Dlist call brackets#DI_List('d', 0, 0, <bang>0, <f-args>)
+"                                                ┌─ command
+"                                                │
+"                                                │   ┌─ pattern is NOT word under cursor
+"                                                │   │
+"                                                │   │  ┌─ do NOT start searching after current line
+"                                                │   │  │  start from beginning of file
+"                                                │   │  │
+"                                                │   │  │   ┌─ search in comments only if a bang is added
+"                                                │   │  │   │
+"                                                │   │  │   │        ┌─ pattern
+"                                                │   │  │   │        │
+com! -bang -nargs=1 Ilist call brackets#DI_List('i', 0, 0, <bang>0, <f-args>)
+com! -bang -nargs=1 Dlist call brackets#DI_List('d', 0, 0, <bang>0, <f-args>)
 
 " Mappings {{{1
 " ]ablqt        move in lists {{{2
