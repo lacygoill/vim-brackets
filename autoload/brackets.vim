@@ -239,7 +239,7 @@ fu! brackets#DI_List(cmd, search_cur_word, start_at_cursor, search_in_comments, 
     " must open the ll or qfl window.
     doautocmd QuickFixCmdPost lvimgrep
 
-    if &ft ==# 'qf'
+    if &l:buftype ==# 'quickfix'
         " hide location
         call qf#my_conceal('location')
 
