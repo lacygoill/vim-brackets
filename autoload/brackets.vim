@@ -241,7 +241,7 @@ fu! brackets#DI_List(cmd, search_cur_word, start_at_cursor, search_in_comments, 
 
     if &l:buftype ==# 'quickfix'
         " hide location
-        call qf#my_conceal('location')
+        call qf#conceal('location')
 
         " Add proper feedback to the statusline.
         let w:quickfix_title = feedback
