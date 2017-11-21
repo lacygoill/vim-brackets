@@ -482,7 +482,7 @@ fu! brackets#mv_text(what) abort "{{{1
             if range !=# "'<,'>"
                 norm! |m<$m>
             endif
-            let w:my_moved_line = matchadd('IncSearch', '.*\%''<\_.*\%<''>.*')
+            let w:my_moved_line = matchadd('Visual', '.*\%''<\_.*\%<''>.*')
 
             let s:Remove_hl_line = { -> execute('
                                  \                  if exists("w:my_moved_line")
@@ -589,7 +589,7 @@ fu! s:moved_region_highlight(first_char, last_char, offset, surrounding_char) ab
     "   the ending  quote, contrary to `yi)`  which doesn't include
     "   the ending parenthesis
 
-    let w:my_moved_region = matchadd('IncSearch', pat)
+    let w:my_moved_region = matchadd('Visual', pat)
 
     let s:Remove_hl_region = { -> execute('
     \                                        if exists("w:my_moved_region")
