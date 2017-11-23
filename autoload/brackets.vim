@@ -251,7 +251,7 @@ endfu
 fu! s:getchar() "{{{1
     let c = getchar()
     if c =~ '^\d\+$'
-        let c = nr2char(c)
+        let c = nr2char(c,1)
     endif
     return c =~ "\e\|\<c-c>"
     \?         ''
