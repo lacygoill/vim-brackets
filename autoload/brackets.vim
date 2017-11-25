@@ -801,8 +801,8 @@ fu! brackets#put_empty_line(below) abort "{{{1
         " positive.  We want  to expand a diagram only when  we're really inside
         " one.
         "}}}
-        let l:Diagram_around = { dir,vpos ->
-        \                        matchstr(getline(line('.')+dir*(cnt+1)), '\%'.vpos.'v.''\@!') =~# '[│┌┐└┘├┤├┤]' }
+        let l:Diagram_around = { dir, vcol ->
+        \                        matchstr(getline(line('.')+dir*(cnt+1)), '\%'.vcol.'v.''\@!') =~# '[│┌┐└┘├┤├┤]' }
         "                                                                              └───┤
         "                             if a diagram character is followed by a single quote ┘
         "                             it's probably used  in some code (like  in this code
@@ -810,15 +810,18 @@ fu! brackets#put_empty_line(below) abort "{{{1
         let ve_save = &ve
         try
             set ve=all
-            let i = 1
+            let vcol = 1
             for char in split(getline('.'), '\zs')
-                if  char ==# '│' && l:Diagram_around(a:below ? 1 : -1, i)
-                \|| index(['┌', '┐', '├', '┤'], char) >= 0 && a:below  && l:Diagram_around(1, i)
-                \|| index(['└', '┘', '├', '┤'], char) >= 0 && !a:below && l:Diagram_around(-1, i)
+                if  char ==# '│' && l:Diagram_around(a:below ? 1 : -1, vcol)
+                \|| index(['┌', '┐', '├', '┤'], char) >= 0 && a:below  && l:Diagram_around(1, vcol)
+                \|| index(['└', '┘', '├', '┤'], char) >= 0 && !a:below && l:Diagram_around(-1, vcol)
                     norm! mz
-                    exe 'norm! '.i.'|'.repeat((a:below ? 'j' : 'k').'r│', cnt).'g`z'
+                    "                                                           ┌ if a:below = 1 and cnt = 3:
+                    "                                                           │     jr|jr|jr|
+                    "                     ┌─────────────────────────────────────┤
+                    exe 'norm! '.vcol.'|'.repeat((a:below ? 'j' : 'k').'r│', cnt).'g`z'
                 endif
-                let i += 1
+                let vcol += 1
             endfor
         catch
             return 'echoerr '.string(v:exception)
