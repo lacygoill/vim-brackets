@@ -641,12 +641,12 @@ fu! brackets#next_file_to_edit(cnt) abort "{{{1
         if a:cnt > 0
             " remove the entries whose names come BEFORE the one of the current
             " entry, and sort the resulting list
-            call sort(filter(entries,'v:val ># here'))
+            call sort(filter(entries,{ k,v -> v ># here }))
         else
             " remove the entries whose names come AFTER the one of the current
             " entry, sort the resulting list, and reverse the order
             " (so that the previous entry comes first instead of last)
-            call reverse(sort(filter(entries,'v:val <# here')))
+            call reverse(sort(filter(entries, { k,v -> v <# here })))
         endif
         let next_entry = get(entries, 0, '')
 
@@ -724,7 +724,7 @@ fu! s:what_is_around(dir) abort
     "         /tmp/..
     "
     " We need to get rid of them.
-    call filter(entries,'v:val !~# ''/\.\.\?$''')
+    call filter(entries, { k,v -> v !~# '/\.\.\?$' })
 
     return entries
 endfu
