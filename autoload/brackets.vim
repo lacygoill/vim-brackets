@@ -3,148 +3,6 @@ if exists('g:autoloaded_brackets')
 endif
 let g:autoloaded_brackets = 1
 
-fu! brackets#colorscheme_lightness(more) abort "{{{1
-    let is_light = g:seoul256_current_bg >= 252 && g:seoul256_current_bg <= 256
-
-    if is_light
-        let g:seoul256_light_background = get(g:, 'seoul256_light_background', 253)
-
-        " How did we find the 1st formula?{{{
-        " We want a formula making a number `n` cycle from 252 to 256.
-        "
-        " Let's simplify the pb, and cycle from 0 to 4. Solution:
-        "
-        "         • initialize `n` to 0
-        "         • use the formula  (n+1)%5  to update `n`
-        "
-        " We can't use this solution to our original problem. They are not the same.
-        " We need to reformulate our problem, so that we can use this solution.
-        " In our problem, what cycles between 0 and 4?
-        " The distance between `n` and 252.
-        " So:
-        "
-        "         • initialize `n` to 252
-        "         • use  (d+1)%5  to update the DISTANCE between `n` and 252
-        "
-        " Let's formalize  the last  sentence, using  `d1`, `d2`,  `n1` and  `n2` to
-        " stand for the old / new distances and the old / new values of `n`:
-        "
-        "       d2       = f(d1)                    with f(x) = (x + 1)%5
-        "     ⇔ d2       = (d1 + 1)%5
-        "     ⇔ n2 - 252 = (n1 - 252 + 1)%5
-        "     ⇔ n2       = (n1 - 252 + 1)%5 + 252
-        "     ⇔ n2       = 252 + (n1 + 1 - 252)%5
-    "}}}
-        " How did we find the 2nd formula?{{{
-        " We want a formula making a number `n` cycle from 256 to 252.
-        "
-        " Let's simplify the pb and make `n` cycle from 0 to 4.
-        "
-        "         • initialize `n` to 0
-        "         • use the formula  (n+1)%5  to update `n`
-        "
-        " We can't use this solution to our original problem. They are not the same.
-        " We need to reformulate our problem, so that we can use this solution.
-        " In our problem, what cycles between 0 and 4?
-        " The distance between `n` and 256.
-        " So:
-        "
-        "         • initialize `n` to 256
-        "         • use  (d+1)%5  to update the DISTANCE between `n` and 256
-        "
-        " Let's formalize the last sentence, using  `d1`, `d2`, `n1` and `n2` to
-        " stand for the old / new distances and the old / new values of `n`:
-        "
-        "        d2       = f(d1)                    with f(x) = (x + 1)%5
-        "      ⇔ d2       = (d1 + 1)%5
-        "      ⇔ 256 - n2 = (256 - n1 + 1)%5
-        "      ⇔       n2 = 256 - (256 - n1 + 1)%5
-        "      ⇔       n2 = 256 + (n1 - 1 - 256)%5
-        "}}}
-        let g:seoul256_light_background = a:more
-        \?        252 + (g:seoul256_light_background + 1 - 252)%5
-        \:        256 + (g:seoul256_light_background - 1 - 256)%5
-        "                └─────────────────────────────┤ └──────┤
-        "                                              │        └ and make sure we don't go
-        "                                              │          too far away from 256
-        "                                              └ decrement
-
-        colo seoul256-light
-        let level = g:seoul256_light_background - 252 + 1
-    else
-        let g:seoul256_background = get(g:, 'seoul256_background', 237)
-
-        let g:seoul256_background = a:more
-        \?        233 + (g:seoul256_background + 1 - 233)%7
-        \:        239 + (g:seoul256_background - 1 - 239)%7
-
-        colo seoul256
-        let level = g:seoul256_background - 233 + 1
-    endif
-
-    " Why the timer?{{{
-    "
-    " When you  want to echo a  message from a  function, there are 3  parameters to
-    " consider.
-    "
-    "         1. Is 'lazyredraw' set or not?
-    "         2. Is the function called from an <expr> mapping?
-    "         3. Do you echo now, or later (timer, feedkeys())?
-    "
-    " There are 8  possibilities. Atm, some of them fail either  because the message
-    " is immediately  erased, or  because the  cursor is  stuck on  the command-line
-    " after  the message  (once out  of 2),  and the  change of  colorscheme is  not
-    " visible while the cursor is stuck.
-    " Reproduce:
-    "
-    "         nno <expr> cd Func()
-    "         fu! Func() abort
-    "             echo 'hello'
-    "             return ''
-    "         endfu
-    "
-    "  In  Vim, this  can be  solved  by calling  `redraw` from  a timer  inside
-    " `Func()`:
-    "
-    "             call timer_start(0, {-> execute('redraw')})
-    "
-    " … but it doesn't work in Neovim.
-    "
-    " The working possibilities are different for Vim and Neovim:
-    "
-    "         Vim:
-    "
-    "          ┌─ is 'lz' set?
-    "          │  ┌─ do you use <expr>?
-    "          │  │  ┌─ do you echo now?
-    "          │  │  │
-    "         [0, 0, 0]
-    "         [1, 0, 0]
-    "         [1, 1, 0]
-    "
-    "         Neovim:
-    "
-    "         [0, 0, 0]
-    "         [0, 0, 1]
-    "         [1, 0, 0]
-    "         [1, 0, 1]
-    "         [1, 1, 1]
-    "
-    " Solutions which work for Vim AND Neovim:    [0,0,0]
-    "                                             [1,0,0]
-    "
-    " Conclusions:
-    " In Vim do NOT echo now, and do NOT enable 'lz' with an <expr> mapping.
-    " In Neovim, do NOT use <expr>, unless you enable 'lz' and you echo now.
-    "
-    " To write a function which echo a message, and which will work in both,
-    " do NOT use <expr>, and do NOT echo now.
-"}}}
-    call timer_start(0, {-> execute('echo "[lightness]"'.level, '')})
-    let g:motion_to_repeat = (a:more ? ']' : '[').'oL'
-    return ''
-endfu
-
 fu! brackets#DI_List(cmd, search_cur_word, start_at_cursor, search_in_comments, ...) abort "{{{1
     " Derive the commands used below from the first argument.
     let excmd   = a:cmd.'list'.(a:search_in_comments ? '!' : '')
@@ -609,6 +467,7 @@ fu! s:moved_region_highlight(first_char, last_char, offset, surrounding_char) ab
         au CursorHold <buffer> call s:Remove_hl_region()
     augroup END
 endfu
+
 fu! brackets#next_file_to_edit(cnt) abort "{{{1
     let here = expand('%:p')
     let cnt  = a:cnt
@@ -641,12 +500,12 @@ fu! brackets#next_file_to_edit(cnt) abort "{{{1
         if a:cnt > 0
             " remove the entries whose names come BEFORE the one of the current
             " entry, and sort the resulting list
-            call sort(filter(entries,{ k,v -> v ># here }))
+            call sort(filter(entries,{ i,v -> v ># here }))
         else
             " remove the entries whose names come AFTER the one of the current
             " entry, sort the resulting list, and reverse the order
             " (so that the previous entry comes first instead of last)
-            call reverse(sort(filter(entries, { k,v -> v <# here })))
+            call reverse(sort(filter(entries, { i,v -> v <# here })))
         endif
         let next_entry = get(entries, 0, '')
 
@@ -724,7 +583,7 @@ fu! s:what_is_around(dir) abort
     "         /tmp/..
     "
     " We need to get rid of them.
-    call filter(entries, { k,v -> v !~# '/\.\.\?$' })
+    call filter(entries, { i,v -> v !~# '/\.\.\?$' })
 
     return entries
 endfu
