@@ -97,13 +97,14 @@ fu! brackets#DI_List(cmd, search_cur_word, start_at_cursor, search_in_comments, 
     " must open the ll or qfl window.
     doautocmd QuickFixCmdPost lvimgrep
 
-    if &l:buftype ==# 'quickfix'
-        " hide location
-        call qf#conceal('location')
-
-        " Add proper feedback to the statusline.
-        let w:quickfix_title = feedback
+    if &l:buftype !=# 'quickfix'
+        return
     endif
+
+    " hide location
+    call qf#conceal('location')
+    " Add proper feedback to the statusline.
+    let w:quickfix_title = feedback
 endfu
 
 fu! s:getchar() "{{{1
