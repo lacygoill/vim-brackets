@@ -157,25 +157,25 @@ call s:mil_build_mapping('t','t')
 
 " ]eE           move text {{{2
 
-nmap [e    <Plug>(mv_line_up)
-nmap ]e    <Plug>(mv_line_down)
+nmap <unique>  [e  <plug>(mv_line_up)
+nmap <unique>  ]e  <plug>(mv_line_down)
 
-nno <silent>  <Plug>(mv_line_up)    :<c-u>exe brackets#mv_text('line_up')<cr>
-nno <silent>  <Plug>(mv_line_down)  :<c-u>exe brackets#mv_text('line_down')<cr>
-
-
-xmap [e    <Plug>(mv_sel_up)
-xmap ]e    <Plug>(mv_sel_down)
-
-noremap <silent>  <Plug>(mv_sel_up)    :<c-u>exe brackets#mv_text('sel_up')<cr>
-noremap <silent>  <Plug>(mv_sel_down)  :<c-u>exe brackets#mv_text('sel_down')<cr>
+nno  <silent>  <plug>(mv_line_up)    :<c-u>exe brackets#mv_text('line_up')<cr>
+nno  <silent>  <plug>(mv_line_down)  :<c-u>exe brackets#mv_text('line_down')<cr>
 
 
-xmap [E    <Plug>(mv_sel_left)
-xmap ]E    <Plug>(mv_sel_right)
+xmap  <unique>  [e  <plug>(mv_sel_up)
+xmap  <unique>  ]e  <plug>(mv_sel_down)
 
-noremap <silent> <Plug>(mv_sel_left)   :<c-u>exe brackets#mv_sel_hor('left')<cr>
-noremap <silent> <Plug>(mv_sel_right)  :<c-u>exe brackets#mv_sel_hor('right')<cr>
+noremap <silent>  <plug>(mv_sel_up)    :<c-u>exe brackets#mv_text('sel_up')<cr>
+noremap <silent>  <plug>(mv_sel_down)  :<c-u>exe brackets#mv_text('sel_down')<cr>
+
+
+xmap  <unique>  [E  <plug>(mv_sel_left)
+xmap  <unique>  ]E  <plug>(mv_sel_right)
+
+noremap <silent> <plug>(mv_sel_left)   :<c-u>exe brackets#mv_sel_hor('left')<cr>
+noremap <silent> <plug>(mv_sel_right)  :<c-u>exe brackets#mv_sel_hor('right')<cr>
 
 " ]f            move in files {{{2
 
@@ -275,15 +275,15 @@ nno <silent><unique> =p :<c-u>exe brackets#put(']p', "=']", '=p')<cr>
 " Besides,  no need  of handling  a custom  highlight (the  visual selection  is
 " highlighted).
 
-nmap [r                                       <plug>(move_region_backward)
-nmap ]r                                       <plug>(move_region_forward)
-nno  <silent> <plug>(move_region_backward)    :<c-u>exe brackets#move_region(0, v:count1)<cr>
-nno  <silent> <plug>(move_region_forward)     :<c-u>exe brackets#move_region(1, v:count1)<cr>
+nmap  <unique>  [r                            <plug>(move_region_backward)
+nmap  <unique>  ]r                            <plug>(move_region_forward)
+nno   <silent>  <plug>(move_region_backward)  :<c-u>exe brackets#move_region(0, v:count1)<cr>
+nno   <silent>  <plug>(move_region_forward)   :<c-u>exe brackets#move_region(1, v:count1)<cr>
 
 " ] space             {{{2
 
-nmap         [<space>                      <plug>(put_empty_line_above)
-nno <silent> <plug>(put_empty_line_above)  :<c-u>exe brackets#put_empty_line(0)<cr>
+nmap  <unique>  [<space>                      <plug>(put_empty_line_above)
+nno   <silent>  <plug>(put_empty_line_above)  :<c-u>exe brackets#put_empty_line(0)<cr>
 
-nmap         ]<space>                      <plug>(put_empty_line_below)
-nno <silent> <plug>(put_empty_line_below)  :<c-u>exe brackets#put_empty_line(1)<cr>
+nmap  <unique>  ]<space>                      <plug>(put_empty_line_below)
+nno   <silent>  <plug>(put_empty_line_below)  :<c-u>exe brackets#put_empty_line(1)<cr>
