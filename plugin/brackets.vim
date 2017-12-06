@@ -109,13 +109,13 @@ endfu
 fu! s:mil_build_mapping(key, pfx) abort "{{{4
     let prev = '['.a:key
     let next = ']'.a:key
-    exe 'nno <silent> '.prev .' :<c-u>exe <sid>mil('.string(prev).')<cr>'
-    exe 'nno <silent> '.next .' :<c-u>exe <sid>mil('.string(next).')<cr>'
+    exe 'nno <silent><unique> '.prev .' :<c-u>exe <sid>mil('.string(prev).')<cr>'
+    exe 'nno <silent><unique> '.next .' :<c-u>exe <sid>mil('.string(next).')<cr>'
 
     let first = '['.toupper(a:key)
     let last  = ']'.toupper(a:key)
-    exe 'nno <silent> '.first.' :<c-u>exe <sid>mil('.string(first).')<cr>'
-    exe 'nno <silent> '.last .' :<c-u>exe <sid>mil('.string(last).')<cr>'
+    exe 'nno <silent><unique> '.first.' :<c-u>exe <sid>mil('.string(first).')<cr>'
+    exe 'nno <silent><unique> '.last .' :<c-u>exe <sid>mil('.string(last).')<cr>'
 
     " If a:pfx = 'c' then we also define the mappings `[ C-q` and `] C-q`
     " which execute the commands `:cpfile` and `:cnfile`:
@@ -132,10 +132,10 @@ fu! s:mil_build_mapping(key, pfx) abort "{{{4
         let pfile = '[<c-'.a:key.'>'
         let nfile = ']<c-'.a:key.'>'
 
-        exe 'nno <silent> '.pfile.' '
+        exe 'nno <silent><unique> '.pfile.' '
         \.  ':<c-u>exe <sid>mil('.substitute(string(pfile), '<', '<lt>', '').')<cr>'
 
-        exe 'nno <silent> '.nfile.' '
+        exe 'nno <silent><unique> '.nfile.' '
         \.  ':<c-u>exe <sid>mil('.substitute(string(nfile), '<', '<lt>', '').')<cr>'
     endif
 endfu
@@ -179,37 +179,39 @@ noremap <silent> <Plug>(mv_sel_right)  :<c-u>exe brackets#mv_sel_hor('right')<cr
 
 " ]f            move in files {{{2
 
-nno <silent> ]f    :<c-u>let g:motion_to_repeat = ']f'
-                   \ <bar> edit <c-r>=fnameescape(brackets#next_file_to_edit(v:count1))<cr><cr>
+nno <silent><unique> ]f  :<c-u>let g:motion_to_repeat = ']f'
+                         \ <bar> edit <c-r>=fnameescape(brackets#next_file_to_edit(v:count1))<cr><cr>
 
-nno <silent> [f    :<c-u>let g:motion_to_repeat = '[f'
-                   \ <bar> edit <c-r>=fnameescape(brackets#next_file_to_edit(-v:count1))<cr><cr>
+nno <silent><unique> [f  :<c-u>let g:motion_to_repeat = '[f'
+                         \ <bar> edit <c-r>=fnameescape(brackets#next_file_to_edit(-v:count1))<cr><cr>
 
 " ]I            [di]list {{{2
 
-"                                                    ┌─ don't start to search at cursor, but at beginning of file
-"                                                    │  ┌─ don't pass a bang to the commands
-"                                                    │  │  normal commands don't accept one anyway
-nno <silent> [I  :<c-u>call brackets#DI_List('i', 1, 0, 0)<cr>
-"                                             │   │
-"                                             │   └─ search current word
-"                                             └─ command to execute (ilist or dlist)
+"                                                            ┌─ don't start to search at cursor,
+"                                                            │  but at beginning of file
+"                                                            │
+"                                                            │  ┌─ don't pass a bang to the commands
+"                                                            │  │  normal commands don't accept one anyway
+nno <silent><unique> [I  :<c-u>call brackets#DI_List('i', 1, 0, 0)<cr>
+"                                                     │   │
+"                                                     │   └─ search current word
+"                                                     └─ command to execute (ilist or dlist)
 
-xno <silent> [I  :<c-u>call brackets#DI_List('i', 0, 0, 1)<cr>
-"                                                 │
-"                                                 └─ don't search current word, but visual selection
+xno <silent><unique> [I  :<c-u>call brackets#DI_List('i', 0, 0, 1)<cr>
+"                                                         │
+"                                                         └─ don't search current word, but visual selection
 
-nno <silent> ]I  :<c-u>call brackets#DI_List('i', 1, 1, 0)<cr>
-"                                                    │
-"                                                    └─ start to search after the line where the cursor is
+nno <silent><unique> ]I  :<c-u>call brackets#DI_List('i', 1, 1, 0)<cr>
+"                                                            │
+"                                                            └─ start to search after the line where the cursor is
 
-xno <silent> ]I  :<c-u>call brackets#DI_List('i', 0, 1, 1)<cr>
+xno <silent><unique> ]I  :<c-u>call brackets#DI_List('i', 0, 1, 1)<cr>
 
-nno <silent> [D  :<c-u>call brackets#DI_List('d', 1, 0, 0)<cr>
-xno <silent> [D  :<c-u>call brackets#DI_List('d', 0, 0, 1)<cr>
+nno <silent><unique> [D  :<c-u>call brackets#DI_List('d', 1, 0, 0)<cr>
+xno <silent><unique> [D  :<c-u>call brackets#DI_List('d', 0, 0, 1)<cr>
 
-nno <silent> ]D  :<c-u>call brackets#DI_List('d', 1, 1, 0)<cr>
-xno <silent> ]D  :<c-u>call brackets#DI_List('d', 0, 1, 1)<cr>
+nno <silent><unique> ]D  :<c-u>call brackets#DI_List('d', 1, 1, 0)<cr>
+xno <silent><unique> ]D  :<c-u>call brackets#DI_List('d', 0, 1, 1)<cr>
 
 " ]p {{{2
 
@@ -219,10 +221,10 @@ xno <silent> ]D  :<c-u>call brackets#DI_List('d', 0, 1, 1)<cr>
 " selected with a characterwise motion.
 
 
-"            ┌─ where do we put: above or below (here above)
-"            │
-nno <silent> [p :<c-u>exe brackets#put('[p', '', '[p')<cr>
-nno <silent> ]p :<c-u>exe brackets#put(']p', '', ']p')<cr>
+"                    ┌─ where do we put: above or below (here above)
+"                    │
+nno <silent><unique> [p :<c-u>exe brackets#put('[p', '', '[p')<cr>
+nno <silent><unique> ]p :<c-u>exe brackets#put(']p', '', ']p')<cr>
 
 " The following mappings put the unnamed register after the current line,
 " treating its contents as linewise (even if characterwise) AND perform another
@@ -232,19 +234,19 @@ nno <silent> ]p :<c-u>exe brackets#put(']p', '', ']p')<cr>
 "         • <p <P    remove a level of indentation
 "         • =p =P    auto-indentation (respecting our indentation-relative options)
 
-"                                        ┌─ command used internally to put
-"                                        │     ┌─ command used internally to indent after the paste
-"                                        │     │      ┌─ lhs that the dot command should repeat
-"                                        │     │      │
-nno <silent> >P :<c-u>exe brackets#put('[p', ">']", '>P')<cr>
-"            ││
-"            │└─ where do we put: above or below (here above)
-"            └─ how do we change the indentation of the text: here we increase it
-nno <silent> >p :<c-u>exe brackets#put(']p', ">']", '>p')<cr>
-nno <silent> <P :<c-u>exe brackets#put('[p', "<']", '<P')<cr>
-nno <silent> <p :<c-u>exe brackets#put(']p', "<']", '<p')<cr>
-nno <silent> =P :<c-u>exe brackets#put('[p', "=']", '=P')<cr>
-nno <silent> =p :<c-u>exe brackets#put(']p', "=']", '=p')<cr>
+"                                                ┌─ command used internally to put
+"                                                │     ┌─ command used internally to indent after the paste
+"                                                │     │      ┌─ lhs that the dot command should repeat
+"                                                │     │      │
+nno <silent><unique> >P :<c-u>exe brackets#put('[p', ">']", '>P')<cr>
+"                    ││
+"                    │└─ where do we put: above or below (here above)
+"                    └─ how do we change the indentation of the text: here we increase it
+nno <silent><unique> >p :<c-u>exe brackets#put(']p', ">']", '>p')<cr>
+nno <silent><unique> <P :<c-u>exe brackets#put('[p', "<']", '<P')<cr>
+nno <silent><unique> <p :<c-u>exe brackets#put(']p', "<']", '<p')<cr>
+nno <silent><unique> =P :<c-u>exe brackets#put('[p', "=']", '=P')<cr>
+nno <silent><unique> =p :<c-u>exe brackets#put(']p', "=']", '=p')<cr>
 
 " A simpler version of the same mappings would be:
 "
