@@ -123,7 +123,7 @@ fu! brackets#move_region(fwd, cnt) abort "{{{1
     let valid = [ "'", '"', '(', ')', '<', '>', 'B', '[', ']', '`', 'a', 'b', 'r', '{', '}' ]
 
     if index(valid, char) == -1
-        return ''
+        return
     endif
 
     let char = char ==# 'a'
