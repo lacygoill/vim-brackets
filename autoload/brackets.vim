@@ -218,16 +218,13 @@ fu! brackets#move_region(fwd, cnt) abort "{{{1
         \                                                  char,
         \                   ), a:cnt)
 
-    catch /\v^Vim%(\(\a+\))?:E486/
-        return ''
     catch
-        return 'echoerr '.string(v:exception)
+        exe my_lib#catch_error()
     finally
         let &cb = cb_save
         let &sel = sel_save
         call setreg('z', reg_save[0], reg_save[1])
     endtry
-    return ''
 endfu
 
 fu! brackets#mv_sel_hor(dir) abort "{{{1
@@ -242,6 +239,7 @@ fu! brackets#mv_sel_hor(dir) abort "{{{1
             exe "sil keepj keepp '<,'>s/\\v^".repeat(' ', cnt).'(.*)$/\1/'
         endif
     catch
+        exe my_lib#catch_error()
     finally
         norm! zv
         norm! `z
@@ -250,7 +248,6 @@ fu! brackets#mv_sel_hor(dir) abort "{{{1
 
     sil! call repeat#set("\<plug>(mv_sel_".a:dir.')', cnt)
     let g:motion_to_repeat = "\<plug>(mv_sel_".a:dir.')'
-    return ''
 endfu
 
 fu! brackets#mv_text(what) abort "{{{1
@@ -367,7 +364,7 @@ fu! brackets#mv_text(what) abort "{{{1
             augroup END
         endif
     catch
-        return 'echoerr '.string(v:exception)
+        exe my_lib#catch_error()
     finally
         " Restoration and cleaning
         let &l:fen = fen_save
@@ -423,7 +420,6 @@ fu! brackets#mv_text(what) abort "{{{1
     \?                           '[e'
     \:                           ']e'
     sil! call repeat#set("\<plug>(mv_".a:what.')', cnt)
-    return ''
 endfu
 
 fu! s:moved_region_highlight(first_char, last_char, offset, surrounding_char) abort "{{{1
@@ -617,7 +613,7 @@ fu! brackets#put(where, post_indent_cmd, lhs) abort "{{{1
         " put the register (a:where can be ]p or [p)
         exe 'norm! "'.reg_to_use.cnt.a:where.a:post_indent_cmd
     catch
-        return 'echoerr '.string(v:exception)
+        exe my_lib#catch_error()
     finally
         " restore the type of the register
         call setreg(reg_to_use, reg_save[0], reg_save[1])
@@ -625,8 +621,6 @@ fu! brackets#put(where, post_indent_cmd, lhs) abort "{{{1
 
     " make the edit dot repeatable
     sil! call repeat#set(a:lhs, cnt)
-
-    return ''
 endfu
 
 fu! brackets#put_empty_line(below) abort "{{{1
@@ -684,7 +678,7 @@ fu! brackets#put_empty_line(below) abort "{{{1
                 let vcol += 1
             endfor
         catch
-            return 'echoerr '.string(v:exception)
+            exe my_lib#catch_error()
         finally
             let &ve = ve_save
             call setpos("'z", z_save)
@@ -707,5 +701,4 @@ fu! brackets#put_empty_line(below) abort "{{{1
     " Document it.
     "}}}
     doautocmd CursorMoved
-    return ''
 endfu

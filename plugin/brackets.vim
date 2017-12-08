@@ -93,7 +93,7 @@ fu! s:mil(lhs) abort "{{{4
         try
             exe cmd2
         catch
-            return 'echoerr '.string(v:exception)
+            exe my_lib#catch_error()
         endtry
     endtry
 
@@ -102,20 +102,18 @@ fu! s:mil(lhs) abort "{{{4
     if a:lhs =~? '\v[lq]$|c-[lq]' && foldclosed('.') != -1
         norm! zv
     endif
-
-    return ''
 endfu
 
 fu! s:mil_build_mapping(key, pfx) abort "{{{4
     let prev = '['.a:key
     let next = ']'.a:key
-    exe 'nno  <silent><unique>  '.prev .'  :<c-u>exe <sid>mil('.string(prev).')<cr>'
-    exe 'nno  <silent><unique>  '.next .'  :<c-u>exe <sid>mil('.string(next).')<cr>'
+    exe 'nno  <silent><unique>  '.prev .'  :<c-u>call <sid>mil('.string(prev).')<cr>'
+    exe 'nno  <silent><unique>  '.next .'  :<c-u>call <sid>mil('.string(next).')<cr>'
 
     let first = '['.toupper(a:key)
     let last  = ']'.toupper(a:key)
-    exe 'nno  <silent><unique>  '.first.'  :<c-u>exe <sid>mil('.string(first).')<cr>'
-    exe 'nno  <silent><unique>  '.last .'  :<c-u>exe <sid>mil('.string(last).')<cr>'
+    exe 'nno  <silent><unique>  '.first.'  :<c-u>call <sid>mil('.string(first).')<cr>'
+    exe 'nno  <silent><unique>  '.last .'  :<c-u>call <sid>mil('.string(last).')<cr>'
 
     " If a:pfx = 'c' then we also define the mappings `[ C-q` and `] C-q`
     " which execute the commands `:cpfile` and `:cnfile`:
@@ -133,10 +131,10 @@ fu! s:mil_build_mapping(key, pfx) abort "{{{4
         let nfile = ']<c-'.a:key.'>'
 
         exe 'nno  <silent><unique>  '.pfile
-        \.  '  :<c-u>exe <sid>mil('.substitute(string(pfile), '<', '<lt>', '').')<cr>'
+        \.  '  :<c-u>call <sid>mil('.substitute(string(pfile), '<', '<lt>', '').')<cr>'
 
         exe 'nno  <silent><unique>  '.nfile
-        \.  '  :<c-u>exe <sid>mil('.substitute(string(nfile), '<', '<lt>', '').')<cr>'
+        \.  '  :<c-u>call <sid>mil('.substitute(string(nfile), '<', '<lt>', '').')<cr>'
     endif
 endfu
 
@@ -160,22 +158,22 @@ call s:mil_build_mapping('t','t')
 nmap  <unique>  [e  <plug>(mv_line_up)
 nmap  <unique>  ]e  <plug>(mv_line_down)
 
-nno  <silent>  <plug>(mv_line_up)    :<c-u>exe brackets#mv_text('line_up')<cr>
-nno  <silent>  <plug>(mv_line_down)  :<c-u>exe brackets#mv_text('line_down')<cr>
+nno  <silent>  <plug>(mv_line_up)    :<c-u>call brackets#mv_text('line_up')<cr>
+nno  <silent>  <plug>(mv_line_down)  :<c-u>call brackets#mv_text('line_down')<cr>
 
 
 xmap  <unique>  [e  <plug>(mv_sel_up)
 xmap  <unique>  ]e  <plug>(mv_sel_down)
 
-noremap  <silent>  <plug>(mv_sel_up)    :<c-u>exe brackets#mv_text('sel_up')<cr>
-noremap  <silent>  <plug>(mv_sel_down)  :<c-u>exe brackets#mv_text('sel_down')<cr>
+noremap  <silent>  <plug>(mv_sel_up)    :<c-u>call brackets#mv_text('sel_up')<cr>
+noremap  <silent>  <plug>(mv_sel_down)  :<c-u>call brackets#mv_text('sel_down')<cr>
 
 
 xmap  <unique>  [E  <plug>(mv_sel_left)
 xmap  <unique>  ]E  <plug>(mv_sel_right)
 
-noremap  <silent>  <plug>(mv_sel_left)   :<c-u>exe brackets#mv_sel_hor('left')<cr>
-noremap  <silent>  <plug>(mv_sel_right)  :<c-u>exe brackets#mv_sel_hor('right')<cr>
+noremap  <silent>  <plug>(mv_sel_left)   :<c-u>call brackets#mv_sel_hor('left')<cr>
+noremap  <silent>  <plug>(mv_sel_right)  :<c-u>call brackets#mv_sel_hor('right')<cr>
 
 " ]f            move in files {{{2
 
@@ -223,8 +221,8 @@ xno  <silent><unique>  ]D  :<c-u>call brackets#DI_List('d', 0, 1, 1)<cr>
 
 "                      ┌─ where do we put: above or below (here above)
 "                      │
-nno  <silent><unique>  [p  :<c-u>exe brackets#put('[p', '', '[p')<cr>
-nno  <silent><unique>  ]p  :<c-u>exe brackets#put(']p', '', ']p')<cr>
+nno  <silent><unique>  [p  :<c-u>call brackets#put('[p', '', '[p')<cr>
+nno  <silent><unique>  ]p  :<c-u>call brackets#put(']p', '', ']p')<cr>
 
 " The following mappings put the unnamed register after the current line,
 " treating its contents as linewise (even if characterwise) AND perform another
@@ -234,19 +232,19 @@ nno  <silent><unique>  ]p  :<c-u>exe brackets#put(']p', '', ']p')<cr>
 "         • <p <P    remove a level of indentation
 "         • =p =P    auto-indentation (respecting our indentation-relative options)
 
-"                                                   ┌─ command used internally to put
-"                                                   │     ┌─ command used internally to indent after the paste
-"                                                   │     │      ┌─ lhs that the dot command should repeat
-"                                                   │     │      │
-nno  <silent><unique>  >P  :<c-u>exe brackets#put('[p', ">']", '>P')<cr>
+"                                                    ┌─ command used internally to put
+"                                                    │     ┌─ command used internally to indent after the paste
+"                                                    │     │      ┌─ lhs that the dot command should repeat
+"                                                    │     │      │
+nno  <silent><unique>  >P  :<c-u>call brackets#put('[p', ">']", '>P')<cr>
 "                      ││
 "                      │└─ where do we put: above or below (here above)
 "                      └─ how do we change the indentation of the text: here we increase it
-nno  <silent><unique>  >p  :<c-u>exe brackets#put(']p', ">']", '>p')<cr>
-nno  <silent><unique>  <P  :<c-u>exe brackets#put('[p', "<']", '<P')<cr>
-nno  <silent><unique>  <p  :<c-u>exe brackets#put(']p', "<']", '<p')<cr>
-nno  <silent><unique>  =P  :<c-u>exe brackets#put('[p', "=']", '=P')<cr>
-nno  <silent><unique>  =p  :<c-u>exe brackets#put(']p', "=']", '=p')<cr>
+nno  <silent><unique>  >p  :<c-u>call brackets#put(']p', ">']", '>p')<cr>
+nno  <silent><unique>  <P  :<c-u>call brackets#put('[p', "<']", '<P')<cr>
+nno  <silent><unique>  <p  :<c-u>call brackets#put(']p', "<']", '<p')<cr>
+nno  <silent><unique>  =P  :<c-u>call brackets#put('[p', "=']", '=P')<cr>
+nno  <silent><unique>  =p  :<c-u>call brackets#put(']p', "=']", '=p')<cr>
 
 " A simpler version of the same mappings would be:
 "
@@ -277,13 +275,13 @@ nno  <silent><unique>  =p  :<c-u>exe brackets#put(']p', "=']", '=p')<cr>
 
 nmap  <unique>  [r                            <plug>(move_region_backward)
 nmap  <unique>  ]r                            <plug>(move_region_forward)
-nno   <silent>  <plug>(move_region_backward)  :<c-u>exe brackets#move_region(0, v:count1)<cr>
-nno   <silent>  <plug>(move_region_forward)   :<c-u>exe brackets#move_region(1, v:count1)<cr>
+nno   <silent>  <plug>(move_region_backward)  :<c-u>call brackets#move_region(0, v:count1)<cr>
+nno   <silent>  <plug>(move_region_forward)   :<c-u>call brackets#move_region(1, v:count1)<cr>
 
 " ] space             {{{2
 
 nmap  <unique>  [<space>                      <plug>(put_empty_line_above)
-nno   <silent>  <plug>(put_empty_line_above)  :<c-u>exe brackets#put_empty_line(0)<cr>
+nno   <silent>  <plug>(put_empty_line_above)  :<c-u>call brackets#put_empty_line(0)<cr>
 
 nmap  <unique>  ]<space>                      <plug>(put_empty_line_below)
-nno   <silent>  <plug>(put_empty_line_below)  :<c-u>exe brackets#put_empty_line(1)<cr>
+nno   <silent>  <plug>(put_empty_line_below)  :<c-u>call brackets#put_empty_line(1)<cr>
