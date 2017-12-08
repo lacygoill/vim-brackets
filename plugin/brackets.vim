@@ -93,7 +93,7 @@ fu! s:mil(lhs) abort "{{{4
         try
             exe cmd2
         catch
-            exe my_lib#catch_error()
+            call my_lib#catch_error()
         endtry
     endtry
 

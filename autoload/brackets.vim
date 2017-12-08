@@ -219,7 +219,7 @@ fu! brackets#move_region(fwd, cnt) abort "{{{1
         \                   ), a:cnt)
 
     catch
-        exe my_lib#catch_error()
+        call my_lib#catch_error()
     finally
         let &cb = cb_save
         let &sel = sel_save
@@ -239,7 +239,7 @@ fu! brackets#mv_sel_hor(dir) abort "{{{1
             exe "sil keepj keepp '<,'>s/\\v^".repeat(' ', cnt).'(.*)$/\1/'
         endif
     catch
-        exe my_lib#catch_error()
+        call my_lib#catch_error()
     finally
         norm! zv
         norm! `z
@@ -364,7 +364,7 @@ fu! brackets#mv_text(what) abort "{{{1
             augroup END
         endif
     catch
-        exe my_lib#catch_error()
+        call my_lib#catch_error()
     finally
         " Restoration and cleaning
         let &l:fen = fen_save
@@ -613,7 +613,7 @@ fu! brackets#put(where, post_indent_cmd, lhs) abort "{{{1
         " put the register (a:where can be ]p or [p)
         exe 'norm! "'.reg_to_use.cnt.a:where.a:post_indent_cmd
     catch
-        exe my_lib#catch_error()
+        call my_lib#catch_error()
     finally
         " restore the type of the register
         call setreg(reg_to_use, reg_save[0], reg_save[1])
@@ -678,7 +678,7 @@ fu! brackets#put_empty_line(below) abort "{{{1
                 let vcol += 1
             endfor
         catch
-            exe my_lib#catch_error()
+            call my_lib#catch_error()
         finally
             let &ve = ve_save
             call setpos("'z", z_save)
