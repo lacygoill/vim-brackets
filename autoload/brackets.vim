@@ -219,7 +219,7 @@ fu! brackets#move_region(fwd, cnt) abort "{{{1
         \                   ), a:cnt)
 
     catch
-        call my_lib#catch_error()
+        return my_lib#catch_error()
     finally
         let &cb = cb_save
         let &sel = sel_save
@@ -242,7 +242,7 @@ fu! brackets#mv_sel_hor(dir) abort "{{{1
         sil! call repeat#set("\<plug>(mv_sel_".a:dir.')', cnt)
         let g:motion_to_repeat = "\<plug>(mv_sel_".a:dir.')'
     catch
-        call my_lib#catch_error()
+        return my_lib#catch_error()
     finally
         norm! zv
         norm! `z
@@ -371,7 +371,7 @@ fu! brackets#mv_text(what) abort "{{{1
         \:                           ']e'
         sil! call repeat#set("\<plug>(mv_".a:what.')', cnt)
     catch
-        call my_lib#catch_error()
+        return my_lib#catch_error()
     finally
         " Restoration and cleaning
         let &l:fen = fen_save
@@ -616,7 +616,7 @@ fu! brackets#put(where, post_indent_cmd, lhs) abort "{{{1
         " make the edit dot repeatable
         sil! call repeat#set(a:lhs, cnt)
     catch
-        call my_lib#catch_error()
+        return my_lib#catch_error()
     finally
         " restore the type of the register
         call setreg(reg_to_use, reg_save[0], reg_save[1])
@@ -695,7 +695,7 @@ fu! brackets#put_empty_line(below) abort "{{{1
             "}}}
             doautocmd CursorMoved
         catch
-            call my_lib#catch_error()
+            return my_lib#catch_error()
         finally
             let &ve = ve_save
             call setpos("'z", z_save)
