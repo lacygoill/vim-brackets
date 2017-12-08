@@ -238,6 +238,9 @@ fu! brackets#mv_sel_hor(dir) abort "{{{1
         else
             exe "sil keepj keepp '<,'>s/\\v^".repeat(' ', cnt).'(.*)$/\1/'
         endif
+
+        sil! call repeat#set("\<plug>(mv_sel_".a:dir.')', cnt)
+        let g:motion_to_repeat = "\<plug>(mv_sel_".a:dir.')'
     catch
         call my_lib#catch_error()
     finally
@@ -245,9 +248,6 @@ fu! brackets#mv_sel_hor(dir) abort "{{{1
         norm! `z
         call setpos("'z", z_save)
     endtry
-
-    sil! call repeat#set("\<plug>(mv_sel_".a:dir.')', cnt)
-    let g:motion_to_repeat = "\<plug>(mv_sel_".a:dir.')'
 endfu
 
 fu! brackets#mv_text(what) abort "{{{1
@@ -363,6 +363,13 @@ fu! brackets#mv_text(what) abort "{{{1
                 au CursorHold <buffer> call s:Remove_hl_line()
             augroup END
         endif
+
+        let g:motion_to_repeat = a:what =~# 'sel'
+        \?                           "\<plug>(mv_".a:what.')'
+        \:                       a:what =~# 'up'
+        \?                           '[e'
+        \:                           ']e'
+        sil! call repeat#set("\<plug>(mv_".a:what.')', cnt)
     catch
         call my_lib#catch_error()
     finally
@@ -413,13 +420,6 @@ fu! brackets#mv_text(what) abort "{{{1
         " }}}
         call setpos("'z", z_save)
     endtry
-
-    let g:motion_to_repeat = a:what =~# 'sel'
-    \?                           "\<plug>(mv_".a:what.')'
-    \:                       a:what =~# 'up'
-    \?                           '[e'
-    \:                           ']e'
-    sil! call repeat#set("\<plug>(mv_".a:what.')', cnt)
 endfu
 
 fu! s:moved_region_highlight(first_char, last_char, offset, surrounding_char) abort "{{{1
@@ -612,15 +612,15 @@ fu! brackets#put(where, post_indent_cmd, lhs) abort "{{{1
 
         " put the register (a:where can be ]p or [p)
         exe 'norm! "'.reg_to_use.cnt.a:where.a:post_indent_cmd
+
+        " make the edit dot repeatable
+        sil! call repeat#set(a:lhs, cnt)
     catch
         call my_lib#catch_error()
     finally
         " restore the type of the register
         call setreg(reg_to_use, reg_save[0], reg_save[1])
     endtry
-
-    " make the edit dot repeatable
-    sil! call repeat#set(a:lhs, cnt)
 endfu
 
 fu! brackets#put_empty_line(below) abort "{{{1
@@ -677,6 +677,23 @@ fu! brackets#put_empty_line(below) abort "{{{1
                 endif
                 let vcol += 1
             endfor
+
+            sil! call repeat#set("\<plug>(put_empty_line_".(a:below ? 'below' : 'above').')', cnt)
+            " FIXME:{{{
+            "         ] space
+            "         dd
+            "         .          ✘
+            "
+            " The issue doesn't affect `[ space`.
+            " It affects `] space` in the original unimpaired plugin.
+            " To fix this, we have to trigger `CursorMoved` manually, AFTER invoking
+            " `repeat#set()`.
+            "
+            " Understand why this fix is needed.
+            " Find whether it's needed somewhere else.
+            " Document it.
+            "}}}
+            doautocmd CursorMoved
         catch
             call my_lib#catch_error()
         finally
@@ -684,21 +701,4 @@ fu! brackets#put_empty_line(below) abort "{{{1
             call setpos("'z", z_save)
         endtry
     endif
-
-    sil! call repeat#set("\<plug>(put_empty_line_".(a:below ? 'below' : 'above').')', cnt)
-    " FIXME:{{{
-    "         ] space
-    "         dd
-    "         .          ✘
-    "
-    " The issue doesn't affect `[ space`.
-    " It affects `] space` in the original unimpaired plugin.
-    " To fix this, we have to trigger `CursorMoved` manually, AFTER invoking
-    " `repeat#set()`.
-    "
-    " Understand why this fix is needed.
-    " Find whether it's needed somewhere else.
-    " Document it.
-    "}}}
-    doautocmd CursorMoved
 endfu
