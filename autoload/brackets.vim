@@ -11,8 +11,8 @@ fu! brackets#DI_List(cmd, search_cur_word, start_at_cursor, search_in_comments, 
     " if we call the function from a normal mode mapping, the pattern is the
     " word under the cursor
     if a:search_cur_word
-        sil! let output = execute('norm! '.(a:start_at_cursor ? ']' : '[').normcmd)
-        let feedback    = (a:start_at_cursor ? ']' : '[').normcmd
+        let output = execute('norm! '.(a:start_at_cursor ? ']' : '[').normcmd, 'silent!')
+        let title       = (a:start_at_cursor ? ']' : '[').normcmd
 
     else
         " otherwise if the function was called with a fifth optional argument,
@@ -36,8 +36,8 @@ fu! brackets#DI_List(cmd, search_cur_word, start_at_cursor, search_in_comments, 
             call my_lib#reg_restore(['"', '+'])
         endif
 
-        sil! let output = execute((a:start_at_cursor ? '+,$' : '').excmd.' /'.search_pattern)
-        let feedback    = excmd.' /'.search_pattern
+        let output = execute((a:start_at_cursor ? '+,$' : '').excmd.' /'.search_pattern, 'silent!')
+        let title  = excmd.' /'.search_pattern
     endif
 
     let lines = split(output, '\n')
@@ -79,19 +79,20 @@ fu! brackets#DI_List(cmd, search_cur_word, start_at_cursor, search_in_comments, 
 
             let col  = match(text, a:search_cur_word ? expand('<cword>') : search_pattern) + 1
             call add(ll_entries,
-                               \ { 'filename' : filename,
-                               \   'lnum'     : l:lnum,
-                               \   'col'      : col,
-                               \   'text'     : text, })
+            \                    { 'filename' : filename,
+            \                      'lnum'     : l:lnum,
+            \                      'col'      : col,
+            \                      'text'     : text, })
         endif
     endfor
 
     call setloclist(0, ll_entries)
+    call setloclist(0, [], 'a', {'title': title})
 
     " Populating the location list doesn't fire any event.
-    " Fire `QuickFixCmdPost`, with the right pattern (*), to open the ll window.
+    " Fire `QuickFixCmdPost`, with the right pattern (!), to open the ll window.
     "
-    " (*) lvimgrep is a valid pattern  (`:h QuickFixCmdPre`), and it begins with
+    " (!) lvimgrep is a valid pattern  (`:h QuickFixCmdPre`), and it begins with
     " a `l`.  The autocmd that we use  to automatically open a qf window, relies
     " on the name of the command (how  its name begins), to determine whether it
     " must open the ll or qfl window.
@@ -103,8 +104,6 @@ fu! brackets#DI_List(cmd, search_cur_word, start_at_cursor, search_in_comments, 
 
     " hide location
     call qf#conceal('location')
-    " Add proper feedback to the statusline.
-    let w:quickfix_title = feedback
 endfu
 
 fu! s:getchar() "{{{1
