@@ -96,7 +96,7 @@ fu! brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, 
     " a `l`.  The autocmd that we use  to automatically open a qf window, relies
     " on the name of the command (how  its name begins), to determine whether it
     " must open the ll or qfl window.
-    doautocmd QuickFixCmdPost lgrep
+    doautocmd <nomodeline> QuickFixCmdPost lgrep
 
     if &l:buftype !=# 'quickfix'
         return
@@ -700,5 +700,5 @@ fu! brackets#put_empty_line(below) abort "{{{1
     " Find whether it's needed somewhere else.
     " Document it.
     "}}}
-    doautocmd CursorMoved
+    doautocmd <nomodeline> CursorMoved
 endfu
