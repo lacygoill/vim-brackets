@@ -102,7 +102,6 @@ fu! brackets#DI_List(cmd, search_cur_word, start_at_cursor, search_in_comments, 
         return
     endif
 
-    " hide location
     call qf#conceal('location')
 endfu
 
