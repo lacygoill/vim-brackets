@@ -227,6 +227,49 @@ fu! brackets#move_region(fwd, cnt) abort "{{{1
     endtry
 endfu
 
+fu! s:moved_region_highlight(first_char, last_char, offset, surrounding_char) abort "{{{1
+    if exists('w:my_moved_region')
+        call matchdelete(w:my_moved_region)
+    endif
+
+    let line         = '%'.line("'[").'l'
+    let [ beg, end ] = [ a:first_char, a:last_char ]
+    let [ beg, end ] = [ beg + a:offset, end + a:offset ]
+    let [ beg, end ] = [ '%'.beg.'v', '%'.end.'v' ]
+
+    let pat = '\v'.line.'.'.beg.'.*'.end.'.'
+    "                    │                │
+    "                    │                └─ last character inside the surrounding characters
+    "                    └─ first surrounding character
+
+    let pat .= index([ '"', "'", '`' ], a:surrounding_char) == -1 ? '.' : ''
+    "                                                                │
+    "   add a character to include the 2nd surrouding character; no  ┘
+    "   need to if it's a quote or backtick, because `yi"` includes
+    "   the ending  quote, contrary to `yi)`  which doesn't include
+    "   the ending parenthesis
+
+    let w:my_moved_region = matchadd('Visual', pat)
+
+    let s:Remove_hl_region = { -> execute('
+    \                                        if exists("w:my_moved_region")
+    \                                      |     call matchdelete(w:my_moved_region)
+    \                                      |     unlet! w:my_moved_region
+    \                                      |     exe "au! my_moved_region"
+    \                                      |     exe "aug! my_moved_region"
+    \                                      | endif
+    \                                     ') }
+
+    augroup my_moved_region
+        au! * <buffer>
+        au CursorMoved <buffer> if line('.') != line("'[")
+                             \|     call s:Remove_hl_region()
+                             \| endif
+
+        au CursorHold <buffer> call s:Remove_hl_region()
+    augroup END
+endfu
+
 fu! brackets#mv_sel_hor(dir) abort "{{{1
     let cnt = v:count1
     let z_save = getpos("'z")
@@ -420,49 +463,6 @@ fu! brackets#mv_text(what) abort "{{{1
         " }}}
         call setpos("'z", z_save)
     endtry
-endfu
-
-fu! s:moved_region_highlight(first_char, last_char, offset, surrounding_char) abort "{{{1
-    if exists('w:my_moved_region')
-        call matchdelete(w:my_moved_region)
-    endif
-
-    let line         = '%'.line("'[").'l'
-    let [ beg, end ] = [ a:first_char, a:last_char ]
-    let [ beg, end ] = [ beg + a:offset, end + a:offset ]
-    let [ beg, end ] = [ '%'.beg.'v', '%'.end.'v' ]
-
-    let pat = '\v'.line.'.'.beg.'.*'.end.'.'
-    "                    │                │
-    "                    │                └─ last character inside the surrounding characters
-    "                    └─ first surrounding character
-
-    let pat .= index([ '"', "'", '`' ], a:surrounding_char) == -1 ? '.' : ''
-    "                                                                │
-    "   add a character to include the 2nd surrouding character; no  ┘
-    "   need to if it's a quote or backtick, because `yi"` includes
-    "   the ending  quote, contrary to `yi)`  which doesn't include
-    "   the ending parenthesis
-
-    let w:my_moved_region = matchadd('Visual', pat)
-
-    let s:Remove_hl_region = { -> execute('
-    \                                        if exists("w:my_moved_region")
-    \                                      |     call matchdelete(w:my_moved_region)
-    \                                      |     unlet! w:my_moved_region
-    \                                      |     exe "au! my_moved_region"
-    \                                      |     exe "aug! my_moved_region"
-    \                                      | endif
-    \                                     ') }
-
-    augroup my_moved_region
-        au! * <buffer>
-        au CursorMoved <buffer> if line('.') != line("'[")
-                             \|     call s:Remove_hl_region()
-                             \| endif
-
-        au CursorHold <buffer> call s:Remove_hl_region()
-    augroup END
 endfu
 
 fu! brackets#next_file_to_edit(cnt) abort "{{{1
