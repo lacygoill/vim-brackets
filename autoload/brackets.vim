@@ -678,22 +678,6 @@ fu! brackets#put_empty_line(below) abort "{{{1
                 let vcol += 1
             endfor
 
-            sil! call repeat#set("\<plug>(put_empty_line_".(a:below ? 'below' : 'above').')', cnt)
-            " FIXME:{{{
-            "         ] space
-            "         dd
-            "         .          ✘
-            "
-            " The issue doesn't affect `[ space`.
-            " It affects `] space` in the original unimpaired plugin.
-            " To fix this, we have to trigger `CursorMoved` manually, AFTER invoking
-            " `repeat#set()`.
-            "
-            " Understand why this fix is needed.
-            " Find whether it's needed somewhere else.
-            " Document it.
-            "}}}
-            doautocmd CursorMoved
         catch
             return my_lib#catch_error()
         finally
@@ -701,4 +685,20 @@ fu! brackets#put_empty_line(below) abort "{{{1
             call setpos("'z", z_save)
         endtry
     endif
+    sil! call repeat#set("\<plug>(put_empty_line_".(a:below ? 'below' : 'above').')', cnt)
+    " FIXME:{{{
+    "         ] space
+    "         dd
+    "         .          ✘
+    "
+    " The issue doesn't affect `[ space`.
+    " It affects `] space` in the original unimpaired plugin.
+    " To fix this, we have to trigger `CursorMoved` manually, AFTER invoking
+    " `repeat#set()`.
+    "
+    " Understand why this fix is needed.
+    " Find whether it's needed somewhere else.
+    " Document it.
+    "}}}
+    doautocmd CursorMoved
 endfu
