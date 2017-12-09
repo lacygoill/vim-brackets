@@ -17,8 +17,8 @@ let g:loaded_brackets = 1
 "                                                │   │  │   │
 "                                                │   │  │   │        ┌─ pattern
 "                                                │   │  │   │        │
-com! -bang -nargs=1 Ilist call brackets#DI_List('i', 0, 0, <bang>0, <f-args>)
-com! -bang -nargs=1 Dlist call brackets#DI_List('d', 0, 0, <bang>0, <f-args>)
+com! -bang -nargs=1 Ilist call brackets#di_list('i', 0, 0, <bang>0, <f-args>)
+com! -bang -nargs=1 Dlist call brackets#di_list('d', 0, 0, <bang>0, <f-args>)
 
 " Mappings {{{1
 " ]ablqt        move in lists {{{2
@@ -190,26 +190,26 @@ nno  <silent><unique>  [f  :<c-u>let g:motion_to_repeat = '[f'
 "                                                              │
 "                                                              │  ┌─ don't pass a bang to the commands
 "                                                              │  │  normal commands don't accept one anyway
-nno  <silent><unique>  [I  :<c-u>call brackets#DI_List('i', 1, 0, 0)<cr>
+nno  <silent><unique>  [I  :<c-u>call brackets#di_list('i', 1, 0, 0)<cr>
 "                                                       │   │
 "                                                       │   └─ search current word
 "                                                       └─ command to execute (ilist or dlist)
 
-xno  <silent><unique>  [I  :<c-u>call brackets#DI_List('i', 0, 0, 1)<cr>
+xno  <silent><unique>  [I  :<c-u>call brackets#di_list('i', 0, 0, 1)<cr>
 "                                                           │
 "                                                           └─ don't search current word, but visual selection
 
-nno  <silent><unique>  ]I  :<c-u>call brackets#DI_List('i', 1, 1, 0)<cr>
+nno  <silent><unique>  ]I  :<c-u>call brackets#di_list('i', 1, 1, 0)<cr>
 "                                                              │
 "                                                              └─ start to search after the line where the cursor is
 
-xno  <silent><unique>  ]I  :<c-u>call brackets#DI_List('i', 0, 1, 1)<cr>
+xno  <silent><unique>  ]I  :<c-u>call brackets#di_list('i', 0, 1, 1)<cr>
 
-nno  <silent><unique>  [D  :<c-u>call brackets#DI_List('d', 1, 0, 0)<cr>
-xno  <silent><unique>  [D  :<c-u>call brackets#DI_List('d', 0, 0, 1)<cr>
+nno  <silent><unique>  [D  :<c-u>call brackets#di_list('d', 1, 0, 0)<cr>
+xno  <silent><unique>  [D  :<c-u>call brackets#di_list('d', 0, 0, 1)<cr>
 
-nno  <silent><unique>  ]D  :<c-u>call brackets#DI_List('d', 1, 1, 0)<cr>
-xno  <silent><unique>  ]D  :<c-u>call brackets#DI_List('d', 0, 1, 1)<cr>
+nno  <silent><unique>  ]D  :<c-u>call brackets#di_list('d', 1, 1, 0)<cr>
+xno  <silent><unique>  ]D  :<c-u>call brackets#di_list('d', 0, 1, 1)<cr>
 
 " ]p {{{2
 

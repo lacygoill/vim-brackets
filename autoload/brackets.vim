@@ -3,7 +3,7 @@ if exists('g:autoloaded_brackets')
 endif
 let g:autoloaded_brackets = 1
 
-fu! brackets#DI_List(cmd, search_cur_word, start_at_cursor, search_in_comments, ...) abort "{{{1
+fu! brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, ...) abort "{{{1
     " Derive the commands used below from the first argument.
     let excmd   = a:cmd.'list'.(a:search_in_comments ? '!' : '')
     let normcmd = toupper(a:cmd)
@@ -102,7 +102,9 @@ fu! brackets#DI_List(cmd, search_cur_word, start_at_cursor, search_in_comments, 
         return
     endif
 
-    call qf#conceal('location')
+    " hide location
+    call qf#set_matches('brackets:di_list', 'Conceal', 'location')
+    call qf#create_matches()
 endfu
 
 fu! s:getchar() "{{{1
