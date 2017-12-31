@@ -37,7 +37,7 @@ fu! brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, 
 
     let lines = split(output, '\n')
     " Bail out on errors. (bail out = se désister)
-    if lines[0] =~ '^Error detected'
+    if get(lines, 0, '') =~ '^Error detected\|^$'
         echom 'Could not find '.string(a:search_cur_word ? expand('<cword>') : search_pattern)
         return
     endif
