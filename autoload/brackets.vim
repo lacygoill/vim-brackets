@@ -17,7 +17,7 @@ fu! brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, 
         else
         " otherwise the function must have been called from visual mode
         " (visual mapping): use the visual selection as the pattern
-            call my_lib#reg_save(['"', '+'])
+            call lg#reg_save(['"', '+'])
 
             norm! gvy
             let search_pattern = substitute('\V'.escape(getreg('"'), '\/'), '\\n', '\\n', 'g')
@@ -28,7 +28,7 @@ fu! brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, 
             "                                │
             "                                └── make sure the contents of the pattern is interpreted literally
 
-            call my_lib#reg_restore(['"', '+'])
+            call lg#reg_restore(['"', '+'])
         endif
 
         let output = execute((a:start_at_cursor ? '+,$' : '').excmd.' /'.search_pattern, 'silent!')
@@ -214,7 +214,7 @@ fu! brackets#move_region(fwd, cnt) abort "{{{1
         \                   ), a:cnt)
 
     catch
-        return my_lib#catch_error()
+        return lg#catch_error()
     finally
         let &cb = cb_save
         let &sel = sel_save
@@ -280,7 +280,7 @@ fu! brackets#mv_sel_hor(dir) abort "{{{1
         sil! call repeat#set("\<plug>(mv_sel_".a:dir.')', cnt)
         let g:motion_to_repeat = "\<plug>(mv_sel_".a:dir.')'
     catch
-        return my_lib#catch_error()
+        return lg#catch_error()
     finally
         norm! zv
         norm! `z
@@ -409,7 +409,7 @@ fu! brackets#mv_text(what) abort "{{{1
         \:                           ']e'
         sil! call repeat#set("\<plug>(mv_".a:what.')', cnt)
     catch
-        return my_lib#catch_error()
+        return lg#catch_error()
     finally
         " Restoration and cleaning
         let &l:fen = fen_save
@@ -611,7 +611,7 @@ fu! brackets#put(where, post_indent_cmd, lhs) abort "{{{1
         " make the edit dot repeatable
         sil! call repeat#set(a:lhs, cnt)
     catch
-        return my_lib#catch_error()
+        return lg#catch_error()
     finally
         " restore the type of the register
         call setreg(reg_to_use, reg_save[0], reg_save[1])
@@ -674,7 +674,7 @@ fu! brackets#put_empty_line(below) abort "{{{1
             endfor
 
         catch
-            return my_lib#catch_error()
+            return lg#catch_error()
         finally
             let &ve = ve_save
             call setpos("'z", z_save)
