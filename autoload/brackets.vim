@@ -17,7 +17,7 @@ fu! brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, 
         else
         " otherwise the function must have been called from visual mode
         " (visual mapping): use the visual selection as the pattern
-            call lg#reg_save(['"', '+'])
+            call lg#reg#save(['"', '+'])
 
             norm! gvy
             let search_pattern = substitute('\V'.escape(getreg('"'), '\/'), '\\n', '\\n', 'g')
@@ -28,7 +28,7 @@ fu! brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, 
             "                                │
             "                                └── make sure the contents of the pattern is interpreted literally
 
-            call lg#reg_restore(['"', '+'])
+            call lg#reg#restore(['"', '+'])
         endif
 
         let output = execute((a:start_at_cursor ? '+,$' : '').excmd.' /'.search_pattern, 'silent!')
