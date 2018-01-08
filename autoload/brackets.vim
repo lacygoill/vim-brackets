@@ -112,193 +112,12 @@ fu! s:getchar() "{{{1
     \:         c
 endfu
 
-fu! brackets#move_region(is_fwd, cnt) abort "{{{1
-    let char = s:getchar()
-
-    let valid = [ "'", '"', '(', ')', '<', '>', 'B', '[', ']', '`', 'a', 'b', 'r', '{', '}' ]
-
-    if index(valid, char) == -1
-        return
-    endif
-
-    let char = char ==# 'a'
-    \?             '<'
-    \:         char ==# 'r'
-    \?             '['
-    \:         char
-
-    let pos = virtcol('.')
-
-    let cb_save  = &cb
-    let sel_save = &sel
-    let reg_save = [ getreg('z'), getregtype('z') ]
-
-    try
-        " don't pollute system registers with the next yank
-        set cb-=unnamed cb-=unnamedplus
-        set selection=inclusive
-
-        " copy the text object to force to Vim to set up the marks `[` and `]`
-        exe 'sil norm! "zyi'.char
-
-        " get the indexes of the first/last char
-        " necessary later to build the regex for the highlighting
-        let first_char = virtcol("'[")
-        let last_char  = virtcol("']")
-
-        " Why resetting the marks manually?{{{
-        "
-        " When we use an  operator on some text, Vim sets the  marks `[` and `]`
-        " just before the first byte of the first character, and before the LAST
-        " byte of the last character of the text-object.
-        "
-        " This is what we want, as long  as the last character is NOT multibyte.
-        " If it is, then  `]` is set in a position which is  wrong for the regex
-        " we're going to build.
-        "
-        " Because  of  this, the  patterns  on  which  we  rely (for  moving  or
-        " highlighting  the region)  may fail.   The  regex engine  is going  to
-        " receive sth like:
-        "
-        "         \%123c
-        "
-        " … where 123 was the index of the LAST byte of the ending character.
-        " It can be read as:
-        "
-        "         the index of the FIRST byte of the next character is 123
-        "
-        " But, in this  case, 123 is the  index of the LAST byte  of a multibyte
-        " character.   So, it  can NOT  be  the one  of  the FIRST  byte of  any
-        " character.  That would  mean that there is an index  which matches the
-        " first byte of  a character and the last byte  of another. A byte can't
-        " belong to 2 characters at the same time.
-        "
-        " Solution:
-        " Reset the  marks manually, with  the `m` command. This time,  Vim will
-        " set them as usual.
-        " }}}
-        norm! `[m[`]m]
-
-        " we  temporarily duplicate  the marks  `[`  and `]`,  because the  next
-        " substitution is going to alter them
-        let [ x_save, y_save ] = [ getpos("'x"), getpos("'y") ]
-        norm! `[mx`]my
-
-        let pat =   a:is_fwd
-        \         ?      printf('(.%%''\[.*%%''\]%s)(%s)',
-        \                       index([ '"', "'", '`' ], char) != - 1 ? '.' : '..',
-        \                                                repeat('.', a:cnt))
-        \         :      printf('(%s)(.%%''\[.*%%''\]%s)',
-        \                                                repeat('.', a:cnt),
-        \                       index([ '"', "'", '`' ], char) >= 0 ? '.' : '..')
-
-        exe 'keepj keepp s/\v'.pat.'/\2\1/'
-
-        " we restore the 4 marks:  first `[` and `]`
-        norm! `xm[`ym]
-
-        " next `x` and `y`
-        call setpos("'x", x_save)
-        call setpos("'y", y_save)
-
-        let offset = a:is_fwd ? a:cnt : -a:cnt
-        exe 'norm! '.(pos + offset).'|'
-
-        call s:moved_region_highlight(first_char, last_char, offset, char)
-
-        let g:motion_to_repeat = (a:is_fwd ? ']r' : '[r').char
-
-        sil! call repeat#set(printf("\<Plug>(move_region_%s)%s",
-        \                     a:is_fwd ? 'forward' : 'backward',
-        \                                                  char,
-        \                   ), a:cnt)
-
-    catch
-        return lg#catch_error()
-    finally
-        let &cb = cb_save
-        let &sel = sel_save
-        call setreg('z', reg_save[0], reg_save[1])
-    endtry
-endfu
-
-fu! s:moved_region_highlight(first_char, last_char, offset, surrounding_char) abort "{{{1
-    if exists('w:my_moved_region')
-        call matchdelete(w:my_moved_region)
-    endif
-
-    let line         = '%'.line("'[").'l'
-    let [ beg, end ] = [ a:first_char, a:last_char ]
-    let [ beg, end ] = [ beg + a:offset, end + a:offset ]
-    let [ beg, end ] = [ '%'.beg.'v', '%'.end.'v' ]
-
-    let pat = '\v'.line.'.'.beg.'.*'.end.'.'
-    "                    │                │
-    "                    │                └─ last character inside the surrounding characters
-    "                    └─ first surrounding character
-
-    let pat .= index([ '"', "'", '`' ], a:surrounding_char) == -1 ? '.' : ''
-    "                                                                │
-    "   add a character to include the 2nd surrouding character; no  ┘
-    "   need to if it's a quote or backtick, because `yi"` includes
-    "   the ending  quote, contrary to `yi)`  which doesn't include
-    "   the ending parenthesis
-
-    let w:my_moved_region = matchadd('Visual', pat)
-
-    let s:Remove_hl_region = { -> execute('
-    \                                        if exists("w:my_moved_region")
-    \                                      |     call matchdelete(w:my_moved_region)
-    \                                      |     unlet! w:my_moved_region
-    \                                      |     exe "au! my_moved_region"
-    \                                      |     exe "aug! my_moved_region"
-    \                                      | endif
-    \                                     ') }
-
-    augroup my_moved_region
-        au! * <buffer>
-        au CursorMoved <buffer> if line('.') != line("'[")
-                             \|     call s:Remove_hl_region()
-                             \| endif
-
-        au CursorHold <buffer> call s:Remove_hl_region()
-    augroup END
-endfu
-
-fu! brackets#mv_sel_hor(dir) abort "{{{1
-    let cnt = v:count1
-    let z_save = getpos("'z")
-
-    try
-        norm! mz
-        if a:dir ==# 'right'
-            sil keepj keepp '<,'>s/\v^.*$/\=repeat(' ', cnt) . submatch(0)/
-        else
-            exe "sil keepj keepp '<,'>s/\\v^".repeat(' ', cnt).'(.*)$/\1/'
-        endif
-
-        sil! call repeat#set("\<plug>(mv_sel_".a:dir.')', cnt)
-        let g:motion_to_repeat = "\<plug>(mv_sel_".a:dir.')'
-    catch
-        return lg#catch_error()
-    finally
-        norm! zv
-        norm! `z
-        call setpos("'z", z_save)
-    endtry
-endfu
-
-fu! brackets#mv_text(what) abort "{{{1
+fu! brackets#mv_line(what) abort "{{{1
     let cnt   = v:count1
-    let range = a:what =~# 'sel' ? "'<,'>" : ''
 
     let where = a:what ==# 'line_up'
     \?              '-1-'
-    \:          a:what ==# 'line_down'
-    \?              '+'
-    \:          a:what ==# 'sel_up'
-    \?              "'<-1-"
-    \:              "'>+"
+    \:              '+'
 
     let where .= cnt
 
@@ -363,50 +182,14 @@ fu! brackets#mv_text(what) abort "{{{1
 "}}}
         norm! mz
 
-        " move the text
-        sil exe range.'move '.where
+        " move the line
+        sil exe 'move '.where
 
         " indent it
         if &ft !=# 'markdown'
-            sil exe 'norm! '.(a:what =~# 'sel' ? 'gv=' : '==')
+            sil norm! ==
         endif
 
-        " highlight it (only if it's a multi-line selection)
-        if !exists('w:my_moved_line') && a:what =~# 'sel'
-            if range !=# "'<,'>"
-                norm! |m<$m>
-            endif
-            let w:my_moved_line = matchadd('Visual', '.*\%''<\_.*\%<''>.*')
-
-            let s:Remove_hl_line = { -> execute('
-                                 \                  if exists("w:my_moved_line")
-                                 \|                     call matchdelete(w:my_moved_line)
-                                 \|                     unlet! w:my_moved_line
-                                 \|                     exe "au! my_moved_line"
-                                 \|                     exe "aug! my_moved_line"
-                                 \|                 endif
-                                 \              ') }
-
-            augroup my_moved_line
-                au! * <buffer>
-                " Why the `+1`?
-                " Useful when we move a selection up, and then undo.
-                " Because in this case, Vim moves the cursor after the last line
-                " of the selection.
-
-                au CursorMoved <buffer> if line('.') < line("'<") || line('.') > line("'>")
-                                     \|     call s:Remove_hl_line()
-                                     \| endif
-
-                au CursorHold <buffer> call s:Remove_hl_line()
-            augroup END
-        endif
-
-        let g:motion_to_repeat = a:what =~# 'sel'
-        \?                           "\<plug>(mv_".a:what.')'
-        \:                       a:what =~# 'up'
-        \?                           '[e'
-        \:                           ']e'
         sil! call repeat#set("\<plug>(mv_".a:what.')', cnt)
     catch
         return lg#catch_error()

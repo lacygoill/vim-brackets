@@ -57,13 +57,6 @@ let s:mil_cmd = {
 fu! s:mil(lhs) abort "{{{4
     let cnt = (v:count == 0 ? '' : v:count)
 
-    if a:lhs =~# '<c-q>' || a:lhs ==# '<c-l>'
-        let g:motion_to_repeat = substitute(a:lhs, '\ze<', '\\', '')
-        let g:motion_to_repeat = eval('"'.g:motion_to_repeat.'"')
-    else
-        let g:motion_to_repeat = a:lhs
-    endif
-
     let cmd1 = s:mil_cmd[a:lhs][0]
     let cmd2 = s:mil_cmd[a:lhs][1]
     try
@@ -153,35 +146,30 @@ call s:mil_build_mapping('l','l')
 call s:mil_build_mapping('q','c')
 call s:mil_build_mapping('t','t')
 
-" ]eE           move text {{{2
+" ]e            move line {{{2
 
-nmap  <unique>  [e  <plug>(mv_line_up)
-nmap  <unique>  ]e  <plug>(mv_line_down)
+" We can't map `]e` to `<plug>(mv_line_down)` directly.
+" Because we execute `:MakeMotionsRepeatable` in
+" `~/.vim/after/plugin/my_repeatable_motions.vim`
+" to make the edition repeatable.
+"
+" The latter will install a NON-recursive wrapper mapping.
+nno  <expr><unique>  [e  <sid>mv_line(0)
+nno  <expr><unique>  ]e  <sid>mv_line(1)
 
-nno  <silent>  <plug>(mv_line_up)    :<c-u>call brackets#mv_text('line_up')<cr>
-nno  <silent>  <plug>(mv_line_down)  :<c-u>call brackets#mv_text('line_down')<cr>
+nno  <silent>  <plug>(mv_line_up)    :<c-u>call brackets#mv_line('line_up')<cr>
+nno  <silent>  <plug>(mv_line_down)  :<c-u>call brackets#mv_line('line_down')<cr>
 
-
-xmap  <unique>  [e  <plug>(mv_sel_up)
-xmap  <unique>  ]e  <plug>(mv_sel_down)
-
-noremap  <silent>  <plug>(mv_sel_up)    :<c-u>call brackets#mv_text('sel_up')<cr>
-noremap  <silent>  <plug>(mv_sel_down)  :<c-u>call brackets#mv_text('sel_down')<cr>
-
-
-xmap  <unique>  [E  <plug>(mv_sel_left)
-xmap  <unique>  ]E  <plug>(mv_sel_right)
-
-noremap  <silent>  <plug>(mv_sel_left)   :<c-u>call brackets#mv_sel_hor('left')<cr>
-noremap  <silent>  <plug>(mv_sel_right)  :<c-u>call brackets#mv_sel_hor('right')<cr>
+fu! s:mv_line(is_fwd) abort
+    let seq = a:is_fwd ? "\<plug>(mv_line_down)" : "\<plug>(mv_line_up)"
+    call feedkeys(seq, 'it')
+    return ''
+endfu
 
 " ]f            move in files {{{2
 
-nno  <silent><unique>  ]f  :<c-u>let g:motion_to_repeat = ']f'
-                           \ <bar> edit <c-r>=fnameescape(brackets#next_file_to_edit(v:count1))<cr><cr>
-
-nno  <silent><unique>  [f  :<c-u>let g:motion_to_repeat = '[f'
-                           \ <bar> edit <c-r>=fnameescape(brackets#next_file_to_edit(-v:count1))<cr><cr>
+nno  <silent><unique>  ]f  :<c-u>e <c-r>=fnameescape(brackets#next_file_to_edit(v:count1))<cr><cr>
+nno  <silent><unique>  [f  :<c-u>e <c-r>=fnameescape(brackets#next_file_to_edit(-v:count1))<cr><cr>
 
 " ]I            [di]list {{{2
 
@@ -256,27 +244,6 @@ nno  <silent><unique>  =p  :<c-u>call brackets#put(']p', "=']", '=p')<cr>
 "         nno =p ]p=']
 "
 " But with these ones, we would lose the linewise conversion.
-
-" ]r            move region {{{2
-
-" TODO:
-" Once we've implemented  our own version of `vim-schlepp`,  we should eliminate
-" these mappings / functions. `vim-schlepp` works better.
-"
-" Watch:
-"
-"         exe 'set '.(s:hls_on ? '' : 'no').'hls'
-"
-" Try to move the region inside the parentheses to the left and repeat.
-" It breaks at one point. Because the text-object is broken at one point.
-"
-" Besides,  no need  of handling  a custom  highlight (the  visual selection  is
-" highlighted).
-
-nmap  <unique>  [r                            <plug>(move_region_backward)
-nmap  <unique>  ]r                            <plug>(move_region_forward)
-nno   <silent>  <plug>(move_region_backward)  :<c-u>call brackets#move_region(0, v:count1)<cr>
-nno   <silent>  <plug>(move_region_forward)   :<c-u>call brackets#move_region(1, v:count1)<cr>
 
 " ] space             {{{2
 
