@@ -154,18 +154,11 @@ call s:mil_build_mapping('t','t')
 " to make the edition repeatable.
 "
 " The latter will install a NON-recursive wrapper mapping.
-nno  <expr><unique>  [e  <sid>mv_line(0)
-nno  <expr><unique>  ]e  <sid>mv_line(1)
+nno  <expr><unique>  [e  brackets#mv_line_plug(0)
+nno  <expr><unique>  ]e  brackets#mv_line_plug(1)
 
 nno  <silent>  <plug>(mv_line_up)    :<c-u>call brackets#mv_line('line_up')<cr>
 nno  <silent>  <plug>(mv_line_down)  :<c-u>call brackets#mv_line('line_down')<cr>
-
-fu! s:mv_line(is_fwd) abort
-    let seq = a:is_fwd ? "\<plug>(mv_line_down)" : "\<plug>(mv_line_up)"
-    " write `<plug>(…)` in the typeahead buffer RECURSIVELY
-    call feedkeys(seq, 'it')
-    return ''
-endfu
 
 " ]f            move in files {{{2
 
