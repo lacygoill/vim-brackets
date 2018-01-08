@@ -162,6 +162,7 @@ nno  <silent>  <plug>(mv_line_down)  :<c-u>call brackets#mv_line('line_down')<cr
 
 fu! s:mv_line(is_fwd) abort
     let seq = a:is_fwd ? "\<plug>(mv_line_down)" : "\<plug>(mv_line_up)"
+    " write `<plug>(…)` in the typeahead buffer RECURSIVELY
     call feedkeys(seq, 'it')
     return ''
 endfu
