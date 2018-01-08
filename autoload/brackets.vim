@@ -112,7 +112,7 @@ fu! s:getchar() "{{{1
     \:         c
 endfu
 
-fu! brackets#move_region(fwd, cnt) abort "{{{1
+fu! brackets#move_region(is_fwd, cnt) abort "{{{1
     let char = s:getchar()
 
     let valid = [ "'", '"', '(', ')', '<', '>', 'B', '[', ']', '`', 'a', 'b', 'r', '{', '}' ]
@@ -184,7 +184,7 @@ fu! brackets#move_region(fwd, cnt) abort "{{{1
         let [ x_save, y_save ] = [ getpos("'x"), getpos("'y") ]
         norm! `[mx`]my
 
-        let pat =   a:fwd
+        let pat =   a:is_fwd
         \         ?      printf('(.%%''\[.*%%''\]%s)(%s)',
         \                       index([ '"', "'", '`' ], char) != - 1 ? '.' : '..',
         \                                                repeat('.', a:cnt))
@@ -201,15 +201,15 @@ fu! brackets#move_region(fwd, cnt) abort "{{{1
         call setpos("'x", x_save)
         call setpos("'y", y_save)
 
-        let offset = a:fwd ? a:cnt : -a:cnt
+        let offset = a:is_fwd ? a:cnt : -a:cnt
         exe 'norm! '.(pos + offset).'|'
 
         call s:moved_region_highlight(first_char, last_char, offset, char)
 
-        let g:motion_to_repeat = (a:fwd ? ']r' : '[r').char
+        let g:motion_to_repeat = (a:is_fwd ? ']r' : '[r').char
 
         sil! call repeat#set(printf("\<Plug>(move_region_%s)%s",
-        \                        a:fwd ? 'forward' : 'backward',
+        \                     a:is_fwd ? 'forward' : 'backward',
         \                                                  char,
         \                   ), a:cnt)
 
