@@ -243,15 +243,6 @@ fu! brackets#mv_line(what) abort "{{{1
     endtry
 endfu
 
-fu! brackets#mv_line_plug(is_fwd) abort "{{{1
-    let seq = a:is_fwd ? "\<plug>(mv_line_down)" : "\<plug>(mv_line_up)"
-    " write `<plug>(…)` in the typeahead buffer RECURSIVELY
-    " to work around an issue introduced by the NON-recursive wrapper
-    " installed by `vim-repeatable-motions`
-    call feedkeys(seq, 'it')
-    return ''
-endfu
-
 fu! brackets#next_file_to_edit(cnt) abort "{{{1
     let here = expand('%:p')
     let cnt  = a:cnt

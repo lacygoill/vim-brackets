@@ -148,14 +148,8 @@ call s:mil_build_mapping('t','t')
 
 " ]e            move line {{{2
 
-" We can't map `]e` to `<plug>(mv_line_down)` directly.
-" Because we execute `:MakeMotionsRepeatable` in
-" `~/.vim/after/plugin/my_repeatable_motions.vim`
-" to make the edition repeatable.
-"
-" The latter will install a NON-recursive wrapper mapping.
-nno  <expr><unique>  [e  brackets#mv_line_plug(0)
-nno  <expr><unique>  ]e  brackets#mv_line_plug(1)
+nmap  <unique>  [e  <plug>(mv_line_up)
+nmap  <unique>  ]e  <plug>(mv_line_down)
 
 nno  <silent>  <plug>(mv_line_up)    :<c-u>call brackets#mv_line('line_up')<cr>
 nno  <silent>  <plug>(mv_line_down)  :<c-u>call brackets#mv_line('line_down')<cr>
