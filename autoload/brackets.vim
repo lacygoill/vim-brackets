@@ -384,6 +384,7 @@ fu! brackets#put(where, post_indent_cmd, lhs) abort "{{{1
         else
             let reg_to_use = v:register
         endif
+        let reg_save = [reg_to_use] + reg_save
 
         " force the type of the register to be linewise
         call setreg(reg_to_use, getreg(reg_to_use), 'l')
@@ -397,7 +398,7 @@ fu! brackets#put(where, post_indent_cmd, lhs) abort "{{{1
         return lg#catch_error()
     finally
         " restore the type of the register
-        call setreg(reg_to_use, reg_save[0], reg_save[1])
+        call call('setreg', reg_save)
     endtry
 endfu
 
