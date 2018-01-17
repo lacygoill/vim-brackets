@@ -405,7 +405,12 @@ endfu
 fu! brackets#put_empty_line(below) abort "{{{1
     let cnt = v:count1
 
-    call append(line('.')+(a:below ? 0 : -1), repeat([''], cnt))
+    " could fail if the buffer is unmodifiable
+    try
+        call append(line('.')+(a:below ? 0 : -1), repeat([''], cnt))
+    catch
+        return lg#catch_error()
+    endtry
 
     " We've just put (an) empty line(s) below/above the current one.
     " But if we were inside a diagram, there's a risk that now the latter
