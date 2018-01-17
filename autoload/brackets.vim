@@ -142,7 +142,7 @@ fu! brackets#mv_line(what) abort "{{{1
     " command will indent the whole fold, instead of the line(s) on which we
     " were operating.
     "
-    " Watch:
+    " MWE:
     "         echo "fold\nfoo\nbar\nbaz\n" >file
     "         vim -Nu NONE file
     "         :set fdm=marker
@@ -204,7 +204,7 @@ fu! brackets#mv_line(what) abort "{{{1
         " FIXME: The next line restores the position of the mark `z`. {{{
         " It works. But when we undo (u, :undo), `z` is put on the line which was
         " moved.
-        " Watch:
+        " MWE:
         "         nno cd :call Func()<cr>
         "         fu! Func() abort
         "             let z_save = getpos("'z")

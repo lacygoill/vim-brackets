@@ -62,7 +62,7 @@ fu! s:mil(lhs) abort "{{{4
     try
         " FIXME:
         " Sometimes, the command doesn't seem to be executed. Why?
-        " Watch:
+        " MWE:
         "         :tab args /etc/*
         "         ]a
         "         ;
