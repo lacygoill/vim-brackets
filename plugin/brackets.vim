@@ -257,7 +257,7 @@ nno  <unique>  ]s  ]S
 nno  <unique>  [S  5zh
 nno  <unique>  ]S  5zl
 "               │
-"               └ mnemonics: Scroll
+"               └ mnemonic: Scroll
 
 " ] space             {{{2
 
