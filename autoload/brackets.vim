@@ -93,7 +93,7 @@ fu! brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, 
     " must open the ll or qfl window.
     doautocmd <nomodeline> QuickFixCmdPost lgrep
 
-    if &l:bt isnot# 'quickfix'
+    if &bt isnot# 'quickfix'
         return
     endif
 
