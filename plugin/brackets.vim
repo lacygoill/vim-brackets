@@ -55,7 +55,7 @@ let s:mil_cmd = {
 
 " Functions {{{3
 fu! s:mil(lhs) abort "{{{4
-    let cnt = (v:count == 0 ? '' : v:count)
+    let cnt = (v:count ==# 0 ? '' : v:count)
 
     let cmd1 = s:mil_cmd[a:lhs][0]
     let cmd2 = s:mil_cmd[a:lhs][1]
