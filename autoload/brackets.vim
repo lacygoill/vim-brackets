@@ -115,7 +115,7 @@ endfu
 fu! brackets#mv_line(what) abort "{{{1
     let cnt   = v:count1
 
-    let where = a:what ==# 'line_up'
+    let where = a:what is# 'line_up'
     \?              '-1-'
     \:              '+'
 
@@ -450,7 +450,7 @@ fu! brackets#put_empty_line(below) abort "{{{1
             set ve=all
             let vcol = 1
             for char in split(getline('.'), '\zs')
-                if  char ==# "\u2502" && l:Diagram_around(a:below ? 1 : -1, vcol)
+                if  char is# "\u2502" && l:Diagram_around(a:below ? 1 : -1, vcol)
                 \|| index(["\u250c", "\u2510", "\u251c", "\u2524"], char) >= 0 && a:below  && l:Diagram_around(1, vcol)
                 \|| index(["\u2514", "\u2518", "\u251c", "\u2524"], char) >= 0 && !a:below && l:Diagram_around(-1, vcol)
                     norm! mz
