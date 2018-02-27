@@ -24,7 +24,7 @@ com! -bang -nargs=1 Dlist call brackets#di_list('d', 0, 0, <bang>0, <f-args>)
 " ]ablqt        move in lists {{{2
 " Data {{{3
 
-let s:mil_cmd = {
+let s:MIL_CMD = {
               \   '[<c-l>': [ 'lpfile', '' ],
               \   ']<c-l>': [ 'lnfile', '' ],
               \   '[<c-q>': [ 'cpfile', '' ],
@@ -57,8 +57,8 @@ let s:mil_cmd = {
 fu! s:mil(lhs) abort "{{{4
     let cnt = (v:count ==# 0 ? '' : v:count)
 
-    let cmd1 = s:mil_cmd[a:lhs][0]
-    let cmd2 = s:mil_cmd[a:lhs][1]
+    let cmd1 = s:MIL_CMD[a:lhs][0]
+    let cmd2 = s:MIL_CMD[a:lhs][1]
     try
         " FIXME:
         " Sometimes, the command doesn't seem to be executed. Why?
