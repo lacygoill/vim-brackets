@@ -72,7 +72,7 @@ fu! brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, 
 
             let text = substitute(line, '^\s*\d\{-}\s*:\s*\d\{-}\s', '', '')
 
-            let col  = match(text, a:search_cur_word ? expand('<cword>') : search_pattern) + 1
+            let col  = match(text, a:search_cur_word ? '\C\<'.expand('<cword>').'\>' : search_pattern) + 1
             call add(ll_entries,
             \                    { 'filename' : filename,
             \                      'lnum'     : l:lnum,
