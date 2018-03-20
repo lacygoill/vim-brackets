@@ -267,7 +267,7 @@ fu! brackets#next_file_to_edit(cnt) abort "{{{1
     " Indeed, at the end of each iteration, we get a previous/next file.
     " It needs to be done exactly `cnt` times (by default 1).
     " So, at the end of each iteration, we update `cnt`, by [in|de]crementing it.
-    while cnt !=# 0
+    while cnt != 0
         let entries = s:what_is_around(fnamemodify(here, ':h'))
 
         " We use `a:cnt` instead of `cnt` in our test, because `cnt` is going
