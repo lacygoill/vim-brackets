@@ -55,7 +55,7 @@ let s:MIL_CMD = {
 
 " Functions {{{3
 fu! s:mil(lhs) abort "{{{4
-    let cnt = (v:count == 0 ? '' : v:count)
+    let cnt = (v:count ==# 0 ? '' : v:count)
 
     let cmd1 = s:MIL_CMD[a:lhs][0]
     let cmd2 = s:MIL_CMD[a:lhs][1]
@@ -92,7 +92,7 @@ fu! s:mil(lhs) abort "{{{4
 
     " If an entry in the quickfix / location list is located inside folds, we
     " want them to be opened to see it directly.
-    if a:lhs =~? '\v[lq]$|c-[lq]' && foldclosed('.') != -1
+    if a:lhs =~? '\v[lq]$|c-[lq]' && foldclosed('.') !=# -1
         norm! zv
     endif
 endfu
