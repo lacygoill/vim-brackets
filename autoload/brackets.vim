@@ -108,16 +108,16 @@ fu! s:getchar() "{{{1
         let c = nr2char(c,1)
     endif
     return c =~ "\e\|\<c-c>"
-    \?         ''
-    \:         c
+    \      ?    ''
+    \      :    c
 endfu
 
 fu! brackets#mv_line(what) abort "{{{1
     let cnt   = v:count1
 
     let where = a:what is# 'line_up'
-    \?              '-1-'
-    \:              '+'
+    \           ?    '-1-'
+    \           :    '+'
 
     let where .= cnt
 
