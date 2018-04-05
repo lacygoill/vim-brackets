@@ -407,7 +407,21 @@ fu! brackets#put_empty_line(below) abort "{{{1
 
     " could fail if the buffer is unmodifiable
     try
-        call append(line('.')+(a:below ? 0 : -1), repeat([''], cnt))
+        let lines = repeat([''], cnt)
+        let lnum  = line('.') + (a:below ? 0 : -1)
+
+        if &ft is# 'markdown'
+            let fold_begin = foldclosed(line('.'))
+            let fold_end = foldclosedend(line('.'))
+            if fold_begin !=# -1
+                let lines = repeat([matchstr(getline('.'), '^#\+')], cnt)
+                let lnum = a:below
+                \ ?            fold_end
+                \ :            fold_begin - 1
+            endif
+        endif
+
+        call append(lnum, lines)
     catch
         return lg#catch_error()
     endtry
@@ -486,3 +500,4 @@ fu! brackets#put_empty_line(below) abort "{{{1
     "}}}
     doautocmd <nomodeline> CursorMoved
 endfu
+
