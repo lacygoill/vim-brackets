@@ -13,32 +13,32 @@ fu! brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, 
         " otherwise if the function was called with a fifth optional argument,
         " by one of our custom Ex command, use it as the pattern
         if a:0 > 0
-            let search_pattern = a:1
+            let pat = a:1
         else
         " otherwise the function must have been called from visual mode
         " (visual mapping): use the visual selection as the pattern
             call lg#reg#save(['"', '+'])
 
             norm! gvy
-            let search_pattern = substitute('\V'.escape(getreg('"'), '\/'), '\\n', '\\n', 'g')
-            "                                │                               │
-            "                                │                               └── make sure newlines are not
-            "                                │                                   converted into NULs
-            "                                │                                   on the search command line
-            "                                │
-            "                                └── make sure the contents of the pattern is interpreted literally
+            let pat = substitute('\V'.escape(getreg('"'), '\/'), '\\n', '\\n', 'g')
+            "                     │                               │
+            "                     │                               └ make sure newlines are not
+            "                     │                                 converted into NULs
+            "                     │                                 on the search command line
+            "                     │
+            "                     └ make sure the contents of the pattern is interpreted literally
 
             call lg#reg#restore(['"', '+'])
         endif
 
-        let output = execute((a:start_at_cursor ? '+,$' : '').excmd.' /'.search_pattern, 'silent!')
-        let title  = excmd.' /'.search_pattern
+        let output = execute((a:start_at_cursor ? '+,$' : '').excmd.' /'.pat, 'silent!')
+        let title  = excmd.' /'.pat
     endif
 
     let lines = split(output, '\n')
     " Bail out on errors. (bail out = se désister)
     if get(lines, 0, '') =~ '^Error detected\|^$'
-        echom 'Could not find '.string(a:search_cur_word ? expand('<cword>') : search_pattern)
+        echom 'Could not find '.string(a:search_cur_word ? expand('<cword>') : pat)
         return
     endif
 
@@ -72,7 +72,7 @@ fu! brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, 
 
             let text = substitute(line, '^\s*\d\{-}\s*:\s*\d\{-}\s', '', '')
 
-            let col  = match(text, a:search_cur_word ? '\C\<'.expand('<cword>').'\>' : search_pattern) + 1
+            let col  = match(text, a:search_cur_word ? '\C\<'.expand('<cword>').'\>' : pat) + 1
             call add(ll_entries,
             \                    { 'filename' : filename,
             \                      'lnum'     : l:lnum,
