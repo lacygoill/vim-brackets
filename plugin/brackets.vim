@@ -261,6 +261,11 @@ nno  <unique>  ]S  5zl
 
 " ] space             {{{2
 
+nmap  <unique>  =<space>                       <plug>(put_empty_line_around)
+nno   <silent>  <plug>(put_empty_line_around)  :<c-u>  call brackets#put_empty_line(0)
+                                               \ <bar> call brackets#put_empty_line(1)
+                                               \ <bar> sil! call repeat#set("\<plug>(put_empty_line_around)", v:count1)<cr>
+
 nmap  <unique>  [<space>                      <plug>(put_empty_line_above)
 nno   <silent>  <plug>(put_empty_line_above)  :<c-u>call brackets#put_empty_line(0)<cr>
 
