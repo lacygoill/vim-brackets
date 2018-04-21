@@ -402,13 +402,13 @@ fu! brackets#put(where, post_indent_cmd, lhs) abort "{{{1
     endtry
 endfu
 
-fu! brackets#put_empty_line(where) abort "{{{1
+fu! brackets#put_empty_line(below) abort "{{{1
     let cnt = v:count1
 
     " could fail if the buffer is unmodifiable
     try
         let lines = repeat([''], cnt)
-        let lnum  = line('.') + (a:where ? 0 : -1)
+        let lnum  = line('.') + (a:below ? 0 : -1)
 
         if &ft is# 'markdown'
             let fold_begin = foldclosed(line('.'))
