@@ -430,9 +430,7 @@ fu! brackets#put_empty_line(below) abort "{{{1
     " But if we were inside a diagram, there's a risk that now the latter
     " is filled with “holes“. We need to complete the diagram when needed.
 
-    "                                                               ┌ diagram characters
-    "                    ┌──────────────────────────────────────────┤
-    if getline('.') =~# '[\u2502\u250c\u2510\u2514\u2518\u251c\u2524]'
+    if getline('.') =~# '[│┌┐└┘├┤]'
 
         " If we're in a commented diagram, the lines we've just put are not commented.
         " They should be. So, we undo, then use  the `o` or `O` command, so that
@@ -454,7 +452,7 @@ fu! brackets#put_empty_line(below) abort "{{{1
         " one.
         "}}}
         let l:Diagram_around = { dir, vcol ->
-        \                        matchstr(getline(line('.')+dir*(cnt+1)), '\%'.vcol.'v.''\@!') =~# '[\u2502\u250c\u2510\u2514\u2518\u251c\u2524\u251c\u2524]' }
+        \                        matchstr(getline(line('.')+dir*(cnt+1)), '\%'.vcol.'v.''\@!') =~# '[│┌┐└┘├┤├┤]' }
         "                                                                              └───┤
         "                             if a diagram character is followed by a single quote ┘
         "                             it's probably used  in some code (like  in this code
@@ -464,14 +462,14 @@ fu! brackets#put_empty_line(below) abort "{{{1
             set ve=all
             let vcol = 1
             for char in split(getline('.'), '\zs')
-                if  char is# "\u2502" && l:Diagram_around(a:below ? 1 : -1, vcol)
-                \|| index(["\u250c", "\u2510", "\u251c", "\u2524"], char) >= 0 && a:below  && l:Diagram_around(1, vcol)
-                \|| index(["\u2514", "\u2518", "\u251c", "\u2524"], char) >= 0 && !a:below && l:Diagram_around(-1, vcol)
+                if  char is# '│' && l:Diagram_around(a:below ? 1 : -1, vcol)
+                \|| index(['┌', '┐', '├', '┤'], char) >= 0 && a:below  && l:Diagram_around(1, vcol)
+                \|| index(['└', '┘', '├', '┤'], char) >= 0 && !a:below && l:Diagram_around(-1, vcol)
                     norm! mz
-                    "                                                                ┌ if a:below = 1 and cnt = 3:
-                    "                                                                │     jr|jr|jr|
-                    "                     ┌──────────────────────────────────────────┤
-                    exe 'norm! '.vcol.'|'.repeat((a:below ? 'j' : 'k')."r\u2502", cnt).'g`z'
+                    "                                                           ┌ if a:below = 1 and cnt = 3:
+                    "                                                           │     jr|jr|jr|
+                    "                     ┌─────────────────────────────────────┤
+                    exe 'norm! '.vcol.'|'.repeat((a:below ? 'j' : 'k').'r│', cnt).'g`z'
                 endif
                 let vcol += 1
             endfor
