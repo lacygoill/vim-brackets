@@ -462,9 +462,9 @@ fu! brackets#put_empty_line(below) abort "{{{1
             set ve=all
             let vcol = 1
             for char in split(getline('.'), '\zs')
-                if  char is# '│' && l:Diagram_around(a:below ? 1 : -1, vcol)
-                \|| index(['┌', '┐', '├', '┤'], char) >= 0 && a:below  && l:Diagram_around(1, vcol)
-                \|| index(['└', '┘', '├', '┤'], char) >= 0 && !a:below && l:Diagram_around(-1, vcol)
+                if   char is# '│' && l:Diagram_around(a:below ? 1 : -1, vcol)
+                \ || index(['┌', '┐', '├', '┤'], char) >= 0 && a:below  && l:Diagram_around(1, vcol)
+                \ || index(['└', '┘', '├', '┤'], char) >= 0 && !a:below && l:Diagram_around(-1, vcol)
                     norm! mz
                     "                                                           ┌ if a:below = 1 and cnt = 3:
                     "                                                           │     jr|jr|jr|

@@ -124,10 +124,10 @@ fu! s:mil_build_mapping(key, pfx) abort "{{{4
         let nfile = ']<c-'.a:key.'>'
 
         exe 'nno  <silent><unique>  '.pfile
-        \.  '  :<c-u>call <sid>mil('.substitute(string(pfile), '<', '<lt>', '').')<cr>'
+        \ . '  :<c-u>call <sid>mil('.substitute(string(pfile), '<', '<lt>', '').')<cr>'
 
         exe 'nno  <silent><unique>  '.nfile
-        \.  '  :<c-u>call <sid>mil('.substitute(string(nfile), '<', '<lt>', '').')<cr>'
+        \ . '  :<c-u>call <sid>mil('.substitute(string(nfile), '<', '<lt>', '').')<cr>'
     endif
 endfu
 
