@@ -121,8 +121,13 @@ fu! s:mil_build_mapping(key, pfx) abort "{{{4
     "
     " We do the same thing if a:pfx = 'l' :
     "
-    "        [ C-l mapped to :lpfile
-    "        ] C-l mapped to :lnfile
+    "        • [ C-l mapped to :lpfile
+    "        • ] C-l mapped to :lnfile
+    "
+    " We also do the same thing to move in the qf stack:
+    "
+    "        • <q >q    (qfl)
+    "        • <l >l    (loclist)
 
     if a:pfx =~# '[cl]'
         if a:pfx is# 'c'
