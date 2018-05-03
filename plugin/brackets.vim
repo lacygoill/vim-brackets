@@ -25,6 +25,11 @@ com! -bang -nargs=1 Dlist call brackets#di_list('d', 0, 0, <bang>0, <f-args>)
 " Data {{{3
 
 let s:MIL_CMD = {
+              \   '<q': [ 'colder', '' ],
+              \   '>q': [ 'cnewer', '' ],
+              \   '<l': [ 'lolder', '' ],
+              \   '>l': [ 'lnewer', '' ],
+              \
               \   '[<c-l>': [ 'lpfile', '' ],
               \   ']<c-l>': [ 'lnfile', '' ],
               \   '[<c-q>': [ 'cpfile', '' ],
@@ -120,14 +125,27 @@ fu! s:mil_build_mapping(key, pfx) abort "{{{4
     "        ] C-l mapped to :lnfile
 
     if a:pfx =~# '[cl]'
-        let pfile = '[<c-'.a:key.'>'
-        let nfile = ']<c-'.a:key.'>'
+        if a:pfx is# 'c'
+            let pqf_key = '<q'
+            let nqf_key = '>q'
 
-        exe 'nno  <silent><unique>  '.pfile
-        \ . '  :<c-u>call <sid>mil('.substitute(string(pfile), '<', '<lt>', '').')<cr>'
+            let pfile_key = '[<c-q>'
+            let nfile_key = ']<c-q>'
+        else
+            let pqf_key = '<l'
+            let nqf_key = '>l'
 
-        exe 'nno  <silent><unique>  '.nfile
-        \ . '  :<c-u>call <sid>mil('.substitute(string(nfile), '<', '<lt>', '').')<cr>'
+            let pfile_key = '[<c-l>'
+            let nfile_key = ']<c-l>'
+        endif
+
+        exe 'nno  <silent><unique>  '.pqf_key.'  :<c-u>call <sid>mil('.string(pqf_key).')<cr>'
+        exe 'nno  <silent><unique>  '.nqf_key.'  :<c-u>call <sid>mil('.string(nqf_key).')<cr>'
+
+        exe 'nno  <silent><unique>  '.pfile_key
+        \ . '  :<c-u>call <sid>mil('.substitute(string(pfile_key), '<', '<lt>', '').')<cr>'
+        exe 'nno  <silent><unique>  '.nfile_key
+        \ . '  :<c-u>call <sid>mil('.substitute(string(nfile_key), '<', '<lt>', '').')<cr>'
     endif
 endfu
 
