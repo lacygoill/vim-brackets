@@ -414,7 +414,11 @@ fu! brackets#put_empty_line(below) abort "{{{1
             let fold_begin = foldclosed(line('.'))
             let fold_end = foldclosedend(line('.'))
             if fold_begin !=# -1
-                let lines = repeat([matchstr(getline(fold_begin), '^#\+')], cnt)
+                let text = matchstr(getline(fold_begin), '^#\+')
+                if text is# '#'
+                    let text = '##'
+                endif
+                let lines = repeat([text], cnt)
                 let lnum = a:below
                 \ ?            fold_end
                 \ :            fold_begin - 1
