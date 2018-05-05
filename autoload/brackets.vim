@@ -377,6 +377,8 @@ fu! brackets#put(where, post_indent_cmd, lhs) abort "{{{1
         let reg_save  = [ getreg(v:register), getregtype(v:register) ]
     endif
 
+    " Don't let folding interfere.
+    let &l:fen = 0
     try
         if v:register =~# '[/:%#.]'
             let reg_to_use = 'z'
@@ -397,6 +399,7 @@ fu! brackets#put(where, post_indent_cmd, lhs) abort "{{{1
     catch
         return lg#catch_error()
     finally
+        let &l:fen = 1
         " restore the type of the register
         call call('setreg', reg_save)
     endtry
