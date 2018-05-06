@@ -379,6 +379,9 @@ fu! brackets#put(where, post_indent_cmd, lhs) abort "{{{1
 
     " Don't let folding interfere.
     let &l:fen = 0
+    " Because we disable/reenable folding, the view may change.
+    " It should not.
+    let view = winsaveview()
     try
         if v:register =~# '[/:%#.]'
             let reg_to_use = 'z'
@@ -400,6 +403,7 @@ fu! brackets#put(where, post_indent_cmd, lhs) abort "{{{1
         return lg#catch_error()
     finally
         let &l:fen = 1
+        call winrestview(view)
         " restore the type of the register
         call call('setreg', reg_save)
     endtry
