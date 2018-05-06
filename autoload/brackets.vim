@@ -377,11 +377,21 @@ fu! brackets#put(where, post_indent_cmd, lhs) abort "{{{1
         let reg_save  = [ getreg(v:register), getregtype(v:register) ]
     endif
 
-    " Don't let folding interfere.
-    let &l:fen = 0
-    " Because we disable/reenable folding, the view may change.
-    " It should not.
-    let view = winsaveview()
+    " Warning: about folding interference{{{
+    "
+    " If one of  the lines you paste  is recognized as the beginning  of a fold,
+    " and you  paste using  `<p` or  `>p`, the  folding mechanism  may interfere
+    " unexpectedly, causing too many lines to be indented.
+    "
+    " You could prevent that by temporarily disabling 'fen'.
+    " But doing so will sometimes make the view change.
+    " So, you would also need to save/restore the view.
+    " But doing so  will position the cursor right back  where you were, instead
+    " of the first line of the pasted text.
+    "
+    " All in all, trying to fix this rare issue seems to cause too much trouble.
+    " So, we don't.
+    "}}}
     try
         if v:register =~# '[/:%#.]'
             let reg_to_use = 'z'
@@ -402,8 +412,6 @@ fu! brackets#put(where, post_indent_cmd, lhs) abort "{{{1
     catch
         return lg#catch_error()
     finally
-        let &l:fen = 1
-        call winrestview(view)
         " restore the type of the register
         call call('setreg', reg_save)
     endtry
