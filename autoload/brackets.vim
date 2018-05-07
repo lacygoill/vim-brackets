@@ -91,8 +91,7 @@ fu! brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, 
     " a `l`.  The autocmd that we use  to automatically open a qf window, relies
     " on the name of the command (how  its name begins), to determine whether it
     " must open the ll or qfl window.
-    doautocmd <nomodeline> QuickFixCmdPost lwindow
-
+    do <nomodeline> QuickFixCmdPost lwindow
     if &bt isnot# 'quickfix'
         return
     endif
