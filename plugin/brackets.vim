@@ -258,27 +258,22 @@ nno  <silent><unique>  =p  :<c-u>call brackets#put(']p', "=']", '=p')<cr>
 
 " ]sS {{{2
 
-" Why?{{{
-"
-" When I press `]s` to move the cursor to the next wrongly spelled
-" word, I want to ignore rare words / words for another region, which
-" is what `]S` does.
-"}}}
-nno  <unique>  [s  [S
-nno  <unique>  ]s  ]S
-
 " Why? {{{
 "
 " By default, `zh` and `zl` move the cursor on a long non-wrapped line.
 " But at the same time, we use `zj` and `zk` to split the window.
 " I don't like  the `hjkl` being used  with a same prefix (`z`)  for 2 different
 " purposes. So, instead we'll use `[S` and `]S`.
-" Warning:
-" This  shadows the  default `]S`  which moves  the cursor  to the  next wrongly
-" spelled word (ignoring rare words and words for other regions).
 "}}}
-nno  <unique>  [S  5zh
-nno  <unique>  ]S  5zl
+" Warning: this shadows the default `]s` command{{{
+"
+" ... which  moves the  cursor to  the next wrongly spelled word.
+" It's not a big deal, because you can still use `]S` which does the same thing,
+" ignoring rare words and words for other regions (which is what we usually want).
+"}}}
+
+nno  <unique>  [s  5zh
+nno  <unique>  ]s  5zl
 "               │
 "               └ mnemonic: Scroll
 
