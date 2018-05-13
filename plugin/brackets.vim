@@ -263,7 +263,9 @@ nno  <silent><unique>  =p  :<c-u>call brackets#put(']p', "=']", '=p')<cr>
 " By default, `zh` and `zl` move the cursor on a long non-wrapped line.
 " But at the same time, we use `zj` and `zk` to split the window.
 " I don't like  the `hjkl` being used  with a same prefix (`z`)  for 2 different
-" purposes. So, instead we'll use `[S` and `]S`.
+" purposes.
+" So, we'll  use `z[hjkl]` to split  the window, and  `[s` and `]s` to  scroll a
+" long wrapped line.
 "}}}
 " Warning: this shadows the default `]s` command{{{
 "
