@@ -419,6 +419,11 @@ endfu
 fu! brackets#put_empty_line(below) abort "{{{1
     let cnt = v:count1
 
+    let no_diagram_around = 0
+    if getline(line('.')+(a:below ? 1 : -1)) !~# '[│┌┐└┘├┤]'
+        let no_diagram_around = 1
+    endif
+
     " could fail if the buffer is unmodifiable
     try
         let lines = repeat([''], cnt)
@@ -449,6 +454,9 @@ fu! brackets#put_empty_line(below) abort "{{{1
     " is filled with “holes“. We need to complete the diagram when needed.
 
     if getline('.') =~# '[│┌┐└┘├┤]'
+        if no_diagram_around
+            return
+        endif
 
         " If we're in a commented diagram, the lines we've just put are not commented.
         " They should be. So, we undo, then use  the `o` or `O` command, so that
@@ -475,29 +483,24 @@ fu! brackets#put_empty_line(below) abort "{{{1
         "                             if a diagram character is followed by a single quote ┘
         "                             it's probably used  in some code (like  in this code
         "                             for example) ignore it
-        let ve_save = &ve
-        try
-            set ve=all
-            let vcol = 1
-            for char in split(getline('.'), '\zs')
-                if   char is# '│' && l:Diagram_around(a:below ? 1 : -1, vcol)
-                \ || index(['┌', '┐', '├', '┤'], char) >= 0 && a:below  && l:Diagram_around(1, vcol)
-                \ || index(['└', '┘', '├', '┤'], char) >= 0 && !a:below && l:Diagram_around(-1, vcol)
-                    norm! mz
-                    "                                                           ┌ if a:below = 1 and cnt = 3:
-                    "                                                           │     jr|jr|jr|
-                    "                     ┌─────────────────────────────────────┤
-                    exe 'norm! '.vcol.'|'.repeat((a:below ? 'j' : 'k').'r│', cnt).'g`z'
-                endif
-                let vcol += 1
-            endfor
+        let vcol = 1
+        let vcols = []
+        for char in split(getline('.'), '\zs')
+            if   char is# '│' && l:Diagram_around(a:below ? 1 : -1, vcol)
+            \ || index(['┌', '┐', '├', '┤'], char) >= 0 && a:below  && l:Diagram_around(1, vcol)
+            \ || index(['└', '┘', '├', '┤'], char) >= 0 && !a:below && l:Diagram_around(-1, vcol)
+                let vcols += [vcol]
+            endif
+            let vcol += 1
+        endfor
 
-        catch
-            return lg#catch_error()
-        finally
-            let &ve = ve_save
-            call setpos("'z", z_save)
-        endtry
+        let line = getline(line('.')+(a:below ? 1 : -1)).repeat(' ', &columns)
+        let pat = join(map(vcols, {i,v -> '\%'.v.'v.'}), '\|')
+        let line = substitute(substitute(line, pat, '│', 'g'), '\s*$', '', '')
+
+        let text = repeat([line], cnt)
+        let lnum = line('.') + (a:below ? 1 : -cnt)
+        call setline(lnum, text)
     endif
     sil! call repeat#set("\<plug>(put_empty_line_".(a:below ? 'below' : 'above').')', cnt)
     " FIXME:{{{
