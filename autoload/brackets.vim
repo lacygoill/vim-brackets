@@ -419,9 +419,9 @@ endfu
 fu! brackets#put_empty_line(below) abort "{{{1
     let cnt = v:count1
 
-    let no_diagram_around = 0
+    let diagram_around = 1
     if getline(line('.')+(a:below ? 1 : -1)) !~# '[│┌┐└┘├┤]'
-        let no_diagram_around = 1
+        let diagram_around = 0
     endif
 
     " could fail if the buffer is unmodifiable
@@ -453,10 +453,7 @@ fu! brackets#put_empty_line(below) abort "{{{1
     " But if we were inside a diagram, there's a risk that now the latter
     " is filled with “holes“. We need to complete the diagram when needed.
 
-    if getline('.') =~# '[│┌┐└┘├┤]'
-        if no_diagram_around
-            return
-        endif
+    if getline('.') =~# '[│┌┐└┘├┤]' && diagram_around
 
         " If we're in a commented diagram, the lines we've just put are not commented.
         " They should be. So, we undo, then use  the `o` or `O` command, so that
@@ -517,6 +514,6 @@ fu! brackets#put_empty_line(below) abort "{{{1
     " Find whether it's needed somewhere else.
     " Document it.
     "}}}
-    doautocmd <nomodeline> CursorMoved
+    do <nomodeline> CursorMoved
 endfu
 
