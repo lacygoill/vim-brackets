@@ -419,18 +419,18 @@ fu! brackets#put_save_param(where, how_to_indent) abort
     let s:put_register = v:register
 endfu
 
-fu! brackets#put_empty_line(below) abort "{{{1
+fu! brackets#put_empty_line(type) abort "{{{1
     let cnt = v:count1
 
     let diagram_around = 1
-    if getline(line('.')+(a:below ? 1 : -1)) !~# '[│┌┐└┘├┤]'
+    if getline(line('.')+(s:put_empty_line_below ? 1 : -1)) !~# '[│┌┐└┘├┤]'
         let diagram_around = 0
     endif
 
     " could fail if the buffer is unmodifiable
     try
         let lines = repeat([''], cnt)
-        let lnum  = line('.') + (a:below ? 0 : -1)
+        let lnum  = line('.') + (s:put_empty_line_below ? 0 : -1)
 
         if &ft is# 'markdown'
             let fold_begin = foldclosed(line('.'))
@@ -445,7 +445,7 @@ fu! brackets#put_empty_line(below) abort "{{{1
                 elseif matchstr(getline(fold_begin+1), '^===\|^---') isnot# ''
                     let lines = repeat(['---', '---'], cnt)
                 endif
-                let lnum = a:below
+                let lnum = s:put_empty_line_below
                 \ ?            fold_end
                 \ :            fold_begin - 1
             endif
@@ -468,7 +468,7 @@ fu! brackets#put_empty_line(below) abort "{{{1
         let z_save = getpos("'z")
         sil undo
         norm! mz
-        exe 'norm! '.cnt.(a:below ? 'o' : 'O')."\e".'g`z'
+        exe 'norm! '.cnt.(s:put_empty_line_below ? 'o' : 'O')."\e".'g`z'
         call setpos("'z", z_save)
 
         " What is this lambda for?{{{
@@ -490,37 +490,33 @@ fu! brackets#put_empty_line(below) abort "{{{1
         let vcol = 1
         let vcols = []
         for char in split(getline('.'), '\zs')
-            if   char is# '│' && l:Diagram_around(a:below ? 1 : -1, vcol)
-            \ || index(['┌', '┐', '├', '┤'], char) >= 0 && a:below  && l:Diagram_around(1, vcol)
-            \ || index(['└', '┘', '├', '┤'], char) >= 0 && !a:below && l:Diagram_around(-1, vcol)
+            if   char is# '│' && l:Diagram_around(s:put_empty_line_below ? 1 : -1, vcol)
+            \ || index(['┌', '┐', '├', '┤'], char) >= 0 && s:put_empty_line_below  && l:Diagram_around(1, vcol)
+            \ || index(['└', '┘', '├', '┤'], char) >= 0 && !s:put_empty_line_below && l:Diagram_around(-1, vcol)
                 let vcols += [vcol]
             endif
             let vcol += 1
         endfor
 
-        let line = getline(line('.')+(a:below ? 1 : -1)).repeat(' ', &columns)
+        let line = getline(line('.')+(s:put_empty_line_below ? 1 : -1)).repeat(' ', &columns)
         let pat = join(map(vcols, {i,v -> '\%'.v.'v.'}), '\|')
         let line = substitute(substitute(line, pat, '│', 'g'), '\s*$', '', '')
 
         let text = repeat([line], cnt)
-        let lnum = line('.') + (a:below ? 1 : -cnt)
+        let lnum = line('.') + (s:put_empty_line_below ? 1 : -cnt)
         call setline(lnum, text)
     endif
-    sil! call repeat#set("\<plug>(put_empty_line_".(a:below ? 'below' : 'above').')', cnt)
-    " FIXME:{{{
-    "         ] space
-    "         dd
-    "         .          ✘
-    "
-    " The issue doesn't affect `[ space`.
-    " It affects `] space` in the original unimpaired plugin.
-    " To fix this, we have to trigger `CursorMoved` manually, AFTER invoking
-    " `repeat#set()`.
-    "
-    " Understand why this fix is needed.
-    " Find whether it's needed somewhere else.
-    " Document it.
-    "}}}
-    do <nomodeline> CursorMoved
+endfu
+
+fu! brackets#put_empty_line_save_dir(below) abort "{{{1
+    let s:put_empty_line_below = a:below
+endfu
+
+fu! brackets#put_empty_lines_around(type) abort "{{{1
+    call brackets#put_empty_line_save_dir(0)
+    call brackets#put_empty_line('line')
+
+    call brackets#put_empty_line_save_dir(1)
+    call brackets#put_empty_line('line')
 endfu
 

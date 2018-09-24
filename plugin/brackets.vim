@@ -271,13 +271,7 @@ nno  <unique>  ]s  5zl
 
 " ] space             {{{2
 
-nmap  <unique>  =<space>                       <plug>(put_empty_line_around)
-nno   <silent>  <plug>(put_empty_line_around)  :<c-u>  call brackets#put_empty_line(0)
-                                               \ <bar> call brackets#put_empty_line(1)
-                                               \ <bar> sil! call repeat#set("\<plug>(put_empty_line_around)", v:count1)<cr>
+nno  <silent><unique>  =<space>  :<c-u>set opfunc=brackets#put_empty_lines_around<bar>exe 'norm! '.v:count1.'g@_'<cr>
+nno  <silent><unique>  [<space>  :<c-u>call brackets#put_empty_line_save_dir(0)<bar>set opfunc=brackets#put_empty_line<bar>exe 'norm! '.v:count1.'g@_'<cr>
+nno  <silent><unique>  ]<space>  :<c-u>call brackets#put_empty_line_save_dir(1)<bar>set opfunc=brackets#put_empty_line<bar>exe 'norm! '.v:count1.'g@_'<cr>
 
-nmap  <unique>  [<space>                      <plug>(put_empty_line_above)
-nno   <silent>  <plug>(put_empty_line_above)  :<c-u>call brackets#put_empty_line(0)<cr>
-
-nmap  <unique>  ]<space>                      <plug>(put_empty_line_below)
-nno   <silent>  <plug>(put_empty_line_below)  :<c-u>call brackets#put_empty_line(1)<cr>
