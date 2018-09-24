@@ -214,11 +214,12 @@ xno  <silent><unique>  ]D  :<c-u>call brackets#di_list('d', 0, 1, 1)<cr>
 " We don't want that, we want the text to be put as linewise even if it was
 " selected with a characterwise motion.
 
-
-"                      ┌─ where do we put: above or below (here above)
-"                      │
-nno  <silent><unique>  [p  :<c-u>call brackets#put('[p', '', '[p')<cr>
-nno  <silent><unique>  ]p  :<c-u>call brackets#put(']p', '', ']p')<cr>
+"                                                              ┌ how to put internally{{{
+"                                                              │
+"                                                              │     ┌ how to indent afterwards
+"                                                              │     │}}}
+nno  <silent><unique>  [p  :<c-u>call brackets#put_save_param('[p', '')<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@_'<cr>
+nno  <silent><unique>  ]p  :<c-u>call brackets#put_save_param(']p', '')<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@_'<cr>
 
 " The following mappings put the unnamed register after the current line,
 " treating its contents as linewise (even if characterwise) AND perform another
@@ -227,20 +228,12 @@ nno  <silent><unique>  ]p  :<c-u>call brackets#put(']p', '', ']p')<cr>
 "         • >p >P    add a level of indentation
 "         • <p <P    remove a level of indentation
 "         • =p =P    auto-indentation (respecting our indentation-relative options)
-
-"                                                    ┌─ command used internally to put
-"                                                    │     ┌─ command used internally to indent after the paste
-"                                                    │     │      ┌─ lhs that the dot command should repeat
-"                                                    │     │      │
-nno  <silent><unique>  >P  :<c-u>call brackets#put('[p', ">']", '>P')<cr>
-"                      ││
-"                      │└─ where do we put: above or below (here above)
-"                      └─ how do we change the indentation of the text: here we increase it
-nno  <silent><unique>  >p  :<c-u>call brackets#put(']p', ">']", '>p')<cr>
-nno  <silent><unique>  <P  :<c-u>call brackets#put('[p', "<']", '<P')<cr>
-nno  <silent><unique>  <p  :<c-u>call brackets#put(']p', "<']", '<p')<cr>
-nno  <silent><unique>  =P  :<c-u>call brackets#put('[p', "=']", '=P')<cr>
-nno  <silent><unique>  =p  :<c-u>call brackets#put(']p', "=']", '=p')<cr>
+nno  <silent><unique>  >P  :<c-u>call brackets#put_save_param('[p', ">']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@_'<cr>
+nno  <silent><unique>  >p  :<c-u>call brackets#put_save_param(']p', ">']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@_'<cr>
+nno  <silent><unique>  <P  :<c-u>call brackets#put_save_param('[p', "<']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@_'<cr>
+nno  <silent><unique>  <p  :<c-u>call brackets#put_save_param(']p', "<']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@_'<cr>
+nno  <silent><unique>  =P  :<c-u>call brackets#put_save_param('[p', "=']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@_'<cr>
+nno  <silent><unique>  =p  :<c-u>call brackets#put_save_param(']p', "=']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@_'<cr>
 
 " A simpler version of the same mappings would be:
 "

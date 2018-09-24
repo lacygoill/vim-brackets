@@ -364,18 +364,16 @@ fu! s:what_is_around(dir) abort
     return entries
 endfu
 
-fu! brackets#put(where, post_indent_cmd, lhs) abort "{{{1
+fu! brackets#put(type) abort "{{{1
     let cnt = v:count1
-    " make sure the dot command will repeat the register we're using
-    sil! call repeat#setreg(a:lhs, v:register)
 
-    if v:register =~# '[/:%#.]'
+    if s:put_register =~# '[/:%#.]'
         " The type of the register we put needs to be linewise.
         " But, some registers are special: we can't change their type.
         " So, we'll temporarily duplicate their contents into `z` instead.
-        let reg_save  = [ getreg('z'), getregtype('z') ]
+        let reg_save  = [getreg('z'), getregtype('z')]
     else
-        let reg_save  = [ getreg(v:register), getregtype(v:register) ]
+        let reg_save  = [getreg(s:put_register), getregtype(s:put_register)]
     endif
 
     " Warning: about folding interference{{{
@@ -394,28 +392,31 @@ fu! brackets#put(where, post_indent_cmd, lhs) abort "{{{1
     " So, we don't.
     "}}}
     try
-        if v:register =~# '[/:%#.]'
+        if s:put_register =~# '[/:%#.]'
             let reg_to_use = 'z'
-            call setreg('z', getreg(v:register), 'l')
+            call setreg('z', getreg(s:put_register), 'l')
         else
-            let reg_to_use = v:register
+            let reg_to_use = s:put_register
         endif
         let reg_save = [reg_to_use] + reg_save
 
         " force the type of the register to be linewise
         call setreg(reg_to_use, getreg(reg_to_use), 'l')
 
-        " put the register (a:where can be ]p or [p)
-        exe 'norm! "'.reg_to_use.cnt.a:where.a:post_indent_cmd
-
-        " make the edit dot repeatable
-        sil! call repeat#set(a:lhs, cnt)
+        " put the register (s:put_where can be ]p or [p)
+        exe 'norm! "'.reg_to_use . cnt . s:put_where . s:put_how_to_indent
     catch
         return lg#catch_error()
     finally
         " restore the type of the register
         call call('setreg', reg_save)
     endtry
+endfu
+
+fu! brackets#put_save_param(where, how_to_indent) abort
+    let s:put_where = a:where
+    let s:put_how_to_indent = a:how_to_indent
+    let s:put_register = v:register
 endfu
 
 fu! brackets#put_empty_line(below) abort "{{{1
