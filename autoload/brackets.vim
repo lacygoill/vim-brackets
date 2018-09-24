@@ -111,10 +111,10 @@ fu! s:getchar() "{{{1
        \ :     c
 endfu
 
-fu! brackets#mv_line(what) abort "{{{1
+fu! brackets#mv_line(type) abort "{{{1
     let cnt   = v:count1
 
-    let where = a:what is# 'line_up'
+    let where = s:mv_line_dir is# 'up'
             \ ?     '-1-'
             \ :     '+'
 
@@ -188,8 +188,6 @@ fu! brackets#mv_line(what) abort "{{{1
         if &ft isnot# 'markdown'
             sil norm! ==
         endif
-
-        sil! call repeat#set("\<plug>(mv_".a:what.')', cnt)
     catch
         return lg#catch_error()
     finally
@@ -240,6 +238,10 @@ fu! brackets#mv_line(what) abort "{{{1
         " }}}
         call setpos("'z", z_save)
     endtry
+endfu
+
+fu! brackets#mv_line_save_dir(dir) abort
+    let s:mv_line_dir = a:dir
 endfu
 
 fu! brackets#next_file_to_edit(cnt) abort "{{{1

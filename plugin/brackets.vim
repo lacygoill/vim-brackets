@@ -171,11 +171,8 @@ call s:mil_build_mapping('t','t')
 
 " ]e            move line {{{2
 
-nmap  <unique>  [e  <plug>(mv_line_up)
-nmap  <unique>  ]e  <plug>(mv_line_down)
-
-nno  <silent>  <plug>(mv_line_up)    :<c-u>call brackets#mv_line('line_up')<cr>
-nno  <silent>  <plug>(mv_line_down)  :<c-u>call brackets#mv_line('line_down')<cr>
+nno  <silent><unique>  [e  :<c-u>call brackets#mv_line_save_dir('up')<bar>set opfunc=brackets#mv_line<bar>exe 'norm! '.v:count1.'g@_'<cr>
+nno  <silent><unique>  ]e  :<c-u>call brackets#mv_line_save_dir('down')<bar>set opfunc=brackets#mv_line<bar>exe 'norm! '.v:count1.'g@_'<cr>
 
 " ]f            move in files {{{2
 
