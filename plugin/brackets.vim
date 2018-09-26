@@ -272,6 +272,6 @@ nno  <unique>  ]s  5zl
 " ] space             {{{2
 
 nno  <silent><unique>  =<space>  :<c-u>set opfunc=brackets#put_empty_lines_around<bar>exe 'norm! '.v:count1.'g@_'<cr>
-nno  <silent><unique>  [<space>  :<c-u>call brackets#put_empty_line_save_dir(0)<bar>set opfunc=brackets#put_empty_line<bar>exe 'norm! '.v:count1.'g@_'<cr>
-nno  <silent><unique>  ]<space>  :<c-u>call brackets#put_empty_line_save_dir(1)<bar>set opfunc=brackets#put_empty_line<bar>exe 'norm! '.v:count1.'g@_'<cr>
+nno  <silent><unique>  [<space>  :<c-u>call brackets#put_empty_line_save_dir(0)<bar>set opfunc=brackets#put_empty_line<bar>exe 'norm! '.v:count1.'g@l'<cr>
+nno  <silent><unique>  ]<space>  :<c-u>call brackets#put_empty_line_save_dir(1)<bar>set opfunc=brackets#put_empty_line<bar>exe 'norm! '.v:count1.'g@l'<cr>
 
