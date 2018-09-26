@@ -171,8 +171,8 @@ call s:mil_build_mapping('t','t')
 
 " ]e            move line {{{2
 
-nno  <silent><unique>  [e  :<c-u>call brackets#mv_line_save_dir('up')<bar>set opfunc=brackets#mv_line<bar>exe 'norm! '.v:count1.'g@_'<cr>
-nno  <silent><unique>  ]e  :<c-u>call brackets#mv_line_save_dir('down')<bar>set opfunc=brackets#mv_line<bar>exe 'norm! '.v:count1.'g@_'<cr>
+nno  <silent><unique>  [e  :<c-u>call brackets#mv_line_save_dir('up')<bar>set opfunc=brackets#mv_line<bar>exe 'norm! '.v:count1.'g@l'<cr>
+nno  <silent><unique>  ]e  :<c-u>call brackets#mv_line_save_dir('down')<bar>set opfunc=brackets#mv_line<bar>exe 'norm! '.v:count1.'g@l'<cr>
 
 " ]f            move in files {{{2
 
@@ -218,8 +218,8 @@ xno  <silent><unique>  ]D  :<c-u>call brackets#di_list('d', 0, 1, 1)<cr>
 "                                                              │
 "                                                              │     ┌ how to indent afterwards
 "                                                              │     │}}}
-nno  <silent><unique>  [p  :<c-u>call brackets#put_save_param('[p', '')<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@_'<cr>
-nno  <silent><unique>  ]p  :<c-u>call brackets#put_save_param(']p', '')<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@_'<cr>
+nno  <silent><unique>  [p  :<c-u>call brackets#put_save_param('[p', '')<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
+nno  <silent><unique>  ]p  :<c-u>call brackets#put_save_param(']p', '')<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
 
 " The following mappings put the unnamed register after the current line,
 " treating its contents as linewise (even if characterwise) AND perform another
@@ -228,12 +228,12 @@ nno  <silent><unique>  ]p  :<c-u>call brackets#put_save_param(']p', '')<bar>set 
 "         • >p >P    add a level of indentation
 "         • <p <P    remove a level of indentation
 "         • =p =P    auto-indentation (respecting our indentation-relative options)
-nno  <silent><unique>  >P  :<c-u>call brackets#put_save_param('[p', ">']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@_'<cr>
-nno  <silent><unique>  >p  :<c-u>call brackets#put_save_param(']p', ">']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@_'<cr>
-nno  <silent><unique>  <P  :<c-u>call brackets#put_save_param('[p', "<']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@_'<cr>
-nno  <silent><unique>  <p  :<c-u>call brackets#put_save_param(']p', "<']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@_'<cr>
-nno  <silent><unique>  =P  :<c-u>call brackets#put_save_param('[p', "=']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@_'<cr>
-nno  <silent><unique>  =p  :<c-u>call brackets#put_save_param(']p', "=']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@_'<cr>
+nno  <silent><unique>  >P  :<c-u>call brackets#put_save_param('[p', ">']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
+nno  <silent><unique>  >p  :<c-u>call brackets#put_save_param(']p', ">']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
+nno  <silent><unique>  <P  :<c-u>call brackets#put_save_param('[p', "<']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
+nno  <silent><unique>  <p  :<c-u>call brackets#put_save_param(']p', "<']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
+nno  <silent><unique>  =P  :<c-u>call brackets#put_save_param('[p', "=']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
+nno  <silent><unique>  =p  :<c-u>call brackets#put_save_param(']p', "=']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
 
 " A simpler version of the same mappings would be:
 "
@@ -271,7 +271,7 @@ nno  <unique>  ]s  5zl
 
 " ] space             {{{2
 
-nno  <silent><unique>  =<space>  :<c-u>set opfunc=brackets#put_empty_lines_around<bar>exe 'norm! '.v:count1.'g@_'<cr>
+nno  <silent><unique>  =<space>  :<c-u>set opfunc=brackets#put_empty_lines_around<bar>exe 'norm! '.v:count1.'g@l'<cr>
 nno  <silent><unique>  [<space>  :<c-u>call brackets#put_empty_line_save_dir(0)<bar>set opfunc=brackets#put_empty_line<bar>exe 'norm! '.v:count1.'g@l'<cr>
 nno  <silent><unique>  ]<space>  :<c-u>call brackets#put_empty_line_save_dir(1)<bar>set opfunc=brackets#put_empty_line<bar>exe 'norm! '.v:count1.'g@l'<cr>
 
