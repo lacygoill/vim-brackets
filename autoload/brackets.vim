@@ -62,7 +62,7 @@ fu! brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, 
         "                                      │ └── relative to current working directory
         "                                      └── full path
         else
-            let l:lnum = split(line)[1]
+            let lnum = split(line)[1]
 
             " remove noise from the text output:
             "
@@ -75,7 +75,7 @@ fu! brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, 
             let col  = match(text, a:search_cur_word ? '\C\<'.expand('<cword>').'\>' : pat) + 1
             call add(ll_entries,
             \                    { 'filename' : filename,
-            \                      'lnum'     : l:lnum,
+            \                      'lnum'     : lnum,
             \                      'col'      : col,
             \                      'text'     : text, })
         endif
