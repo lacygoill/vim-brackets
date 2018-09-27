@@ -7,7 +7,7 @@ fu! brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, 
     " word under the cursor
     if a:search_cur_word
         let output = execute('norm! '.(a:start_at_cursor ? ']' : '[').normcmd, 'silent!')
-        let title       = (a:start_at_cursor ? ']' : '[').normcmd
+        let title  = (a:start_at_cursor ? ']' : '[').normcmd
 
     else
         " otherwise if the function was called with a fifth optional argument,
@@ -15,20 +15,28 @@ fu! brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, 
         if a:0 > 0
             let pat = a:1
         else
-        " otherwise the function must have been called from visual mode
-        " (visual mapping): use the visual selection as the pattern
-            call lg#reg#save(['"', '+'])
-
-            norm! gvy
-            let pat = substitute('\V'.escape(getreg('"'), '\/'), '\\n', '\\n', 'g')
-            "                     │                               │
-            "                     │                               └ make sure newlines are not
-            "                     │                                 converted into NULs
-            "                     │                                 on the search command line
-            "                     │
-            "                     └ make sure the contents of the pattern is interpreted literally
-
-            call lg#reg#restore(['"', '+'])
+            " otherwise the function must have been called from visual mode
+            " (visual mapping): use the visual selection as the pattern
+            let cb_save  = &cb
+            let sel_save = &sel
+            let reg_save = ['"', getreg('"'), getregtype('"')]
+            try
+                set cb-=unnamed cb-=unnamedplus
+                set sel=inclusive
+                norm! gvy
+                let pat = substitute('\V'.escape(getreg('"'), '\/'), '\\n', '\\n', 'g')
+                "                     │                               │{{{
+                "                     │                               └ make sure newlines are not
+                "                     │                                 converted into NULs
+                "                     │                                 on the search command line
+                "                     │
+                "                     └ make sure the contents of the pattern is interpreted literally
+                "}}}
+            finally
+                let &cb  = cb_save
+                let &sel = sel_save
+                call call('setreg', reg_save)
+            endtry
         endif
 
         let output = execute((a:start_at_cursor ? '+,$' : '').excmd.' /'.pat, 'silent!')
@@ -58,9 +66,10 @@ fu! brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, 
         " to generate valid entries in the ll.
         if line !~ '^\s*\d\+:'
             let filename = fnamemodify(line, ':p:.')
-        "                                      │ │
-        "                                      │ └── relative to current working directory
-        "                                      └── full path
+        "                                      │ │{{{
+        "                                      │ └ relative to current working directory
+        "                                      └ full path
+        "}}}
         else
             let lnum = split(line)[1]
 
@@ -74,10 +83,11 @@ fu! brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, 
 
             let col  = match(text, a:search_cur_word ? '\C\<'.expand('<cword>').'\>' : pat) + 1
             call add(ll_entries,
-            \                    { 'filename' : filename,
-            \                      'lnum'     : lnum,
-            \                      'col'      : col,
-            \                      'text'     : text, })
+            \ { 'filename' : filename,
+            \   'lnum'     : lnum,
+            \   'col'      : col,
+            \   'text'     : text,
+            \ })
         endif
     endfor
 

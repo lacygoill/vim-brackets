@@ -6,19 +6,19 @@ let g:loaded_brackets = 1
 " Commands {{{1
 " Ilist {{{2
 
-"                                                ┌─ command
+"                                                ┌ command{{{
 "                                                │
-"                                                │   ┌─ pattern is NOT word under cursor
+"                                                │   ┌ pattern is NOT word under cursor
 "                                                │   │
-"                                                │   │  ┌─ do NOT start searching after current line
+"                                                │   │  ┌ do NOT start searching after current line
 "                                                │   │  │  start from beginning of file
 "                                                │   │  │
-"                                                │   │  │   ┌─ search in comments only if a bang is added
+"                                                │   │  │   ┌ search in comments only if a bang is added
 "                                                │   │  │   │
-"                                                │   │  │   │        ┌─ pattern
-"                                                │   │  │   │        │
-com! -bang -nargs=1 Ilist call brackets#di_list('i', 0, 0, <bang>0, <f-args>)
-com! -bang -nargs=1 Dlist call brackets#di_list('d', 0, 0, <bang>0, <f-args>)
+"                                                │   │  │   │        ┌ pattern
+"                                                │   │  │   │        │}}}
+com! -bang -nargs=1 Ilist call brackets#di_list('i', 0, 0, <bang>0, <q-args>)
+com! -bang -nargs=1 Dlist call brackets#di_list('d', 0, 0, <bang>0, <q-args>)
 
 " Mappings {{{1
 " ]ablqt        move in lists {{{2
