@@ -111,18 +111,8 @@ fu! brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, 
     call qf#create_matches()
 endfu
 
-fu! s:getchar() "{{{1
-    let c = getchar()
-    if c =~ '^\d\+$'
-        let c = nr2char(c,1)
-    endif
-    return c =~ "\e\|\<c-c>"
-       \ ?     ''
-       \ :     c
-endfu
-
 fu! brackets#mv_line(type) abort "{{{1
-    let cnt   = v:count1
+    let cnt = v:count1
 
     let where = s:mv_line_dir is# 'up'
             \ ?     '-1-'
