@@ -432,9 +432,13 @@ fu! brackets#put_empty_line(type) abort "{{{1
         let lines = repeat([''], cnt)
         let lnum  = line('.') + (s:put_empty_line_below ? 0 : -1)
 
+        " if we're in a closed fold, we don't want to simply add an empty line,
+        " we want to create a visual separation between folds
         let fold_begin = foldclosed('.')
         let fold_end = foldclosedend('.')
         if fold_begin !=# -1 && &ft is# 'markdown'
+            " for  a  markdown  buffer,  where  we  use  a  foldexpr,  a  visual
+            " separation means an empty fold
             let prefix = matchstr(getline(fold_begin), '^#\+')
             if prefix =~# '#'
                 if prefix is# '#'
@@ -449,12 +453,21 @@ fu! brackets#put_empty_line(type) abort "{{{1
                 \ : fold_begin - 1
 
         elseif fold_begin !=# -1
+            " for other buffers, where we use markers, a visual separation means ...
             let cml = matchstr(get(split(&l:cms, '%s'), 0, ''), '\S*')
-            let fold_level = foldlevel(fold_begin)
-            let lines = [cml . '}'.'}}' . fold_level]
             let lnum = s:put_empty_line_below
                 \ ? fold_end - 1
                 \ : fold_begin - 2
+            let line = getline(lnum + 1)
+            if line =~# '^\s*\V'.escape(cml, '\').'\m\s*\%({'.'{{\|}'.'}}\)\s*\d\+\s*$'
+                " ... adding an empty line, if the next/previous fold is already closed
+                let lines = ['']
+                let lnum += 1
+            else
+                " ... closing the next/previous fold by adding a marker like `} }}3`.
+                let fold_level = foldlevel(fold_begin)
+                let lines = [cml . '}'.'}}' . fold_level]
+            endif
         endif
 
         call append(lnum, lines)
