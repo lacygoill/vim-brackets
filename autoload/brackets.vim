@@ -422,9 +422,9 @@ endfu
 fu! brackets#put_empty_line(type) abort "{{{1
     let cnt = v:count1
 
-    let diagram_around = 1
+    let is_diagram_around = 1
     if getline(line('.')+(s:put_empty_line_below ? 1 : -1)) !~# '[│┌┐└┘├┤]'
-        let diagram_around = 0
+        let is_diagram_around = 0
     endif
 
     " could fail if the buffer is unmodifiable
@@ -433,8 +433,8 @@ fu! brackets#put_empty_line(type) abort "{{{1
         let lnum  = line('.') + (s:put_empty_line_below ? 0 : -1)
 
         if &ft is# 'markdown'
-            let fold_begin = foldclosed(line('.'))
-            let fold_end = foldclosedend(line('.'))
+            let fold_begin = foldclosed('.')
+            let fold_end = foldclosedend('.')
             if fold_begin !=# -1
                 let prefix = matchstr(getline(fold_begin), '^#\+')
                 if prefix =~# '#'
@@ -460,8 +460,7 @@ fu! brackets#put_empty_line(type) abort "{{{1
     " But if we were inside a diagram, there's a risk that now the latter
     " is filled with “holes“. We need to complete the diagram when needed.
 
-    if getline('.') =~# '[│┌┐└┘├┤]' && diagram_around
-
+    if getline('.') =~# '[│┌┐└┘├┤]' && is_diagram_around
         " If we're in a commented diagram, the lines we've just put are not commented.
         " They should be. So, we undo, then use  the `o` or `O` command, so that
         " Vim adds the comment leader for each line.
@@ -481,18 +480,18 @@ fu! brackets#put_empty_line(type) abort "{{{1
         " positive.  We want  to expand a diagram only when  we're really inside
         " one.
         "}}}
-        let l:Diagram_around = { dir, vcol ->
-        \                        matchstr(getline(line('.')+dir*(cnt+1)), '\%'.vcol.'v.''\@!') =~# '[│┌┐└┘├┤├┤]' }
-        "                                                                              └───┤
-        "                             if a diagram character is followed by a single quote ┘
-        "                             it's probably used  in some code (like  in this code
-        "                             for example) ignore it
+        let l:Is_diagram_around = { dir, vcol ->
+            \ matchstr(getline(line('.')+dir*(cnt+1)), '\%'.vcol.'v.''\@!') =~# '[│┌┐└┘├┤├┤]' }
+        "                                                           └───┤
+        "          if a diagram character is followed by a single quote ┘
+        "          it's probably used  in some code (like  in this code
+        "          for example) ignore it
         let vcol = 1
         let vcols = []
         for char in split(getline('.'), '\zs')
-            if   char is# '│' && l:Diagram_around(s:put_empty_line_below ? 1 : -1, vcol)
-            \ || index(['┌', '┐', '├', '┤'], char) >= 0 && s:put_empty_line_below  && l:Diagram_around(1, vcol)
-            \ || index(['└', '┘', '├', '┤'], char) >= 0 && !s:put_empty_line_below && l:Diagram_around(-1, vcol)
+            if   char is# '│' && l:Is_diagram_around(s:put_empty_line_below ? 1 : -1, vcol)
+            \ || index(['┌', '┐', '├', '┤'], char) >= 0 && s:put_empty_line_below  && l:Is_diagram_around(1, vcol)
+            \ || index(['└', '┘', '├', '┤'], char) >= 0 && !s:put_empty_line_below && l:Is_diagram_around(-1, vcol)
                 let vcols += [vcol]
             endif
             let vcol += 1
