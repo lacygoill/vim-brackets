@@ -451,10 +451,10 @@ fu! brackets#put_empty_line(type) abort "{{{1
         elseif fold_begin !=# -1
             let cml = matchstr(get(split(&l:cms, '%s'), 0, ''), '\S*')
             let fold_level = foldlevel(fold_begin)
-            let lines = [cml . '}'.'}}' . fold_level, '']
+            let lines = [cml . '}'.'}}' . fold_level]
             let lnum = s:put_empty_line_below
-                \ ? fold_end
-                \ : fold_begin - 1
+                \ ? fold_end - 1
+                \ : fold_begin - 2
         endif
 
         call append(lnum, lines)
