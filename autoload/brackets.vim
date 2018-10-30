@@ -432,23 +432,30 @@ fu! brackets#put_empty_line(type) abort "{{{1
         let lines = repeat([''], cnt)
         let lnum  = line('.') + (s:put_empty_line_below ? 0 : -1)
 
-        if &ft is# 'markdown'
-            let fold_begin = foldclosed('.')
-            let fold_end = foldclosedend('.')
-            if fold_begin !=# -1
-                let prefix = matchstr(getline(fold_begin), '^#\+')
-                if prefix =~# '#'
-                    if prefix is# '#'
-                        let prefix = '##'
-                    endif
-                    let lines = repeat([prefix], cnt)
-                elseif matchstr(getline(fold_begin+1), '^===\|^---') isnot# ''
-                    let lines = repeat(['---', '---'], cnt)
+        let fold_begin = foldclosed('.')
+        let fold_end = foldclosedend('.')
+        if fold_begin !=# -1 && &ft is# 'markdown'
+            let prefix = matchstr(getline(fold_begin), '^#\+')
+            if prefix =~# '#'
+                if prefix is# '#'
+                    let prefix = '##'
                 endif
-                let lnum = s:put_empty_line_below
-                \ ?            fold_end
-                \ :            fold_begin - 1
+                let lines = repeat([prefix], cnt)
+            elseif matchstr(getline(fold_begin+1), '^===\|^---') isnot# ''
+                let lines = repeat(['---', '---'], cnt)
             endif
+            let lnum = s:put_empty_line_below
+                \ ? fold_end
+                \ : fold_begin - 1
+
+        elseif fold_begin !=# -1
+            let cml = matchstr(get(split(&l:cms, '%s'), 0, ''), '\S*')
+            let fold_level = foldlevel(fold_begin)
+            let fold_marker = s:put_empty_line_below ? '{'.'{{' : '}'.'}}'
+            let lines = [cml . fold_marker . fold_level] + (s:put_empty_line_below ? [] : [''])
+            let lnum = s:put_empty_line_below
+                \ ? fold_end
+                \ : fold_begin - 1
         endif
 
         call append(lnum, lines)
