@@ -28,7 +28,7 @@ fu! brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, 
                 "                     │                               │{{{
                 "                     │                               └ make sure newlines are not
                 "                     │                                 converted into NULs
-                "                     │                                 on the search command line
+                "                     │                                 on the search command-line
                 "                     │
                 "                     └ make sure the contents of the pattern is interpreted literally
                 "}}}
