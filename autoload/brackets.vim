@@ -451,23 +451,6 @@ fu! brackets#put_empty_line(type) abort "{{{1
             let lnum = s:put_empty_line_below
                 \ ? fold_end
                 \ : fold_begin - 1
-
-        elseif fold_begin !=# -1
-            " for other buffers, where we use markers, a visual separation means ...
-            let cml = matchstr(get(split(&l:cms, '%s'), 0, ''), '\S*')
-            let lnum = s:put_empty_line_below
-                \ ? fold_end - 1
-                \ : fold_begin - 2
-            let line = getline(lnum + 1)
-            if line =~# '^\s*\V'.escape(cml, '\').'\m\s*\%({'.'{{\|}'.'}}\)\s*\d\+\s*$'
-                " ... adding an empty line, if the next/previous fold is already closed
-                let lines = ['']
-                let lnum += 1
-            else
-                " ... closing the next/previous fold by adding a marker like `} }}3`.
-                let fold_level = foldlevel(fold_begin)
-                let lines = [cml . '}'.'}}' . fold_level]
-            endif
         endif
 
         call append(lnum, lines)
