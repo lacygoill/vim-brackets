@@ -149,10 +149,7 @@ fu! brackets#mv_line(type) abort "{{{1
     "         zv
     "         j
     "         :m + | norm! ==
-    "
-    "             → 5 lines indented
-    "               │
-    "               └─ ✘ it should be just one
+    "         5 lines indented ✘ it should be just one~
     "
     " Maybe we could use `norm! zv` to open the folds, but it would be tedious
     " and error-prone in the future. Every time we would add a new command, we
