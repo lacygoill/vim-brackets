@@ -397,10 +397,20 @@ fu! brackets#put(type) abort "{{{1
         endif
         let reg_save = [reg_to_use] + reg_save
 
+        " if we've just sourced some line of code in a markdown file,
+        " with `+s{text-object}`, the register `o` contains its output;
+        " we want it to highlighted as a code output, so we append `~`
+        " at the end of every line
+        if reg_to_use is# 'o'
+            \ && &ft is# 'markdown'
+            \ && synIDattr(synID(line('.'), col('.'), 0), 'name') is# 'markdownCodeBlock'
+            let @o = join(map(split(@o, '\n'), {i,v -> v.'~'}), "\n")
+        endif
+
         " force the type of the register to be linewise
         call setreg(reg_to_use, getreg(reg_to_use), 'l')
 
-        " put the register (s:put_where can be ]p or [p)
+        " put the register (`s:put_where` can be `]p` or `[p`)
         exe 'norm! "'.reg_to_use . cnt . s:put_where . s:put_how_to_indent
     catch
         return lg#catch_error()
@@ -410,7 +420,7 @@ fu! brackets#put(type) abort "{{{1
     endtry
 endfu
 
-fu! brackets#put_save_param(where, how_to_indent) abort
+fu! brackets#put_save_param(where, how_to_indent) abort "{{{1
     let s:put_where = a:where
     let s:put_how_to_indent = a:how_to_indent
     let s:put_register = v:register
