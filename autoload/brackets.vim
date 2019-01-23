@@ -257,8 +257,8 @@ fu! brackets#next_file_to_edit(cnt) abort "{{{1
     " The main code of this function is a double nested loop.
     " We use both to move in the tree:
     "
-    "         • the outer loop    to climb up    the tree
-    "         • the inner loop    to go down     the tree
+    "         - the outer loop    to climb up    the tree
+    "         - the inner loop    to go down     the tree
     "
     " We also use the outer loop to determine when to stop:
     " once `cnt` reaches 0.

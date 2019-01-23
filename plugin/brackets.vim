@@ -116,18 +116,18 @@ fu! s:mil_build_mapping(key, pfx) abort "{{{4
     " If a:pfx = 'c' then we also define the mappings `[ C-q` and `] C-q`
     " which execute the commands `:cpfile` and `:cnfile`:
     "
-    "         • :cpfile     = go to last error in the previous file in qfl.
-    "         • :cnfile     = go to first error in the next file in qfl.
+    "         - :cpfile     = go to last error in the previous file in qfl.
+    "         - :cnfile     = go to first error in the next file in qfl.
     "
     " We do the same thing if a:pfx = 'l' :
     "
-    "        • [ C-l mapped to :lpfile
-    "        • ] C-l mapped to :lnfile
+    "        - [ C-l mapped to :lpfile
+    "        - ] C-l mapped to :lnfile
     "
     " We also do the same thing to move in the qf stack:
     "
-    "        • <q >q    (qfl)
-    "        • <l >l    (loclist)
+    "        - <q >q    (qfl)
+    "        - <l >l    (loclist)
 
     if a:pfx =~# '[cl]'
         if a:pfx is# 'c'
@@ -225,9 +225,9 @@ nno  <silent><unique>  ]p  :<c-u>call brackets#put_save_param(']p', '')<bar>set 
 " treating its contents as linewise (even if characterwise) AND perform another
 " action:
 "
-"         • >p >P    add a level of indentation
-"         • <p <P    remove a level of indentation
-"         • =p =P    auto-indentation (respecting our indentation-relative options)
+"         - >p >P    add a level of indentation
+"         - <p <P    remove a level of indentation
+"         - =p =P    auto-indentation (respecting our indentation-relative options)
 nno  <silent><unique>  >P  :<c-u>call brackets#put_save_param('[p', ">']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
 nno  <silent><unique>  >p  :<c-u>call brackets#put_save_param(']p', ">']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
 nno  <silent><unique>  <P  :<c-u>call brackets#put_save_param('[p', "<']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
