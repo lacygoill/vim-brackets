@@ -225,9 +225,9 @@ nno  <silent><unique>  ]p  :<c-u>call brackets#put_save_param(']p', '')<bar>set 
 " treating its contents as linewise (even if characterwise) AND perform another
 " action:
 "
-"         - >p >P    add a level of indentation
-"         - <p <P    remove a level of indentation
-"         - =p =P    auto-indentation (respecting our indentation-relative options)
+"    - >p >P    add a level of indentation
+"    - <p <P    remove a level of indentation
+"    - =p =P    auto-indentation (respecting our indentation-relative options)
 nno  <silent><unique>  >P  :<c-u>call brackets#put_save_param('[p', ">']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
 nno  <silent><unique>  >p  :<c-u>call brackets#put_save_param(']p', ">']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
 nno  <silent><unique>  <P  :<c-u>call brackets#put_save_param('[p', "<']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
@@ -237,12 +237,12 @@ nno  <silent><unique>  =p  :<c-u>call brackets#put_save_param(']p', "=']")<bar>s
 
 " A simpler version of the same mappings would be:
 "
-"         nno >P [p>']
-"         nno >p ]p>']
-"         nno <P [p<']
-"         nno <p ]p<']
-"         nno =P [p=']
-"         nno =p ]p=']
+"     nno >P [p>']
+"     nno >p ]p>']
+"     nno <P [p<']
+"     nno <p ]p<']
+"     nno =P [p=']
+"     nno =p ]p=']
 "
 " But with these ones, we would lose the linewise conversion.
 
