@@ -257,8 +257,8 @@ fu! brackets#next_file_to_edit(cnt) abort "{{{1
     " The main code of this function is a double nested loop.
     " We use both to move in the tree:
     "
-    "         - the outer loop    to climb up    the tree
-    "         - the inner loop    to go down     the tree
+    "    - the outer loop    to climb up    the tree
+    "    - the inner loop    to go down     the tree
     "
     " We also use the outer loop to determine when to stop:
     " once `cnt` reaches 0.
@@ -397,14 +397,14 @@ fu! brackets#put(type) abort "{{{1
         endif
         let reg_save = [reg_to_use] + reg_save
 
-        " if we've just sourced some line of code in a markdown file,
-        " with `+s{text-object}`, the register `o` contains its output;
-        " we want it to highlighted as a code output, so we append `~`
-        " at the end of every line
+        " If  we've just  sourced some  line of  code in  a markdown  file, with
+        " `+s{text-object}`, the register `o` contains its output.
+        " We want it to be highlighted as a code output, so we append `~` at the
+        " end of every non-empty line.
         if reg_to_use is# 'o'
             \ && &ft is# 'markdown'
             \ && synIDattr(synID(line('.'), col('.'), 0), 'name') =~# '^markdown.*CodeBlock$'
-            let @o = join(map(split(@o, '\n'), {i,v -> v.'~'}), "\n")
+            let @o = join(map(split(@o, '\n'), {i,v -> v !~ '^$' ? v.'~' : v}), "\n")
         endif
 
         " force the type of the register to be linewise
