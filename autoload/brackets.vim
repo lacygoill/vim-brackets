@@ -521,10 +521,12 @@ fu! brackets#put_empty_line_save_dir(below) abort "{{{1
 endfu
 
 fu! brackets#put_empty_lines_around(type) abort "{{{1
+    " above
     call brackets#put_empty_line_save_dir(0)
-    call brackets#put_empty_line('line')
+    call brackets#put_empty_line('')
 
+    " below
     call brackets#put_empty_line_save_dir(1)
-    call brackets#put_empty_line('line')
+    call brackets#put_empty_line('')
 endfu
 
