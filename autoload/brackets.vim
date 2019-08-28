@@ -426,7 +426,7 @@ fu! brackets#put_save_param(where, how_to_indent) abort "{{{1
     let s:put_register = v:register
 endfu
 
-fu! brackets#put_empty_line(type) abort "{{{1
+fu! brackets#put_empty_line(_) abort "{{{1
     let cnt = v:count1
 
     let is_diagram_around = 1
@@ -520,7 +520,7 @@ fu! brackets#put_empty_line_save_dir(below) abort "{{{1
     let s:put_empty_line_below = a:below
 endfu
 
-fu! brackets#put_empty_lines_around(type) abort "{{{1
+fu! brackets#put_empty_lines_around(_) abort "{{{1
     " above
     call brackets#put_empty_line_save_dir(0)
     call brackets#put_empty_line('')
