@@ -273,12 +273,12 @@ fu! brackets#next_file_to_edit(cnt) abort "{{{1
         if a:cnt > 0
             " remove the entries whose names come BEFORE the one of the current
             " entry, and sort the resulting list
-            call sort(filter(entries,{ i,v -> v ># here }))
+            call sort(filter(entries,{_,v -> v ># here}))
         else
             " remove the entries whose names come AFTER the one of the current
             " entry, sort the resulting list, and reverse the order
             " (so that the previous entry comes first instead of last)
-            call reverse(sort(filter(entries, { i,v -> v <# here })))
+            call reverse(sort(filter(entries, {_,v -> v <# here})))
         endif
         let next_entry = get(entries, 0, '')
 
@@ -356,7 +356,7 @@ fu! s:what_is_around(dir) abort
     "         /tmp/..
     "
     " We need to get rid of them.
-    call filter(entries, { i,v -> v !~# '/\.\.\?$' })
+    call filter(entries, {_,v -> v !~# '/\.\.\?$'})
 
     return entries
 endfu
@@ -404,7 +404,7 @@ fu! brackets#put(type) abort "{{{1
         if reg_to_use is# 'o'
             \ && &ft is# 'markdown'
             \ && synIDattr(synID(line('.'), col('.'), 0), 'name') =~# '^markdown.*CodeBlock$'
-            let @o = join(map(split(@o, '\n'), {i,v -> v !~ '^$' ? v.'~' : v}), "\n")
+            let @o = join(map(split(@o, '\n'), {_,v -> v !~ '^$' ? v.'~' : v}), "\n")
         endif
 
         " force the type of the register to be linewise
@@ -507,7 +507,7 @@ fu! brackets#put_empty_line(_) abort "{{{1
         endfor
 
         let line = getline(line('.')+(s:put_empty_line_below ? 1 : -1)).repeat(' ', &columns)
-        let pat = join(map(vcols, {i,v -> '\%'.v.'v.'}), '\|')
+        let pat = join(map(vcols, {_,v -> '\%'.v.'v.'}), '\|')
         let line = substitute(substitute(line, pat, '│', 'g'), '\s*$', '', '')
 
         let text = repeat([line], cnt)
