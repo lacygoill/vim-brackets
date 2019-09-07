@@ -128,8 +128,8 @@ fu! brackets#mv_line(type) abort "{{{1
     " Why do we disable folding?{{{
     " We're going to do 2 things:
     "
-    "         1. move a / several line(s)
-    "         2. update its / their indentation
+    "    1. move a / several line(s)
+    "    2. update its / their indentation
     "
     " If we're inside a fold, the `:move` command will close it.
     " Why?
