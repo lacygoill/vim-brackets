@@ -160,8 +160,8 @@ fu! brackets#mv_line(type) abort "{{{1
     " Because of a quirk of Vim's implementation, always temporarily disable
     " 'fen' before moving lines which could be in a fold.
 "}}}
-    let fen_save = &l:fen
-    let &l:fen   = 0
+    let [fen_save, winid, bufnr] = [&l:fen, win_getid(), bufnr('%')]
+    let &l:fen = 0
 
     try
         " Why do we mark the line since we already saved the view?{{{
@@ -188,9 +188,12 @@ fu! brackets#mv_line(type) abort "{{{1
     catch
         return lg#catch_error()
     finally
-        " Restoration and cleaning
-        let &l:fen = fen_save
-        " restore the view AFTER re-enabling folding,
+        " restoration and cleaning
+        if winbufnr(winid) == bufnr
+            let [tabnr, winnr] = win_id2tabwin(winid)
+            call settabwinvar(tabnr, winnr, '&fen', fen_save)
+        endif
+        " restore the view *after* re-enabling folding,
         " because the latter may alter the view
         call winrestview(view)
         norm! `z

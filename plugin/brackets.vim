@@ -116,18 +116,18 @@ fu! s:mil_build_mapping(key, pfx) abort "{{{4
     " If a:pfx = 'c' then we also define the mappings `[ C-q` and `] C-q`
     " which execute the commands `:cpfile` and `:cnfile`:
     "
-    "         - :cpfile     = go to last error in the previous file in qfl.
-    "         - :cnfile     = go to first error in the next file in qfl.
+    "    - `:cpfile` = go to last error in the previous file in qfl.
+    "    - `:cnfile` = go to first error in the next file in qfl.
     "
     " We do the same thing if a:pfx = 'l' :
     "
-    "        - [ C-l mapped to :lpfile
-    "        - ] C-l mapped to :lnfile
+    "    - [ C-l mapped to `:lpfile`
+    "    - ] C-l mapped to `:lnfile`
     "
     " We also do the same thing to move in the qf stack:
     "
-    "        - <q >q    (qfl)
-    "        - <l >l    (loclist)
+    "   - <q >q    (qfl)
+    "   - <l >l    (loclist)
 
     if a:pfx =~# '[cl]'
         if a:pfx is# 'c'
@@ -153,6 +153,7 @@ fu! s:mil_build_mapping(key, pfx) abort "{{{4
         \ . '  :<c-u>call <sid>mil('.substitute(string(nfile_key), '<', '<lt>', '').')<cr>'
     endif
 endfu
+"}}}4
 
 " Installation {{{3
 "
@@ -168,6 +169,7 @@ call s:mil_build_mapping('b','b')
 call s:mil_build_mapping('l','l')
 call s:mil_build_mapping('q','c')
 call s:mil_build_mapping('t','t')
+"}}}3
 
 " ]e            move line {{{2
 
@@ -181,23 +183,23 @@ nno  <silent><unique>  [f  :<c-u>e <c-r>=fnameescape(brackets#next_file_to_edit(
 
 " ]I            [di]list {{{2
 
-"                                                              ┌─ don't start to search at cursor,
-"                                                              │  but at beginning of file
+"                                                              ┌ don't start to search at cursor,
+"                                                              │ but at beginning of file
 "                                                              │
-"                                                              │  ┌─ don't pass a bang to the commands
-"                                                              │  │  normal commands don't accept one anyway
+"                                                              │  ┌ don't pass a bang to the commands
+"                                                              │  │ normal commands don't accept one anyway
 nno  <silent><unique>  [I  :<c-u>call brackets#di_list('i', 1, 0, 0)<cr>
 "                                                       │   │
-"                                                       │   └─ search current word
-"                                                       └─ command to execute (ilist or dlist)
+"                                                       │   └ search current word
+"                                                       └ command to execute (ilist or dlist)
 
 xno  <silent><unique>  [I  :<c-u>call brackets#di_list('i', 0, 0, 1)<cr>
 "                                                           │
-"                                                           └─ don't search current word, but visual selection
+"                                                           └ don't search current word, but visual selection
 
 nno  <silent><unique>  ]I  :<c-u>call brackets#di_list('i', 1, 1, 0)<cr>
 "                                                              │
-"                                                              └─ start to search after the line where the cursor is
+"                                                              └ start to search after the line where the cursor is
 
 xno  <silent><unique>  ]I  :<c-u>call brackets#di_list('i', 0, 1, 1)<cr>
 
