@@ -97,7 +97,7 @@ fu! s:mil(lhs) abort "{{{4
 
     " If an entry in the quickfix / location list is located inside folds, we
     " want them to be opened to see it directly.
-    if a:lhs =~? '\v[lq]$|c-[lq]' && foldclosed('.') !=# -1
+    if a:lhs =~? '\v[lq]$|c-[lq]' && foldclosed('.') != -1
         norm! zv
     endif
 endfu

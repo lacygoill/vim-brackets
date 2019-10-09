@@ -118,7 +118,7 @@ fu! brackets#mv_line(type) abort "{{{1
             \ ?     '-1-'
             \ :     '+'
 
-    let where .= cnt
+    let where ..= cnt
 
     " I'm not sure, but disabling the folds may alter the view, so save it first
     let view = winsaveview()
@@ -446,7 +446,7 @@ fu! brackets#put_empty_line(_) abort "{{{1
         " we want to create a visual separation between folds
         let fold_begin = foldclosed('.')
         let fold_end = foldclosedend('.')
-        if fold_begin !=# -1 && &ft is# 'markdown'
+        if fold_begin != -1 && &ft is# 'markdown'
             " for  a  markdown  buffer,  where  we  use  a  foldexpr,  a  visual
             " separation means an empty fold
             let prefix = matchstr(getline(fold_begin), '^#\+')
