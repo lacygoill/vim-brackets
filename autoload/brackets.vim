@@ -346,7 +346,7 @@ endfu
 fu s:what_is_around(dir) abort
     " If `dir` is the root of the tree, we need to get rid of the
     " slash, because we're going to add a slash when calling `glob('/*')`.
-    let dir = substitute(a:dir, '/$', '', '')
+    let dir = trim(a:dir, '/')
     let entries  = glob(dir.'/.*', 0, 1)
     let entries += glob(dir.'/*', 0, 1)
 
