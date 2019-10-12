@@ -17,14 +17,14 @@ let g:loaded_brackets = 1
 "                                                │   │  │   │
 "                                                │   │  │   │        ┌ pattern
 "                                                │   │  │   │        │}}}
-com! -bang -nargs=1 Ilist call brackets#di_list('i', 0, 0, <bang>0, <q-args>)
-com! -bang -nargs=1 Dlist call brackets#di_list('d', 0, 0, <bang>0, <q-args>)
+com -bang -nargs=1 Ilist call brackets#di_list('i', 0, 0, <bang>0, <q-args>)
+com -bang -nargs=1 Dlist call brackets#di_list('d', 0, 0, <bang>0, <q-args>)
 
 " Mappings {{{1
 " ]ablqt        move in lists {{{2
-" Data {{{3
+" Init {{{3
 
-let s:MIL_CMD = {
+const s:MIL_CMD = {
               \   '<q': ['colder', ''],
               \   '>q': ['cnewer', ''],
               \   '<l': ['lolder', ''],
@@ -59,7 +59,7 @@ let s:MIL_CMD = {
               \ }
 
 " Functions {{{3
-fu! s:mil(lhs) abort "{{{4
+fu s:mil(lhs) abort "{{{4
     let cnt = (v:count ? v:count : '')
 
     let cmd1 = s:MIL_CMD[a:lhs][0]
@@ -102,7 +102,7 @@ fu! s:mil(lhs) abort "{{{4
     endif
 endfu
 
-fu! s:mil_build_mapping(key, pfx) abort "{{{4
+fu s:mil_build_mapping(key, pfx) abort "{{{4
     let prev = '['.a:key
     let next = ']'.a:key
     exe 'nno  <silent><unique>  '.prev .'  :<c-u>call <sid>mil('.string(prev).')<cr>'
@@ -153,8 +153,7 @@ fu! s:mil_build_mapping(key, pfx) abort "{{{4
         \ . '  :<c-u>call <sid>mil('.substitute(string(nfile_key), '<', '<lt>', '').')<cr>'
     endif
 endfu
-"}}}4
-
+"}}}3
 " Installation {{{3
 "
 " Install a bunch of mappings to move in the:

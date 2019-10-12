@@ -1,4 +1,4 @@
-fu! brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, ...) abort "{{{1
+fu brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, ...) abort "{{{1
     " Derive the commands used below from the first argument.
     let excmd   = a:cmd.'list'.(a:search_in_comments ? '!' : '')
     let normcmd = toupper(a:cmd)
@@ -111,7 +111,7 @@ fu! brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, 
     call qf#create_matches()
 endfu
 
-fu! brackets#mv_line(type) abort "{{{1
+fu brackets#mv_line(type) abort "{{{1
     let cnt = v:count1
 
     let where = s:mv_line_dir is# 'up'
@@ -203,7 +203,7 @@ fu! brackets#mv_line(type) abort "{{{1
         " moved.
         " MWE:
         "         nno cd :call Func()<cr>
-        "         fu! Func() abort
+        "         fu Func() abort
         "             let z_save = getpos("'z")
         "             norm! mz
         "             m -1-
@@ -224,7 +224,7 @@ fu! brackets#mv_line(type) abort "{{{1
         " before `:m`:
         "
         "         nno cd :call Func()<cr>
-        "         fu! Func() abort
+        "         fu Func() abort
         "             let z_save = getpos("'z")
         "             " isn't there a better way to break undo sequence?
         "             exe "norm! i\<c-g>u"
@@ -240,11 +240,11 @@ fu! brackets#mv_line(type) abort "{{{1
     endtry
 endfu
 
-fu! brackets#mv_line_save_dir(dir) abort
+fu brackets#mv_line_save_dir(dir) abort
     let s:mv_line_dir = a:dir
 endfu
 
-fu! brackets#next_file_to_edit(cnt) abort "{{{1
+fu brackets#next_file_to_edit(cnt) abort "{{{1
     let here = expand('%:p')
     let cnt  = a:cnt
 
@@ -343,7 +343,7 @@ fu! brackets#next_file_to_edit(cnt) abort "{{{1
     return here
 endfu
 
-fu! s:what_is_around(dir) abort
+fu s:what_is_around(dir) abort
     " If `dir` is the root of the tree, we need to get rid of the
     " slash, because we're going to add a slash when calling `glob('/*')`.
     let dir = substitute(a:dir, '/$', '', '')
@@ -364,7 +364,7 @@ fu! s:what_is_around(dir) abort
     return entries
 endfu
 
-fu! brackets#put(type) abort "{{{1
+fu brackets#put(type) abort "{{{1
     let cnt = v:count1
 
     if s:put_register =~# '[/:%#.]'
@@ -423,13 +423,13 @@ fu! brackets#put(type) abort "{{{1
     endtry
 endfu
 
-fu! brackets#put_save_param(where, how_to_indent) abort "{{{1
+fu brackets#put_save_param(where, how_to_indent) abort "{{{1
     let s:put_where = a:where
     let s:put_how_to_indent = a:how_to_indent
     let s:put_register = v:register
 endfu
 
-fu! brackets#put_empty_line(_) abort "{{{1
+fu brackets#put_empty_line(_) abort "{{{1
     let cnt = v:count1
 
     let is_diagram_around = 1
@@ -519,11 +519,11 @@ fu! brackets#put_empty_line(_) abort "{{{1
     endif
 endfu
 
-fu! brackets#put_empty_line_save_dir(below) abort "{{{1
+fu brackets#put_empty_line_save_dir(below) abort "{{{1
     let s:put_empty_line_below = a:below
 endfu
 
-fu! brackets#put_empty_lines_around(_) abort "{{{1
+fu brackets#put_empty_lines_around(_) abort "{{{1
     " above
     call brackets#put_empty_line_save_dir(0)
     call brackets#put_empty_line('')
