@@ -172,41 +172,41 @@ call s:mil_build_mapping('t','t')
 
 " ]e            move line {{{2
 
-nno  <silent><unique>  [e  :<c-u>call brackets#mv_line_save_dir('up')<bar>set opfunc=brackets#mv_line<bar>exe 'norm! '.v:count1.'g@l'<cr>
-nno  <silent><unique>  ]e  :<c-u>call brackets#mv_line_save_dir('down')<bar>set opfunc=brackets#mv_line<bar>exe 'norm! '.v:count1.'g@l'<cr>
+nno <silent><unique> [e :<c-u>call brackets#mv_line_save_dir('up')<bar>set opfunc=brackets#mv_line<bar>exe 'norm! '.v:count1.'g@l'<cr>
+nno <silent><unique> ]e :<c-u>call brackets#mv_line_save_dir('down')<bar>set opfunc=brackets#mv_line<bar>exe 'norm! '.v:count1.'g@l'<cr>
 
 " ]f            move in files {{{2
 
-nno  <silent><unique>  ]f  :<c-u>e <c-r>=fnameescape(brackets#next_file_to_edit(v:count1))<cr><cr>
-nno  <silent><unique>  [f  :<c-u>e <c-r>=fnameescape(brackets#next_file_to_edit(-v:count1))<cr><cr>
+nno <silent><unique> ]f :<c-u>e <c-r>=fnameescape(brackets#next_file_to_edit(v:count1))<cr><cr>
+nno <silent><unique> [f :<c-u>e <c-r>=fnameescape(brackets#next_file_to_edit(-v:count1))<cr><cr>
 
 " ]I            [di]list {{{2
 
-"                                                              ┌ don't start to search at cursor,
-"                                                              │ but at beginning of file
-"                                                              │
-"                                                              │  ┌ don't pass a bang to the commands
-"                                                              │  │ normal commands don't accept one anyway
-nno  <silent><unique>  [I  :<c-u>call brackets#di_list('i', 1, 0, 0)<cr>
-"                                                       │   │
-"                                                       │   └ search current word
-"                                                       └ command to execute (ilist or dlist)
-
-xno  <silent><unique>  [I  :<c-u>call brackets#di_list('i', 0, 0, 1)<cr>
+"                                                           ┌ don't start to search at cursor,
+"                                                           │ but at beginning of file
 "                                                           │
-"                                                           └ don't search current word, but visual selection
+"                                                           │  ┌ don't pass a bang to the commands
+"                                                           │  │ normal commands don't accept one anyway
+nno <silent><unique> [I :<c-u>call brackets#di_list('i', 1, 0, 0)<cr>
+"                                                    │   │
+"                                                    │   └ search current word
+"                                                    └ command to execute (ilist or dlist)
 
-nno  <silent><unique>  ]I  :<c-u>call brackets#di_list('i', 1, 1, 0)<cr>
-"                                                              │
-"                                                              └ start to search after the line where the cursor is
+xno <silent><unique> [I :<c-u>call brackets#di_list('i', 0, 0, 1)<cr>
+"                                                        │
+"                                                        └ don't search current word, but visual selection
 
-xno  <silent><unique>  ]I  :<c-u>call brackets#di_list('i', 0, 1, 1)<cr>
+nno <silent><unique> ]I :<c-u>call brackets#di_list('i', 1, 1, 0)<cr>
+"                                                           │
+"                                                           └ start to search after the line where the cursor is
 
-nno  <silent><unique>  [D  :<c-u>call brackets#di_list('d', 1, 0, 0)<cr>
-xno  <silent><unique>  [D  :<c-u>call brackets#di_list('d', 0, 0, 1)<cr>
+xno <silent><unique> ]I :<c-u>call brackets#di_list('i', 0, 1, 1)<cr>
 
-nno  <silent><unique>  ]D  :<c-u>call brackets#di_list('d', 1, 1, 0)<cr>
-xno  <silent><unique>  ]D  :<c-u>call brackets#di_list('d', 0, 1, 1)<cr>
+nno <silent><unique> [D :<c-u>call brackets#di_list('d', 1, 0, 0)<cr>
+xno <silent><unique> [D :<c-u>call brackets#di_list('d', 0, 0, 1)<cr>
+
+nno <silent><unique> ]D :<c-u>call brackets#di_list('d', 1, 1, 0)<cr>
+xno <silent><unique> ]D :<c-u>call brackets#di_list('d', 0, 1, 1)<cr>
 
 " ]p {{{2
 
@@ -215,12 +215,12 @@ xno  <silent><unique>  ]D  :<c-u>call brackets#di_list('d', 0, 1, 1)<cr>
 " We don't want that, we want the text to be put as linewise even if it was
 " selected with a characterwise motion.
 
-"                                                              ┌ how to put internally{{{
-"                                                              │
-"                                                              │     ┌ how to indent afterwards
-"                                                              │     │}}}
-nno  <silent><unique>  [p  :<c-u>call brackets#put_save_param('[p', '')<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
-nno  <silent><unique>  ]p  :<c-u>call brackets#put_save_param(']p', '')<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
+"                                                           ┌ how to put internally{{{
+"                                                           │
+"                                                           │    ┌ how to indent afterwards
+"                                                           │    │}}}
+nno <silent><unique> [p :<c-u>call brackets#put_save_param('[p', '')<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
+nno <silent><unique> ]p :<c-u>call brackets#put_save_param(']p', '')<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
 
 " The following mappings put the unnamed register after the current line,
 " treating its contents as linewise (even if characterwise) AND perform another
@@ -229,12 +229,12 @@ nno  <silent><unique>  ]p  :<c-u>call brackets#put_save_param(']p', '')<bar>set 
 "    - >p >P    add a level of indentation
 "    - <p <P    remove a level of indentation
 "    - =p =P    auto-indentation (respecting our indentation-relative options)
-nno  <silent><unique>  >P  :<c-u>call brackets#put_save_param('[p', ">']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
-nno  <silent><unique>  >p  :<c-u>call brackets#put_save_param(']p', ">']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
-nno  <silent><unique>  <P  :<c-u>call brackets#put_save_param('[p', "<']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
-nno  <silent><unique>  <p  :<c-u>call brackets#put_save_param(']p', "<']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
-nno  <silent><unique>  =P  :<c-u>call brackets#put_save_param('[p', "=']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
-nno  <silent><unique>  =p  :<c-u>call brackets#put_save_param(']p', "=']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
+nno <silent><unique> >P :<c-u>call brackets#put_save_param('[p', ">']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
+nno <silent><unique> >p :<c-u>call brackets#put_save_param(']p', ">']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
+nno <silent><unique> <P :<c-u>call brackets#put_save_param('[p', "<']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
+nno <silent><unique> <p :<c-u>call brackets#put_save_param(']p', "<']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
+nno <silent><unique> =P :<c-u>call brackets#put_save_param('[p', "=']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
+nno <silent><unique> =p :<c-u>call brackets#put_save_param(']p', "=']")<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
 
 " A simpler version of the same mappings would be:
 "
@@ -265,14 +265,14 @@ nno  <silent><unique>  =p  :<c-u>call brackets#put_save_param(']p', "=']")<bar>s
 " ignoring rare words and words for other regions (which is what we usually want).
 "}}}
 
-nno  <unique>  [s  5zh
-nno  <unique>  ]s  5zl
-"               │
-"               └ mnemonic: Scroll
+nno <unique> [s 5zh
+nno <unique> ]s 5zl
+"             │
+"             └ mnemonic: Scroll
 
 " ] space             {{{2
 
-nno  <silent><unique>  =<space>  :<c-u>set opfunc=brackets#put_empty_lines_around<bar>exe 'norm! '.v:count1.'g@l'<cr>
-nno  <silent><unique>  [<space>  :<c-u>call brackets#put_empty_line_save_dir(0)<bar>set opfunc=brackets#put_empty_line<bar>exe 'norm! '.v:count1.'g@l'<cr>
-nno  <silent><unique>  ]<space>  :<c-u>call brackets#put_empty_line_save_dir(1)<bar>set opfunc=brackets#put_empty_line<bar>exe 'norm! '.v:count1.'g@l'<cr>
+nno <silent><unique> =<space> :<c-u>set opfunc=brackets#put_empty_lines_around<bar>exe 'norm! '.v:count1.'g@l'<cr>
+nno <silent><unique> [<space> :<c-u>call brackets#put_empty_line_save_dir(0)<bar>set opfunc=brackets#put_empty_line<bar>exe 'norm! '.v:count1.'g@l'<cr>
+nno <silent><unique> ]<space> :<c-u>call brackets#put_empty_line_save_dir(1)<bar>set opfunc=brackets#put_empty_line<bar>exe 'norm! '.v:count1.'g@l'<cr>
 
