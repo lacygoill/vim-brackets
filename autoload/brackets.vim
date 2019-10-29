@@ -1,13 +1,13 @@
 fu brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, ...) abort "{{{1
     " Derive the commands used below from the first argument.
-    let excmd   = a:cmd.'list'.(a:search_in_comments ? '!' : '')
+    let excmd   = a:cmd..'list'..(a:search_in_comments ? '!' : '')
     let normcmd = toupper(a:cmd)
 
     " if we call the function from a normal mode mapping, the pattern is the
     " word under the cursor
     if a:search_cur_word
-        let output = execute('norm! '.(a:start_at_cursor ? ']' : '[').normcmd, 'silent!')
-        let title  = (a:start_at_cursor ? ']' : '[').normcmd
+        let output = execute('norm! '..(a:start_at_cursor ? ']' : '[')..normcmd, 'silent!')
+        let title  = (a:start_at_cursor ? ']' : '[')..normcmd
 
     else
         " otherwise if the function was called with a fifth optional argument,
@@ -24,11 +24,11 @@ fu brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, .
                 set cb-=unnamed cb-=unnamedplus
                 set sel=inclusive
                 norm! gvy
-                let pat = substitute('\V'.escape(getreg('"'), '\/'), '\\n', '\\n', 'g')
-                "                     │                               │{{{
-                "                     │                               └ make sure newlines are not
-                "                     │                                 converted into NULs
-                "                     │                                 on the search command-line
+                let pat = substitute('\V'..escape(getreg('"'), '\/'), '\\n', '\\n', 'g')
+                "                     │                                │{{{
+                "                     │                                └ make sure newlines are not
+                "                     │                                  converted into NULs
+                "                     │                                  on the search command-line
                 "                     │
                 "                     └ make sure the contents of the pattern is interpreted literally
                 "}}}
@@ -39,14 +39,14 @@ fu brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, .
             endtry
         endif
 
-        let output = execute((a:start_at_cursor ? '+,$' : '').excmd.' /'.pat, 'silent!')
-        let title  = excmd.' /'.pat
+        let output = execute((a:start_at_cursor ? '+,$' : '')..excmd..' /'..pat, 'silent!')
+        let title  = excmd..' /'..pat
     endif
 
     let lines = split(output, '\n')
     " Bail out on errors. (bail out = se désister)
     if get(lines, 0, '') =~ '^Error detected\|^$'
-        echom 'Could not find '.string(a:search_cur_word ? expand('<cword>') : pat)
+        echom 'Could not find '..string(a:search_cur_word ? expand('<cword>') : pat)
         return
     endif
 
@@ -81,7 +81,7 @@ fu brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, .
 
             let text = substitute(line, '^\s*\d\{-}\s*:\s*\d\{-}\s', '', '')
 
-            let col  = match(text, a:search_cur_word ? '\C\<'.expand('<cword>').'\>' : pat) + 1
+            let col  = match(text, a:search_cur_word ? '\C\<'..expand('<cword>')..'\>' : pat) + 1
             call add(ll_entries,
             \ { 'filename' : filename,
             \   'lnum'     : lnum,
@@ -179,7 +179,7 @@ fu brackets#mv_line(type) abort "{{{1
         norm! mz
 
         " move the line
-        sil exe 'move '.where
+        sil exe 'move '..where
 
         " indent it
         if &ft isnot# 'markdown'
@@ -254,7 +254,7 @@ fu brackets#next_file_to_edit(cnt) abort "{{{1
     "
     " To fix this, we reset `here` by giving it the path to the working directory.
     if empty(here)
-        let here = getcwd().'/'
+        let here = getcwd()..'/'
     endif
 
     " The main code of this function is a double nested loop.
@@ -347,8 +347,8 @@ fu s:what_is_around(dir) abort
     " If `dir` is the root of the tree, we need to get rid of the
     " slash, because we're going to add a slash when calling `glob('/*')`.
     let dir = substitute(a:dir, '/$', '', '')
-    let entries  = glob(dir.'/.*', 0, 1)
-    let entries += glob(dir.'/*', 0, 1)
+    let entries  = glob(dir..'/.*', 0, 1)
+    let entries += glob(dir..'/*', 0, 1)
 
     " The first call to `glob()` was meant to include the hidden entries,
     " but it produces 2 garbage entries which do not exist.
@@ -371,9 +371,9 @@ fu brackets#put(type) abort "{{{1
         " The type of the register we put needs to be linewise.
         " But, some registers are special: we can't change their type.
         " So, we'll temporarily duplicate their contents into `z` instead.
-        let reg_save  = [getreg('z'), getregtype('z')]
+        let reg_save = [getreg('z'), getregtype('z')]
     else
-        let reg_save  = [getreg(s:put_register), getregtype(s:put_register)]
+        let reg_save = [getreg(s:put_register), getregtype(s:put_register)]
     endif
 
     " Warning: about folding interference{{{
@@ -407,14 +407,14 @@ fu brackets#put(type) abort "{{{1
         if reg_to_use is# 'o'
             \ && &ft is# 'markdown'
             \ && synIDattr(synID(line('.'), col('.'), 0), 'name') =~# '^markdown.*CodeBlock$'
-            let @o = join(map(split(@o, '\n'), {_,v -> v !~ '^$' ? v.'~' : v}), "\n")
+            let @o = join(map(split(@o, '\n'), {_,v -> v !~ '^$' ? v..'~' : v}), "\n")
         endif
 
         " force the type of the register to be linewise
         call setreg(reg_to_use, getreg(reg_to_use), 'l')
 
         " put the register (`s:put_where` can be `]p` or `[p`)
-        exe 'norm! "'.reg_to_use . cnt . s:put_where . s:put_how_to_indent
+        exe 'norm! "'..reg_to_use..cnt..s:put_where..s:put_how_to_indent
     catch
         return lg#catch_error()
     finally
@@ -479,7 +479,7 @@ fu brackets#put_empty_line(_) abort "{{{1
         let z_save = getpos("'z")
         sil undo
         norm! mz
-        exe 'norm! '.cnt.(s:put_empty_line_below ? 'o' : 'O')."\e".'g`z'
+        exe 'norm! '..cnt..(s:put_empty_line_below ? 'o' : 'O').."\e"..'g`z'
         call setpos("'z", z_save)
 
         " What is this lambda for?{{{
@@ -493,11 +493,11 @@ fu brackets#put_empty_line(_) abort "{{{1
         " one.
         "}}}
         let l:Is_diagram_around = { dir, vcol ->
-            \ matchstr(getline(line('.')+dir*(cnt+1)), '\%'.vcol.'v.''\@!') =~# '[│┌┐└┘├┤├┤]' }
-        "                                                           └───┤
-        "          if a diagram character is followed by a single quote ┘
-        "          it's probably used  in some code (like  in this code
-        "          for example) ignore it
+            \ matchstr(getline(line('.')+dir*(cnt+1)), '\%'..vcol..'v.''\@!') =~# '[│┌┐└┘├┤├┤]' }
+        "                                                             └───┤
+        "            if a diagram character is followed by a single quote ┘
+        "            it's probably used  in some code (like  in this code
+        "            for example) ignore it
         let vcol = 1
         let vcols = []
         for char in split(getline('.'), '\zs')
@@ -509,8 +509,8 @@ fu brackets#put_empty_line(_) abort "{{{1
             let vcol += 1
         endfor
 
-        let line = getline(line('.')+(s:put_empty_line_below ? 1 : -1)).repeat(' ', &columns)
-        let pat = join(map(vcols, {_,v -> '\%'.v.'v.'}), '\|')
+        let line = getline(line('.')+(s:put_empty_line_below ? 1 : -1))..repeat(' ', &columns)
+        let pat = join(map(vcols, {_,v -> '\%'..v..'v.'}), '\|')
         let line = substitute(substitute(line, pat, '│', 'g'), '\s*$', '', '')
 
         let text = repeat([line], cnt)
