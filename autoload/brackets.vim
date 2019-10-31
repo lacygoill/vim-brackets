@@ -198,21 +198,21 @@ fu brackets#mv_line(type) abort "{{{1
         call winrestview(view)
         norm! `z
 
-        " FIXME: The next line restores the position of the mark `z`. {{{
-        " It works. But when we undo (u, :undo), `z` is put on the line which was
-        " moved.
-        " MWE:
-        "         nno cd :call Func()<cr>
-        "         fu Func() abort
-        "             let z_save = getpos("'z")
-        "             norm! mz
-        "             m -1-
-        "             norm! `z
-        "             call setpos("'z", z_save)
-        "         endfu
+        " FIXME: When we undo (u, :undo), `z` is put on the line which was moved. {{{
         "
-        "         put the mark `z` somewhere, hit `cd` somewhere else, undo,
-        "         then hit `z (the `z` mark has moved; we don't want that)
+        " MWE:
+        "
+        "     nno cd :call Func()<cr>
+        "     fu Func() abort
+        "         let z_save = getpos("'z")
+        "         norm! mz
+        "         m -1-
+        "         norm! `z
+        "         call setpos("'z", z_save)
+        "     endfu
+        "
+        "     put the mark `z` somewhere, hit `cd` somewhere else, undo,
+        "     then hit `z (the `z` mark has moved; we don't want that)
         "
         " The issue comes from the fact that Vim saves the state of the buffer right
         " before a change. Here the change is caused by the `:move` command. So, Vim
@@ -430,93 +430,51 @@ fu brackets#put_save_param(where, how_to_indent) abort "{{{1
 endfu
 
 fu brackets#put_empty_line(_) abort "{{{1
+    " TODO: Refactor this function so that we can use it to put any type of text; not just an empty line.{{{
+    "
+    " For example, `---`.
+    " We often have to insert `---` to separate 2 sections in our (commented) notes.
+    " We do it way too inefficently/awkwardly.
+    "}}}
     let cnt = v:count1
+    let line = getline('.')
+    let cml = '\V'..escape(matchstr(split(&l:cms, '%s'), '\S*'), '\')..'\m'
+    let is_in_diagram = line =~# '^\s*\%('..cml..'\)\=\s*[│┌┐└┘├┤]'
+    if is_in_diagram
+        let line = substitute(line, '\%(│.*\)\@<=[^│┌┐└┘├┤]', ' ', 'g')
+        let l:Rep = {m ->
+        \    m[0] is# '└' && s:put_empty_line_below
+        \ || m[0] is# '┌' && ! s:put_empty_line_below
+        \ ? '' : '│'}
+        let line = substitute(line, '[└┌]', l:Rep, 'g')
+        let line = substitute(line, '\s*$', '', '')
+    else
+        let line = ''
+    endif
+    let lines = repeat([line], cnt)
+    let lnum = line('.') + (s:put_empty_line_below ? 0 : -1)
+    " if we're in a closed fold, we don't want to simply add an empty line,
+    " we want to create a visual separation between folds
+    let [fold_begin, fold_end] = [foldclosed('.'), foldclosedend('.')]
+    let is_in_closed_fold = fold_begin != -1
 
-    let is_diagram_around = 1
-    if getline(line('.')+(s:put_empty_line_below ? 1 : -1)) !~# '[│┌┐└┘├┤]'
-        let is_diagram_around = 0
+    if is_in_closed_fold && &ft is# 'markdown'
+        " for  a  markdown  buffer,  where  we  use  a  foldexpr,  a  visual
+        " separation means an empty fold
+        let prefix = matchstr(getline(fold_begin), '^#\+')
+        " fold marked by a line starting with `#`
+        if prefix =~# '#'
+            if prefix is# '#' | let prefix = '##' | endif
+            let lines = repeat([prefix], cnt)
+        " fold marked by a line starting with `===` or `---`
+        elseif matchstr(getline(fold_begin+1), '^===\|^---') isnot# ''
+            let lines = repeat(['---', '---'], cnt)
+        endif
+        let lnum = s:put_empty_line_below ? fold_end : fold_begin - 1
     endif
 
     " could fail if the buffer is unmodifiable
-    try
-        let lines = repeat([''], cnt)
-        let lnum  = line('.') + (s:put_empty_line_below ? 0 : -1)
-
-        " if we're in a closed fold, we don't want to simply add an empty line,
-        " we want to create a visual separation between folds
-        let fold_begin = foldclosed('.')
-        let fold_end = foldclosedend('.')
-        if fold_begin != -1 && &ft is# 'markdown'
-            " for  a  markdown  buffer,  where  we  use  a  foldexpr,  a  visual
-            " separation means an empty fold
-            let prefix = matchstr(getline(fold_begin), '^#\+')
-            if prefix =~# '#'
-                if prefix is# '#'
-                    let prefix = '##'
-                endif
-                let lines = repeat([prefix], cnt)
-            elseif matchstr(getline(fold_begin+1), '^===\|^---') isnot# ''
-                let lines = repeat(['---', '---'], cnt)
-            endif
-            let lnum = s:put_empty_line_below
-                \ ? fold_end
-                \ : fold_begin - 1
-        endif
-
-        call append(lnum, lines)
-    catch
-        return lg#catch_error()
-    endtry
-
-    " We've just put (an) empty line(s) below/above the current one.
-    " But if we were inside a diagram, there's a risk that now the latter
-    " is filled with “holes“. We need to complete the diagram when needed.
-
-    if getline('.') =~# '[│┌┐└┘├┤]' && is_diagram_around
-        " If we're in a commented diagram, the lines we've just put are not commented.
-        " They should be. So, we undo, then use  the `o` or `O` command, so that
-        " Vim adds the comment leader for each line.
-        let z_save = getpos("'z")
-        sil undo
-        norm! mz
-        exe 'norm! '..cnt..(s:put_empty_line_below ? 'o' : 'O').."\e"..'g`z'
-        call setpos("'z", z_save)
-
-        " What is this lambda for?{{{
-        "
-        " This lambda will be invoked every  time there's a diagram character on
-        " the line where we pressed our mapping.
-        "
-        " It will  be used to  check if  there's another diagram  character just
-        " above/below.   This is  some  kind of  heuristics  to eliminate  false
-        " positive.  We want  to expand a diagram only when  we're really inside
-        " one.
-        "}}}
-        let l:Is_diagram_around = { dir, vcol ->
-            \ matchstr(getline(line('.')+dir*(cnt+1)), '\%'..vcol..'v.''\@!') =~# '[│┌┐└┘├┤├┤]' }
-        "                                                             └───┤
-        "            if a diagram character is followed by a single quote ┘
-        "            it's probably used  in some code (like  in this code
-        "            for example) ignore it
-        let vcol = 1
-        let vcols = []
-        for char in split(getline('.'), '\zs')
-            if   char is# '│' && l:Is_diagram_around(s:put_empty_line_below ? 1 : -1, vcol)
-            \ || index(['┌', '┐', '├', '┤'], char) >= 0 && s:put_empty_line_below  && l:Is_diagram_around(1, vcol)
-            \ || index(['└', '┘', '├', '┤'], char) >= 0 && !s:put_empty_line_below && l:Is_diagram_around(-1, vcol)
-                let vcols += [vcol]
-            endif
-            let vcol += 1
-        endfor
-
-        let line = getline(line('.')+(s:put_empty_line_below ? 1 : -1))..repeat(' ', &columns)
-        let pat = join(map(vcols, {_,v -> '\%'..v..'v.'}), '\|')
-        let line = substitute(substitute(line, pat, '│', 'g'), '\s*$', '', '')
-
-        let text = repeat([line], cnt)
-        let lnum = line('.') + (s:put_empty_line_below ? 1 : -cnt)
-        call setline(lnum, text)
-    endif
+    try | call append(lnum, lines) | catch | return lg#catch_error() | endtry
 endfu
 
 fu brackets#put_empty_line_save_dir(below) abort "{{{1
