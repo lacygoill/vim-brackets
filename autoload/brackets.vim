@@ -429,22 +429,17 @@ fu brackets#put_save_param(where, how_to_indent) abort "{{{1
     let s:put_register = v:register
 endfu
 
-fu brackets#put_empty_line(_) abort "{{{1
-    " TODO: Refactor this function so that we can use it to put any type of text; not just an empty line.{{{
-    "
-    " For example, `---`.
-    " We often have to insert `---` to separate 2 sections in our (commented) notes.
-    " We do it way too inefficently/awkwardly.
-    "}}}
+fu brackets#put_line(_) abort "{{{1
     let cnt = v:count1
     let line = getline('.')
     let cml = '\V'..escape(matchstr(split(&l:cms, '%s'), '\S*'), '\')..'\m'
+
     let is_in_diagram = line =~# '^\s*\%('..cml..'\)\=\s*[│┌┐└┘├┤]'
     if is_in_diagram
         let line = substitute(line, '\%(│.*\)\@<=[^│┌┐└┘├┤]', ' ', 'g')
         let l:Rep = {m ->
-        \    m[0] is# '└' && s:put_empty_line_below
-        \ || m[0] is# '┌' && ! s:put_empty_line_below
+        \    m[0] is# '└' && s:put_line_below
+        \ || m[0] is# '┌' && ! s:put_line_below
         \ ? '' : '│'}
         let line = substitute(line, '[└┌]', l:Rep, 'g')
         let line = substitute(line, '\s*$', '', '')
@@ -452,7 +447,8 @@ fu brackets#put_empty_line(_) abort "{{{1
         let line = ''
     endif
     let lines = repeat([line], cnt)
-    let lnum = line('.') + (s:put_empty_line_below ? 0 : -1)
+
+    let lnum = line('.') + (s:put_line_below ? 0 : -1)
     " if we're in a closed fold, we don't want to simply add an empty line,
     " we want to create a visual separation between folds
     let [fold_begin, fold_end] = [foldclosed('.'), foldclosedend('.')]
@@ -470,24 +466,57 @@ fu brackets#put_empty_line(_) abort "{{{1
         elseif matchstr(getline(fold_begin+1), '^===\|^---') isnot# ''
             let lines = repeat(['---', '---'], cnt)
         endif
-        let lnum = s:put_empty_line_below ? fold_end : fold_begin - 1
+        let lnum = s:put_line_below ? fold_end : fold_begin - 1
     endif
 
     " could fail if the buffer is unmodifiable
     try | call append(lnum, lines) | catch | return lg#catch_error() | endtry
 endfu
 
-fu brackets#put_empty_line_save_dir(below) abort "{{{1
-    let s:put_empty_line_below = a:below
+fu brackets#put_line_save_param(below) abort "{{{1
+    let s:put_line_below = a:below
 endfu
 
-fu brackets#put_empty_lines_around(_) abort "{{{1
+fu brackets#put_lines_around(_) abort "{{{1
     " above
-    call brackets#put_empty_line_save_dir(0)
-    call brackets#put_empty_line('')
+    call brackets#put_line_save_param(0)
+    call brackets#put_line('')
 
     " below
-    call brackets#put_empty_line_save_dir(1)
-    call brackets#put_empty_line('')
+    call brackets#put_line_save_param(1)
+    call brackets#put_line('')
+endfu
+
+fu brackets#rule_motion(below) abort "{{{1
+    let cml = '\V'..escape(matchstr(split(&l:cms, '%s'), '\S*'), '\')..'\m'
+    let flags = (a:below ? '' : 'b')..'W'
+    if &ft is# 'markdown'
+        let pat = '^---$'
+        let stopline = search('^#', flags..'n')
+    else
+        let pat = '^\s*'..cml..' ---$'
+        let fmr = '\%('..join(split(&l:fmr, ','), '\|')..'\)\d*'
+        let stopline = search('^\s*'..cml..'.*'..fmr..'$', flags..'n')
+    endif
+    let lnum = search(pat, flags..'n')
+    if stopline == 0 || (a:below && lnum < stopline || ! a:below && lnum > stopline)
+        call search(pat, flags)
+    endif
+endfu
+
+fu brackets#rule_put(below) abort "{{{1
+    call append('.', ["\x01", '---', "\x01", "\x01"])
+    if &ft isnot# 'markdown'
+        +,+4CommentToggle
+    endif
+    sil keepj keepp +,+4s/\s*\%x01$//e
+    if &ft isnot# 'markdown'
+        sil exe 'norm! V3k=3jA '
+    endif
+    if ! a:below
+        -4m.
+        exe 'norm! '..(&ft is# 'markdown' ? '' : '==')..'k'
+    endif
+    startinsert!
 endfu
 

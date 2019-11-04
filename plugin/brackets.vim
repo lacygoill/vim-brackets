@@ -78,15 +78,15 @@ fu s:mil(lhs) abort "{{{4
         "
         " It only happens when an argument is a directory or a non-readable file.
         " How to exclude directories from the expansion?
-        " Or how to change the function so that it skips directories
-        " and non-readable files.
+        " Or  how to  change  the  function so  that  it  skips directories  and
+        " non-readable files.
         "
         "     :args /etc/*[^/]      ✘
         "     :args /etc/*[^\/ ]    ✘
         "     :args /etc/*[^a-z]    ✘
         "     :args `=systemlist('find /etc -type f -maxdepth 1 -readable')`    ✔
         "     :PA find /etc/ -maxdepth 1    ✔
-        exe cnt.cmd1
+        exe cnt..cmd1
     catch
         try
             exe cmd2
@@ -103,15 +103,15 @@ fu s:mil(lhs) abort "{{{4
 endfu
 
 fu s:mil_build_mapping(key, pfx) abort "{{{4
-    let prev = '['.a:key
-    let next = ']'.a:key
-    exe 'nno  <silent><unique>  '.prev .'  :<c-u>call <sid>mil('.string(prev).')<cr>'
-    exe 'nno  <silent><unique>  '.next .'  :<c-u>call <sid>mil('.string(next).')<cr>'
+    let prev = '['..a:key
+    let next = ']'..a:key
+    exe 'nno  <silent><unique>  '..prev..'  :<c-u>call <sid>mil('..string(prev)..')<cr>'
+    exe 'nno  <silent><unique>  '..next..'  :<c-u>call <sid>mil('..string(next)..')<cr>'
 
-    let first = '['.toupper(a:key)
-    let last  = ']'.toupper(a:key)
-    exe 'nno  <silent><unique>  '.first.'  :<c-u>call <sid>mil('.string(first).')<cr>'
-    exe 'nno  <silent><unique>  '.last .'  :<c-u>call <sid>mil('.string(last).')<cr>'
+    let first = '['..toupper(a:key)
+    let last  = ']'..toupper(a:key)
+    exe 'nno  <silent><unique>  '..first..'  :<c-u>call <sid>mil('..string(first)..')<cr>'
+    exe 'nno  <silent><unique>  '..last..'  :<c-u>call <sid>mil('..string(last)..')<cr>'
 
     " If a:pfx = 'c' then we also define the mappings `[ C-q` and `] C-q`
     " which execute the commands `:cpfile` and `:cnfile`:
@@ -144,13 +144,13 @@ fu s:mil_build_mapping(key, pfx) abort "{{{4
             let nfile_key = ']<c-l>'
         endif
 
-        exe 'nno  <silent><unique>  '.pqf_key.'  :<c-u>call <sid>mil('.string(pqf_key).')<cr>'
-        exe 'nno  <silent><unique>  '.nqf_key.'  :<c-u>call <sid>mil('.string(nqf_key).')<cr>'
+        exe 'nno  <silent><unique>  '..pqf_key..'  :<c-u>call <sid>mil('..string(pqf_key)..')<cr>'
+        exe 'nno  <silent><unique>  '..nqf_key..'  :<c-u>call <sid>mil('..string(nqf_key)..')<cr>'
 
-        exe 'nno  <silent><unique>  '.pfile_key
-        \ . '  :<c-u>call <sid>mil('.substitute(string(pfile_key), '<', '<lt>', '').')<cr>'
-        exe 'nno  <silent><unique>  '.nfile_key
-        \ . '  :<c-u>call <sid>mil('.substitute(string(nfile_key), '<', '<lt>', '').')<cr>'
+        exe 'nno  <silent><unique>  '..pfile_key
+        \ ..'  :<c-u>call <sid>mil('..substitute(string(pfile_key), '<', '<lt>', '')..')<cr>'
+        exe 'nno  <silent><unique>  '..nfile_key
+        \ ..'  :<c-u>call <sid>mil('..substitute(string(nfile_key), '<', '<lt>', '')..')<cr>'
     endif
 endfu
 "}}}3
@@ -172,8 +172,8 @@ call s:mil_build_mapping('t','t')
 
 " ]e            move line {{{2
 
-nno <silent><unique> [e :<c-u>call brackets#mv_line_save_dir('up')<bar>set opfunc=brackets#mv_line<bar>exe 'norm! '.v:count1.'g@l'<cr>
-nno <silent><unique> ]e :<c-u>call brackets#mv_line_save_dir('down')<bar>set opfunc=brackets#mv_line<bar>exe 'norm! '.v:count1.'g@l'<cr>
+nno <silent><unique> [e :<c-u>call brackets#mv_line_save_dir('up')<bar>set opfunc=brackets#mv_line<bar>exe 'norm! '..v:count1..'g@l'<cr>
+nno <silent><unique> ]e :<c-u>call brackets#mv_line_save_dir('down')<bar>set opfunc=brackets#mv_line<bar>exe 'norm! '..v:count1..'g@l'<cr>
 
 " ]f            move in files {{{2
 
@@ -219,8 +219,8 @@ xno <silent><unique> ]D :<c-u>call brackets#di_list('d', 0, 1, 1)<cr>
 "                                                           │
 "                                                           │    ┌ how to indent afterwards
 "                                                           │    │}}}
-nno <silent><unique> [p :<c-u>call brackets#put_save_param('[p', '')<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
-nno <silent><unique> ]p :<c-u>call brackets#put_save_param(']p', '')<bar>set opfunc=brackets#put<bar>exe 'norm! '.v:count1.'g@l'<cr>
+nno <silent><unique> [p :<c-u>call brackets#put_save_param('[p', '')<bar>set opfunc=brackets#put<bar>exe 'norm! '..v:count1..'g@l'<cr>
+nno <silent><unique> ]p :<c-u>call brackets#put_save_param(']p', '')<bar>set opfunc=brackets#put<bar>exe 'norm! '..v:count1..'g@l'<cr>
 
 " The following mappings put the unnamed register after the current line,
 " treating its contents as linewise (even if characterwise) AND perform another
@@ -270,9 +270,17 @@ nno <unique> ]s 5zl
 "             │
 "             └ mnemonic: Scroll
 
-" ] space             {{{2
+" ] space {{{2
 
-nno <silent><unique> =<space> :<c-u>set opfunc=brackets#put_empty_lines_around<bar>exe 'norm! '.v:count1.'g@l'<cr>
-nno <silent><unique> [<space> :<c-u>call brackets#put_empty_line_save_dir(0)<bar>set opfunc=brackets#put_empty_line<bar>exe 'norm! '.v:count1.'g@l'<cr>
-nno <silent><unique> ]<space> :<c-u>call brackets#put_empty_line_save_dir(1)<bar>set opfunc=brackets#put_empty_line<bar>exe 'norm! '.v:count1.'g@l'<cr>
+nno <silent><unique> =<space> :<c-u>set opfunc=brackets#put_lines_around<bar>exe 'norm! '..v:count1..'g@l'<cr>
+nno <silent><unique> [<space> :<c-u>call brackets#put_line_save_param(0)<bar>set opfunc=brackets#put_line<bar>exe 'norm! '..v:count1..'g@l'<cr>
+nno <silent><unique> ]<space> :<c-u>call brackets#put_line_save_param(1)<bar>set opfunc=brackets#put_line<bar>exe 'norm! '..v:count1..'g@l'<cr>
+
+" ] - {{{2
+
+nno <silent><unique> [- :<c-u>call brackets#rule_motion(0)<cr>
+nno <silent><unique> ]- :<c-u>call brackets#rule_motion(1)<cr>
+
+nno <silent><unique> <c-g>[- :<c-u>call brackets#rule_put(0)<cr>
+nno <silent><unique> <c-g>]- :<c-u>call brackets#rule_put(1)<cr>
 
