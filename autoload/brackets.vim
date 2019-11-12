@@ -406,7 +406,7 @@ fu brackets#put(type) abort "{{{1
         " end of every non-empty line.
         if reg_to_use is# 'o'
             \ && &ft is# 'markdown'
-            \ && synIDattr(synID(line('.'), col('.'), 0), 'name') =~# '^markdown.*CodeBlock$'
+            \ && synIDattr(synID(line('.'), col('.'), 1), 'name') =~# '^markdown.*CodeBlock$'
             let @o = join(map(split(@o, '\n'), {_,v -> v !~ '^$' ? v..'~' : v}), "\n")
         endif
 
