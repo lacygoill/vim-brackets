@@ -95,16 +95,14 @@ fu brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, .
     call setloclist(0, [], 'a', {'title': title})
 
     " Populating the location list doesn't fire any event.
-    " Fire `QuickFixCmdPost`, with the right pattern (!), to open the ll window.
+    " Fire `QuickFixCmdPost`, with the right pattern (*), to open the ll window.
     "
-    " (!) lvimgrep is a valid pattern  (`:h QuickFixCmdPre`), and it begins with
-    " a `l`.  The autocmd that we use  to automatically open a qf window, relies
-    " on the name of the command (how  its name begins), to determine whether it
-    " must open the ll or qfl window.
+    " (*) `lvimgrep`  is a  valid pattern (`:h  QuickFixCmdPre`), and  it begins
+    " with a `l`.   The autocmd that we  use to automatically open  a qf window,
+    " relies on  the name  of the  command (how its  name begins),  to determine
+    " whether it must open the ll or qfl window.
     do <nomodeline> QuickFixCmdPost lwindow
-    if &bt isnot# 'quickfix'
-        return
-    endif
+    if &bt isnot# 'quickfix' | return | endif
 
     " hide location
     call qf#set_matches('brackets:di_list', 'Conceal', 'location')
