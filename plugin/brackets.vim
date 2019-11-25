@@ -65,27 +65,81 @@ fu s:mil(lhs) abort "{{{4
     let cmd1 = s:MIL_CMD[a:lhs][0]
     let cmd2 = s:MIL_CMD[a:lhs][1]
     try
-        " FIXME:
-        " Sometimes, the command doesn't seem to be executed. Why?
+        " FIXME: Sometimes, the command doesn't seem to be executed. Why?{{{
+        "
         " MWE:
-        "         :tab args /etc/*
-        "         ]a
-        "         ;
-        "         ;
-        "         …
+        "
+        "     $ touch /tmp/file{1..3}
+        "     $ sudo chown root:root /tmp/file3 && sudo chmod 600 /tmp/file3
+        "     $ vim /tmp/file{1..3}
+        "     :try | next | endtry
+        "     @:
+        "     :echo expand('%:p')
+        "     /tmp/file3~
+        "     :args
+        "     /tmp/file1   [/tmp/file2] /tmp/file3~
+        "                  ^^^^^^^^^^^^
+        "
+        " Why is the current argument still `/tmp/file2`, and not `/tmp/file3`?
+        " If you had  removed the `try` conditional, the  current argument would
+        " be `/tmp/file3`; why the difference?
+        "
+        "     :try | next | endtry
+        "     " the current argument and the current file have not changed, and no error is raised
+        "     " why?
+        "
+        "     :prev
+        "     :try | next | endtry
+        "     :try | next | endtry
+        "     :args
+        "     /tmp/file1   /tmp/file2   [/tmp/file3]~
+        "                               ^^^^^^^^^^^^
+        "     " this time, the current argument is correctly `/tmp/file3`
+        "     " why did `:next` work now – to visit the last argument – but not before?
+        "
+        " ---
+        "
         " It seems to be linked to the conditional `try`.
         " Because `:next` works outside of it.
         "
-        " It only happens when an argument is a directory or a non-readable file.
-        " How to exclude directories from the expansion?
-        " Or  how to  change  the  function so  that  it  skips directories  and
-        " non-readable files.
+        " It only happens when an argument is a non-readable file/directory.
+        " How to ignore non-readable files/directories?
         "
-        "     :args /etc/*[^/]      ✘
-        "     :args /etc/*[^\/ ]    ✘
-        "     :args /etc/*[^a-z]    ✘
-        "     :args `=systemlist('find /etc -type f -maxdepth 1 -readable')`    ✔
-        "     :PA find /etc/ -maxdepth 1    ✔
+        " Ideas:
+        "
+        "     :args `=systemlist('find /etc -type f -maxdepth 1 -readable')`
+        "
+        " or:
+        "
+        "     :PA find /etc/ -maxdepth 1
+        "
+        " ---
+        "
+        " I can see 3 issues.
+        "
+        " First, the behavior of `:next` is inconsistent inside/outside a `try`
+        " (it works as expected outside but not inside).
+        "
+        " Second, the behavior of `:next` is inconsistent inside a `try`
+        " (it works as expected only after you fail to visit the unreadable
+        " argument then run `:prev`).
+        "
+        " Third, if it is an error to ask Vim to read a non-readable file, then
+        " the error  should be  catchable so that  I can react,  and ask  Vim to
+        " visit the next argument if there is one (or the first if we've reached
+        " the end of the arglist).
+        "
+        " ---
+        "
+        " Note that  when you ask Vim  to read a non-readable  file, usually, it
+        " prints a message on the command-line to inform you that you can't read
+        " the file:
+        "
+        "     /path/to/unreadable/file" [Permission Denied]
+        "                               ^^^^^^^^^^^^^^^^^^^
+        "
+        " Unless you include the `F` flag in `'shm'`.
+        "}}}
         exe cnt..cmd1
     catch
         try
