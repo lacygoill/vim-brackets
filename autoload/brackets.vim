@@ -180,7 +180,7 @@ fu brackets#mv_line(type) abort "{{{1
         sil exe 'move '..where
 
         " indent it
-        if &ft isnot# 'markdown'
+        if &ft isnot# 'markdown' && &ft isnot# ''
             sil norm! ==
         endif
     catch
