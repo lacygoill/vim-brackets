@@ -432,18 +432,26 @@ fu brackets#put_line(_) abort "{{{1
     let line = getline('.')
     let cml = '\V'..escape(matchstr(split(&l:cms, '%s'), '\S*'), '\')..'\m'
 
+    let is_first_line_in_diagram = line =~# '^\s*\%('..cml..'\)\=├[─┐┘ ├]*$'
     let is_in_diagram = line =~# '^\s*\%('..cml..'\)\=\s*[│┌┐└┘├┤]'
-    if is_in_diagram
-        let line = substitute(line, '\%(│.*\)\@<=[^│┌┐└┘├┤]', ' ', 'g')
+    if is_first_line_in_diagram
+        if s:put_line_below && line =~# '┐' || ! s:put_line_below && line =~# '┘'
+            let line =  ''
+        else
+            let line =  substitute(line, '[^├]', ' ', 'g')
+            let line =  substitute(line, '├', '│', 'g')
+        endif
+    elseif is_in_diagram
+        let line = substitute(line, '\%([│┌┐└┘├┤].*\)\@<=[^│┌┐└┘├┤]', ' ', 'g')
         let l:Rep = {m ->
-        \    m[0] is# '└' && s:put_line_below
-        \ || m[0] is# '┌' && ! s:put_line_below
-        \ ? '' : '│'}
+            \    m[0] is# '└' && s:put_line_below
+            \ || m[0] is# '┌' && ! s:put_line_below
+            \ ? '' : '│'}
         let line = substitute(line, '[└┌]', l:Rep, 'g')
-        let line = substitute(line, '\s*$', '', '')
     else
         let line = ''
     endif
+    let line = substitute(line, '\s*$', '', '')
     let lines = repeat([line], cnt)
 
     let lnum = line('.') + (s:put_line_below ? 0 : -1)
