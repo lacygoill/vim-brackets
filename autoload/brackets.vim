@@ -157,7 +157,7 @@ fu brackets#mv_line(type) abort "{{{1
     " Remember:
     " Because of a quirk of Vim's implementation, always temporarily disable
     " 'fen' before moving lines which could be in a fold.
-"}}}
+    "}}}
     let [fen_save, winid, bufnr] = [&l:fen, win_getid(), bufnr('%')]
     let &l:fen = 0
 
@@ -173,7 +173,7 @@ fu brackets#mv_line(type) abort "{{{1
         " And why do we use a named mark? Why not m'?
         " Probably because we could be using '' to go back and forth between
         " 2 positions, and we don't want this function to disrupt these jumps.
-"}}}
+        "}}}
         norm! mz
 
         " move the line

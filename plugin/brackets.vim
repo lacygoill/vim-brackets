@@ -335,6 +335,6 @@ nno <silent><unique> ]<space> :<c-u>call brackets#put_line_save_param(1)<bar>set
 nno <silent><unique> [- :<c-u>call brackets#rule_motion(0)<cr>
 nno <silent><unique> ]- :<c-u>call brackets#rule_motion(1)<cr>
 
-nno <silent><unique> <c-g>[- :<c-u>call brackets#rule_put(0)<cr>
-nno <silent><unique> <c-g>]- :<c-u>call brackets#rule_put(1)<cr>
+nno <silent><unique> +[- :<c-u>call brackets#rule_put(0)<cr>
+nno <silent><unique> +]- :<c-u>call brackets#rule_put(1)<cr>
 
