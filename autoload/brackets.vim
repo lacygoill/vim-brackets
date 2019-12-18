@@ -6,6 +6,7 @@ fu brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, .
     " if we call the function from a normal mode mapping, the pattern is the
     " word under the cursor
     if a:search_cur_word
+        " `silent!` because pressing `]I` on a unique word raises `E389`
         let output = execute('norm! '..(a:start_at_cursor ? ']' : '[')..normcmd, 'silent!')
         let title  = (a:start_at_cursor ? ']' : '[')..normcmd
 
