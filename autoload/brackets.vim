@@ -431,7 +431,7 @@ endfu
 fu brackets#put_line(_) abort "{{{1
     let cnt = v:count1
     let line = getline('.')
-    let cml = '\V'..escape(matchstr(split(&l:cms, '%s'), '\S*'), '\')..'\m'
+    let cml = '\V'..escape(matchstr(&l:cms, '\S*\ze\s*%s'), '\')..'\m'
 
     let is_first_line_in_diagram = line =~# '^\s*\%('..cml..'\)\=├[─┐┘ ├]*$'
     let is_in_diagram = line =~# '^\s*\%('..cml..'\)\=\s*[│┌┐└┘├┤]'
@@ -495,7 +495,7 @@ fu brackets#put_lines_around(_) abort "{{{1
 endfu
 
 fu brackets#rule_motion(below) abort "{{{1
-    let cml = '\V'..escape(matchstr(split(&l:cms, '%s'), '\S*'), '\')..'\m'
+    let cml = '\V'..escape(matchstr(&l:cms, '\S*\ze\s*%s'), '\')..'\m'
     let flags = (a:below ? '' : 'b')..'W'
     if &ft is# 'markdown'
         let pat = '^---$'
