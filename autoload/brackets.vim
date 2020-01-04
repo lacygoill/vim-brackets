@@ -92,8 +92,7 @@ fu brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, .
         endif
     endfor
 
-    call setloclist(0, ll_entries)
-    call setloclist(0, [], 'a', {'title': title})
+    call setloclist(0, [], ' ', {'items': ll_entries, 'title': title})
 
     " Populating the location list doesn't fire any event.
     " Fire `QuickFixCmdPost`, with the right pattern (*), to open the ll window.
@@ -436,7 +435,7 @@ fu brackets#put_line(_) abort "{{{1
     let is_first_line_in_diagram = line =~# '^\s*\%('..cml..'\)\=├[─┐┘ ├]*$'
     let is_in_diagram = line =~# '^\s*\%('..cml..'\)\=\s*[│┌┐└┘├┤]'
     if is_first_line_in_diagram
-        if s:put_line_below && line =~# '┐' || ! s:put_line_below && line =~# '┘'
+        if s:put_line_below && line =~# '┐' || !s:put_line_below && line =~# '┘'
             let line =  ''
         else
             let line =  substitute(line, '[^├]', ' ', 'g')
@@ -446,7 +445,7 @@ fu brackets#put_line(_) abort "{{{1
         let line = substitute(line, '\%([│┌┐└┘├┤].*\)\@<=[^│┌┐└┘├┤]', ' ', 'g')
         let l:Rep = {m ->
             \    m[0] is# '└' && s:put_line_below
-            \ || m[0] is# '┌' && ! s:put_line_below
+            \ || m[0] is# '┌' && !s:put_line_below
             \ ? '' : '│'}
         let line = substitute(line, '[└┌]', l:Rep, 'g')
     else
@@ -506,7 +505,7 @@ fu brackets#rule_motion(below) abort "{{{1
         let stopline = search('^\s*'..cml..'.*'..fmr..'$', flags..'n')
     endif
     let lnum = search(pat, flags..'n')
-    if stopline == 0 || (a:below && lnum < stopline || ! a:below && lnum > stopline)
+    if stopline == 0 || (a:below && lnum < stopline || !a:below && lnum > stopline)
         call search(pat, flags)
     endif
 endfu
@@ -520,7 +519,7 @@ fu brackets#rule_put(below) abort "{{{1
     if &ft isnot# 'markdown'
         sil exe 'norm! V3k=3jA '
     endif
-    if ! a:below
+    if !a:below
         -4m.
         exe 'norm! '..(&ft is# 'markdown' ? '' : '==')..'k'
     endif
