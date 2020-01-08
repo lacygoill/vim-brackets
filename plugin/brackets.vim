@@ -19,7 +19,7 @@ let g:loaded_brackets = 1
 "                                                │   │  │   │        │}}}
 com -bang -nargs=1 Ilist call brackets#di_list('i', 0, 0, <bang>0, <q-args>)
 com -bang -nargs=1 Dlist call brackets#di_list('d', 0, 0, <bang>0, <q-args>)
-
+"}}}1
 " Mappings {{{1
 " ]ablqt        move in lists {{{2
 " Init {{{3
@@ -35,8 +35,6 @@ const s:MIL_CMD = {
               \   '[<c-q>': ['cpfile', ''],
               \   ']<c-q>': ['cnfile', ''],
               \
-              \   '[A': ['first',      ''],
-              \   ']A': ['last',       ''],
               \   '[B': ['bfirst',     ''],
               \   ']B': ['blast',      ''],
               \   '[L': ['lfirst',     ''],
@@ -46,8 +44,6 @@ const s:MIL_CMD = {
               \   '[T': ['tfirst',     ''],
               \   ']T': ['tlast',      ''],
               \
-              \   '[a': ['previous',   'last'],
-              \   ']a': ['next',       'first'],
               \   '[b': ['bprevious',  'blast'],
               \   ']b': ['bnext',      'bfirst'],
               \   '[l': ['lprevious',  'llast'],
@@ -64,82 +60,8 @@ fu s:mil(lhs) abort "{{{4
 
     let cmd1 = s:MIL_CMD[a:lhs][0]
     let cmd2 = s:MIL_CMD[a:lhs][1]
+
     try
-        " FIXME: Sometimes, the command doesn't seem to be executed. Why?{{{
-        "
-        " MWE:
-        "
-        "     $ touch /tmp/file{1..3}
-        "     $ sudo chown root:root /tmp/file3 && sudo chmod 600 /tmp/file3
-        "     $ vim /tmp/file{1..3}
-        "     :try | next | endtry
-        "     @:
-        "     :echo expand('%:p')
-        "     /tmp/file3~
-        "     :args
-        "     /tmp/file1   [/tmp/file2] /tmp/file3~
-        "                  ^^^^^^^^^^^^
-        "
-        " Why is the current argument still `/tmp/file2`, and not `/tmp/file3`?
-        " If you had  removed the `try` conditional, the  current argument would
-        " be `/tmp/file3`; why the difference?
-        "
-        "     :try | next | endtry
-        "     " the current argument and the current file have not changed, and no error is raised
-        "     " why?
-        "
-        "     :prev
-        "     :try | next | endtry
-        "     :try | next | endtry
-        "     :args
-        "     /tmp/file1   /tmp/file2   [/tmp/file3]~
-        "                               ^^^^^^^^^^^^
-        "     " this time, the current argument is correctly `/tmp/file3`
-        "     " why did `:next` work now – to visit the last argument – but not before?
-        "
-        " ---
-        "
-        " It seems to be linked to the conditional `try`.
-        " Because `:next` works outside of it.
-        "
-        " It only happens when an argument is a non-readable file/directory.
-        " How to ignore non-readable files/directories?
-        "
-        " Ideas:
-        "
-        "     :args `=systemlist('find /etc -type f -maxdepth 1 -readable')`
-        "
-        " or:
-        "
-        "     :PA find /etc/ -maxdepth 1
-        "
-        " ---
-        "
-        " I can see 3 issues.
-        "
-        " First, the behavior of `:next` is inconsistent inside/outside a `try`
-        " (it works as expected outside but not inside).
-        "
-        " Second, the behavior of `:next` is inconsistent inside a `try`
-        " (it works as expected only after you fail to visit the unreadable
-        " argument then run `:prev`).
-        "
-        " Third, if it is an error to ask Vim to read a non-readable file, then
-        " the error  should be  catchable so that  I can react,  and ask  Vim to
-        " visit the next argument if there is one (or the first if we've reached
-        " the end of the arglist).
-        "
-        " ---
-        "
-        " Note that  when you ask Vim  to read a non-readable  file, usually, it
-        " prints a message on the command-line to inform you that you can't read
-        " the file:
-        "
-        "     /path/to/unreadable/file" [Permission Denied]
-        "                               ^^^^^^^^^^^^^^^^^^^
-        "
-        " Unless you include the `F` flag in `'shm'`.
-        "}}}
         exe cnt..cmd1
     catch
         try
@@ -159,30 +81,33 @@ endfu
 fu s:mil_build_mapping(key, pfx) abort "{{{4
     let prev = '['..a:key
     let next = ']'..a:key
-    exe 'nno  <silent><unique>  '..prev..'  :<c-u>call <sid>mil('..string(prev)..')<cr>'
-    exe 'nno  <silent><unique>  '..next..'  :<c-u>call <sid>mil('..string(next)..')<cr>'
+    exe 'nno <silent><unique> '..prev..' :<c-u>call <sid>mil('..string(prev)..')<cr>'
+    exe 'nno <silent><unique> '..next..' :<c-u>call <sid>mil('..string(next)..')<cr>'
 
     let first = '['..toupper(a:key)
     let last  = ']'..toupper(a:key)
-    exe 'nno  <silent><unique>  '..first..'  :<c-u>call <sid>mil('..string(first)..')<cr>'
-    exe 'nno  <silent><unique>  '..last..'  :<c-u>call <sid>mil('..string(last)..')<cr>'
+    exe 'nno <silent><unique> '..first..' :<c-u>call <sid>mil('..string(first)..')<cr>'
+    exe 'nno <silent><unique> '..last..' :<c-u>call <sid>mil('..string(last)..')<cr>'
 
-    " If a:pfx = 'c' then we also define the mappings `[ C-q` and `] C-q`
+    " If `a:pfx  == 'c'` then we  also define the  mappings `[ C-q` and  `] C-q`{{{
+    "
     " which execute the commands `:cpfile` and `:cnfile`:
     "
     "    - `:cpfile` = go to last error in the previous file in qfl.
     "    - `:cnfile` = go to first error in the next file in qfl.
     "
-    " We do the same thing if a:pfx = 'l' :
+    " ---
     "
-    "    - [ C-l mapped to `:lpfile`
-    "    - ] C-l mapped to `:lnfile`
+    " We do the same thing if `a:pfx == 'l'` :
+    "
+    "    - `[ C-l` mapped to `:lpfile`
+    "    - `] C-l` mapped to `:lnfile`
     "
     " We also do the same thing to move in the qf stack:
     "
-    "   - <q >q    (qfl)
-    "   - <l >l    (loclist)
-
+    "   - `<q` `>q`    (qfl)
+    "   - `<l` `>l`    (loclist)
+    "}}}
     if a:pfx =~# '[cl]'
         if a:pfx is# 'c'
             let pqf_key = '<q'
@@ -198,32 +123,43 @@ fu s:mil_build_mapping(key, pfx) abort "{{{4
             let nfile_key = ']<c-l>'
         endif
 
-        exe 'nno  <silent><unique>  '..pqf_key..'  :<c-u>call <sid>mil('..string(pqf_key)..')<cr>'
-        exe 'nno  <silent><unique>  '..nqf_key..'  :<c-u>call <sid>mil('..string(nqf_key)..')<cr>'
+        exe 'nno <silent><unique> '..pqf_key..' :<c-u>call <sid>mil('..string(pqf_key)..')<cr>'
+        exe 'nno <silent><unique> '..nqf_key..' :<c-u>call <sid>mil('..string(nqf_key)..')<cr>'
 
-        exe 'nno  <silent><unique>  '..pfile_key
+        exe 'nno <silent><unique> '..pfile_key
         \ ..'  :<c-u>call <sid>mil('..substitute(string(pfile_key), '<', '<lt>', '')..')<cr>'
-        exe 'nno  <silent><unique>  '..nfile_key
+        exe 'nno <silent><unique> '..nfile_key
         \ ..'  :<c-u>call <sid>mil('..substitute(string(nfile_key), '<', '<lt>', '')..')<cr>'
     endif
 endfu
 "}}}3
 " Installation {{{3
-"
-" Install a bunch of mappings to move in the:
-"    arglist
-"    buffer    list
-"    location  list
-"    quickfix  list
-"    tag match list
 
-call s:mil_build_mapping('a','')
+" Install a bunch of mappings to move in the:
+"
+"    - arglist
+"    - buffer    list
+"    - location  list
+"    - quickfix  list
+"    - tag match list
+
 call s:mil_build_mapping('b','b')
 call s:mil_build_mapping('l','l')
 call s:mil_build_mapping('q','c')
 call s:mil_build_mapping('t','t')
-"}}}3
 
+" Why is the arglist a special case?{{{
+"
+" Inside a try conditional, `:next`/`:prev` fail when the next/previous argument
+" is not readable.
+"
+" https://github.com/vim/vim/issues/5451
+"}}}
+nno <silent><unique> [a :<c-u>call brackets#move_in_arglist('[a')<cr>
+nno <silent><unique> ]a :<c-u>call brackets#move_in_arglist(']a')<cr>
+nno <silent><unique> [A :<c-u>first<cr>
+nno <silent><unique> ]A :<c-u>last<cr>
+"}}}2
 " ]e            move line {{{2
 
 nno <silent><unique> [e :<c-u>call brackets#mv_line_save_dir('up')<bar>set opfunc=brackets#mv_line<bar>exe 'norm! '..v:count1..'g@l'<cr>
@@ -334,6 +270,9 @@ nno <silent><unique> ]<space> :<c-u>call brackets#put_line_save_param(1)<bar>set
 
 nno <silent><unique> [- :<c-u>call brackets#rule_motion(0)<cr>
 nno <silent><unique> ]- :<c-u>call brackets#rule_motion(1)<cr>
+
+xno <silent><unique> [- :<c-u>call brackets#rule_motion(0)<cr>m'gv`'
+xno <silent><unique> ]- :<c-u>call brackets#rule_motion(1)<cr>m'gv`'
 
 nno <silent><unique> +[- :<c-u>call brackets#rule_put(0)<cr>
 nno <silent><unique> +]- :<c-u>call brackets#rule_put(1)<cr>

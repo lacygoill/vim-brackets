@@ -1,3 +1,22 @@
+" move_in_arglist {{{1
+
+fu brackets#move_in_arglist(lhs) abort
+    let [argc, argidx] = [argc(), argidx()]
+    if argc < 2
+        echohl ErrorMsg | echo 'E163: There is only one file to edit' | echohl NONE
+        return
+    endif
+    if a:lhs is# ']a' && argidx == argc - 1
+        first
+    elseif a:lhs is# '[a' && argidx == 0
+        last
+    elseif a:lhs is# ']a'
+        next
+    elseif a:lhs =~# '[a'
+        prev
+    endif
+endfu
+
 fu brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, ...) abort "{{{1
     " Derive the commands used below from the first argument.
     let excmd   = a:cmd..'list'..(a:search_in_comments ? '!' : '')
