@@ -513,6 +513,10 @@ fu brackets#put_lines_around(_) abort "{{{1
 endfu
 
 fu brackets#rule_motion(below, ...) abort "{{{1
+    " after this function has been called from the command-line, we're in normal
+    " mode; we need to get back to visual mode so that the search motion extends
+    " the visual selection, instead of just moving the cursor
+    if a:0 && a:1 is# 'vis' | exe 'norm! gv' | endif
     let cml = '\V'..escape(matchstr(&l:cms, '\S*\ze\s*%s'), '\')..'\m'
     let flags = (a:below ? '' : 'b')..'W'
     if &ft is# 'markdown'
@@ -523,10 +527,6 @@ fu brackets#rule_motion(below, ...) abort "{{{1
         let fmr = '\%('..join(split(&l:fmr, ','), '\|')..'\)\d*'
         let stopline = search('^\s*'..cml..'.*'..fmr..'$', flags..'n')
     endif
-    " after this function  has been invoked from the  command-line, we're in
-    " normal mode;  we need to  get back to visual  mode so that  the search
-    " motion extends the visual selection, instead of just moving the cursor
-    if a:0 && a:1 is# 'vis' | exe 'norm! gv' | endif
     let lnum = search(pat, flags..'n')
     if stopline == 0 || (a:below && lnum < stopline || !a:below && lnum > stopline)
         call search(pat, flags, stopline)
