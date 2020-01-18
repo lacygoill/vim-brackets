@@ -495,7 +495,20 @@ fu brackets#put_line(_) abort "{{{1
     endif
 
     " could fail if the buffer is unmodifiable
-    try | call append(lnum, lines) | catch | return lg#catch_error() | endtry
+    try
+        call append(lnum, lines)
+        " Why?{{{
+        "
+        " By default, we  set the foldmethod to `manual`, because  `expr` can be
+        " much more expensive.
+        " As a  consequence, when you  insert a  new fold, it's  not immediately
+        " detected as such; not until you've temporarily switched to `expr`.
+        " That's what `:FoldLazyCompute` does.
+        "}}}
+        if &ft is# 'markdown' | sil! FoldLazyCompute | endif
+    catch
+        return lg#catch_error()
+    endtry
 endfu
 
 fu brackets#put_line_save_param(below) abort "{{{1
