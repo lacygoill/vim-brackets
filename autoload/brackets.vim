@@ -128,7 +128,7 @@ fu brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, .
     call qf#create_matches()
 endfu
 
-fu brackets#mv_line(type) abort "{{{1
+fu brackets#mv_line(_) abort "{{{1
     let cnt = v:count1
 
     let where = s:mv_line_dir is# 'up'
@@ -137,12 +137,12 @@ fu brackets#mv_line(type) abort "{{{1
 
     let where ..= cnt
 
-    " I'm not sure, but disabling the folds may alter the view, so save it first
+    " disabling the folds may alter the view, so save it first
     let view = winsaveview()
-
     let z_save = getpos("'z")
 
-    " Why do we disable folding?{{{
+    " Why do you disable folding?{{{
+    "
     " We're going to do 2 things:
     "
     "    1. move a / several line(s)
@@ -159,14 +159,15 @@ fu brackets#mv_line(type) abort "{{{1
     " were operating.
     "
     " MWE:
-    "         echo "fold\nfoo\nbar\nbaz\n" >file
-    "         vim -Nu NONE file
-    "         :set fdm=marker
-    "         VGzf
-    "         zv
-    "         j
-    "         :m + | norm! ==
-    "         5 lines indented ✘ it should be just one~
+    "
+    "     echo "fold\nfoo\nbar\nbaz\n" >file
+    "     vim -Nu NONE file
+    "     :set fdm=marker
+    "     VGzf
+    "     zv
+    "     j
+    "     :m + | norm! ==
+    "     5 lines indented ✘ it should be just one~
     "
     " Maybe we could use `norm! zv` to open the folds, but it would be tedious
     " and error-prone in the future. Every time we would add a new command, we
@@ -381,7 +382,7 @@ fu s:what_is_around(dir) abort
     return entries
 endfu
 
-fu brackets#put(type) abort "{{{1
+fu brackets#put(_) abort "{{{1
     let cnt = v:count1
 
     if s:put_register =~# '[/:%#.]'
@@ -432,6 +433,9 @@ fu brackets#put(type) abort "{{{1
 
         " put the register (`s:put_where` can be `]p` or `[p`)
         exe 'norm! "'..reg_to_use..cnt..s:put_where..s:put_how_to_indent
+
+        " make sure the cursor is on the first non-whitespace
+        call search('\S', 'cW')
     catch
         return lg#catch_error()
     finally
@@ -503,9 +507,9 @@ fu brackets#put_line(_) abort "{{{1
         " much more expensive.
         " As a  consequence, when you  insert a  new fold, it's  not immediately
         " detected as such; not until you've temporarily switched to `expr`.
-        " That's what `:FoldLazyCompute` does.
+        " That's what `#update_win()` does.
         "}}}
-        if &ft is# 'markdown' | sil! FoldLazyCompute | endif
+        if &ft is# 'markdown' | sil! call fold#lazy#update_win() | endif
     catch
         return lg#catch_error()
     endtry
