@@ -509,7 +509,9 @@ fu brackets#put_line(_) abort "{{{1
         " detected as such; not until you've temporarily switched to `expr`.
         " That's what `#compute()` does.
         "}}}
-        if &ft is# 'markdown' | sil! call fold#lazy#compute() | endif
+        if &ft is# 'markdown' && lines[0] =~# '^[#=-]'
+            sil! call fold#lazy#compute()
+        endif
     catch
         return lg#catch_error()
     endtry
