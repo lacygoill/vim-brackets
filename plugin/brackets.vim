@@ -21,159 +21,87 @@ com -bang -nargs=1 Ilist call brackets#di_list('i', 0, 0, <bang>0, <q-args>)
 com -bang -nargs=1 Dlist call brackets#di_list('d', 0, 0, <bang>0, <q-args>)
 "}}}1
 " Mappings {{{1
-" ]ablqt        move in lists {{{2
-" Init {{{3
+" Move in lists {{{2
+" arglist {{{3
 
-const s:MIL_CMD = {
-              \   '<q': ['colder', ''],
-              \   '>q': ['cnewer', ''],
-              \   '<l': ['lolder', ''],
-              \   '>l': ['lnewer', ''],
-              \
-              \   '[<c-l>': ['lpfile', ''],
-              \   ']<c-l>': ['lnfile', ''],
-              \   '[<c-q>': ['cpfile', ''],
-              \   ']<c-q>': ['cnfile', ''],
-              \
-              \   '[B': ['bfirst',     ''],
-              \   ']B': ['blast',      ''],
-              \   '[L': ['lfirst',     ''],
-              \   ']L': ['llast',      ''],
-              \   '[Q': ['cfirst',     ''],
-              \   ']Q': ['clast',      ''],
-              \   '[T': ['tfirst',     ''],
-              \   ']T': ['tlast',      ''],
-              \
-              \   '[b': ['bprevious',  'blast'],
-              \   ']b': ['bnext',      'bfirst'],
-              \   '[l': ['lprevious',  'llast'],
-              \   ']l': ['lnext',      'lfirst'],
-              \   '[q': ['cprevious',  'clast'],
-              \   ']q': ['cnext',      'cfirst'],
-              \   '[t': ['tprevious',  'tlast'],
-              \   ']t': ['tnext',      'tfirst'],
-              \ }
+nno <silent><unique> [a :<c-u>call brackets#move#next('[a')<cr>
+nno <silent><unique> ]a :<c-u>call brackets#move#next(']a')<cr>
 
-" Functions {{{3
-fu s:mil(lhs) abort "{{{4
-    let cnt = (v:count ? v:count : '')
-
-    let cmd1 = s:MIL_CMD[a:lhs][0]
-    let cmd2 = s:MIL_CMD[a:lhs][1]
-
-    try
-        exe cnt..cmd1
-    catch
-        try
-            exe cmd2
-        catch
-            return lg#catch_error()
-        endtry
-    endtry
-
-    " If an entry in the quickfix / location list is located inside folds, we
-    " want them to be opened to see it directly.
-    if a:lhs =~? '[lq]$\|c-[lq]' && foldclosed('.') != -1
-        if a:lhs =~? '^[[\]]l$' && get(maparg('j', 'n', 0, 1), 'rhs', '') =~# 'move_and_open_fold'
-            norm! zM
-        endif
-        norm! zv
-    endif
-endfu
-
-fu s:mil_build_mapping(key, pfx) abort "{{{4
-    let prev = '['..a:key
-    let next = ']'..a:key
-    exe 'nno <silent><unique> '..prev..' :<c-u>call <sid>mil('..string(prev)..')<cr>'
-    exe 'nno <silent><unique> '..next..' :<c-u>call <sid>mil('..string(next)..')<cr>'
-
-    let first = '['..toupper(a:key)
-    let last  = ']'..toupper(a:key)
-    exe 'nno <silent><unique> '..first..' :<c-u>call <sid>mil('..string(first)..')<cr>'
-    exe 'nno <silent><unique> '..last..' :<c-u>call <sid>mil('..string(last)..')<cr>'
-
-    " If `a:pfx  == 'c'` then we  also define the  mappings `[ C-q` and  `] C-q`{{{
-    "
-    " which execute the commands `:cpfile` and `:cnfile`:
-    "
-    "    - `:cpfile` = go to last error in the previous file in qfl.
-    "    - `:cnfile` = go to first error in the next file in qfl.
-    "
-    " ---
-    "
-    " We do the same thing if `a:pfx == 'l'` :
-    "
-    "    - `[ C-l` mapped to `:lpfile`
-    "    - `] C-l` mapped to `:lnfile`
-    "
-    " We also do the same thing to move in the qf stack:
-    "
-    "   - `<q` `>q`    (qfl)
-    "   - `<l` `>l`    (loclist)
-    "}}}
-    if a:pfx =~# '[cl]'
-        if a:pfx is# 'c'
-            let pqf_key = '<q'
-            let nqf_key = '>q'
-
-            let pfile_key = '[<c-q>'
-            let nfile_key = ']<c-q>'
-        else
-            let pqf_key = '<l'
-            let nqf_key = '>l'
-
-            let pfile_key = '[<c-l>'
-            let nfile_key = ']<c-l>'
-        endif
-
-        exe 'nno <silent><unique> '..pqf_key..' :<c-u>call <sid>mil('..string(pqf_key)..')<cr>'
-        exe 'nno <silent><unique> '..nqf_key..' :<c-u>call <sid>mil('..string(nqf_key)..')<cr>'
-
-        exe 'nno <silent><unique> '..pfile_key
-        \ ..'  :<c-u>call <sid>mil('..substitute(string(pfile_key), '<', '<lt>', '')..')<cr>'
-        exe 'nno <silent><unique> '..nfile_key
-        \ ..'  :<c-u>call <sid>mil('..substitute(string(nfile_key), '<', '<lt>', '')..')<cr>'
-    endif
-endfu
-"}}}3
-" Installation {{{3
-
-" Install a bunch of mappings to move in the:
-"
-"    - arglist
-"    - buffer    list
-"    - location  list
-"    - quickfix  list
-"    - tag match list
-
-call s:mil_build_mapping('b','b')
-call s:mil_build_mapping('l','l')
-call s:mil_build_mapping('q','c')
-call s:mil_build_mapping('t','t')
-
-" Why is the arglist a special case?{{{
-"
-" Inside a try conditional, `:next`/`:prev` fail when the next/previous argument
-" is not readable.
-"
-" https://github.com/vim/vim/issues/5451
-"}}}
-nno <silent><unique> [a :<c-u>call brackets#move_in_arglist('[a')<cr>
-nno <silent><unique> ]a :<c-u>call brackets#move_in_arglist(']a')<cr>
 nno <silent><unique> [A :<c-u>first<cr>
 nno <silent><unique> ]A :<c-u>last<cr>
-"}}}2
-" ]e            move line {{{2
 
-nno <silent><unique> [e :<c-u>call brackets#mv_line_save_dir('up')<bar>set opfunc=brackets#mv_line<bar>exe 'norm! '..v:count1..'g@l'<cr>
-nno <silent><unique> ]e :<c-u>call brackets#mv_line_save_dir('down')<bar>set opfunc=brackets#mv_line<bar>exe 'norm! '..v:count1..'g@l'<cr>
+" buffer list {{{3
 
-" ]f            move in files {{{2
+" `:bnext` wrap around the end of the buffer list by default
+nno <silent><unique> [b :<c-u>exe v:count..'bprevious'<cr>
+nno <silent><unique> ]b :<c-u>exe v:count..'bnext'<cr>
+
+nno <silent><unique> [B :<c-u>bfirst<cr>
+nno <silent><unique> ]B :<c-u>blast<cr>
+
+" file list {{{3
 
 nno <silent><unique> ]f :<c-u>e <c-r>=fnameescape(brackets#next_file_to_edit(v:count1))<cr><cr>
 nno <silent><unique> [f :<c-u>e <c-r>=fnameescape(brackets#next_file_to_edit(-v:count1))<cr><cr>
 
-" ]I            [di]list {{{2
+" quickfix list {{{3
+
+nno <silent><unique> [q :<c-u>call brackets#move#cafter('[q')<cr>
+nno <silent><unique> ]q :<c-u>call brackets#move#cafter(']q')<cr>
+
+nno <silent><unique> [l :<c-u>call brackets#move#cafter('[l')<cr>
+nno <silent><unique> ]l :<c-u>call brackets#move#cafter(']l')<cr>
+
+nno <silent><unique> [Q :<c-u>cfirst<cr>
+nno <silent><unique> ]Q :<c-u>clast<cr>
+
+nno <silent><unique> [L :<c-u>lfirst<cr>
+nno <silent><unique> ]L :<c-u>llast<cr>
+
+nno <silent><unique> [<c-q> :<c-u>call brackets#move#cnfile('[q')<cr>
+nno <silent><unique> ]<c-q> :<c-u>call brackets#move#cnfile(']q')<cr>
+
+nno <silent><unique> [<c-l> :<c-u>call brackets#move#cnfile('[l')<cr>
+nno <silent><unique> ]<c-l> :<c-u>call brackets#move#cnfile(']l')<cr>
+
+" quickfix stack {{{3
+
+nno <silent><unique> <q :<c-u>call brackets#move#cnewer('<q')<cr>
+nno <silent><unique> >q :<c-u>call brackets#move#cnewer('>q')<cr>
+
+nno <silent><unique> <l :<c-u>call brackets#move#cnewer('<l')<cr>
+nno <silent><unique> >l :<c-u>call brackets#move#cnewer('>l')<cr>
+
+" tag list {{{3
+
+nno <silent><unique> [t :<c-u>call brackets#move#tnext('[t')<cr>
+nno <silent><unique> ]t :<c-u>call brackets#move#tnext(']t')<cr>
+
+nno <silent><unique> [T :<c-u>tfirst<cr>
+nno <silent><unique> ]T :<c-u>tlast<cr>
+"}}}2
+" Miscellaneous {{{2
+" ] SPC {{{3
+
+nno <silent><unique> =<space> :<c-u>set opfunc=brackets#put_lines_around<bar>exe 'norm! '..v:count1..'g@l'<cr>
+nno <silent><unique> [<space> :<c-u>call brackets#put_line_save_param(0)<bar>set opfunc=brackets#put_line<bar>exe 'norm! '..v:count1..'g@l'<cr>
+nno <silent><unique> ]<space> :<c-u>call brackets#put_line_save_param(1)<bar>set opfunc=brackets#put_line<bar>exe 'norm! '..v:count1..'g@l'<cr>
+
+" ] - {{{3
+
+nno <silent><unique> [- :<c-u>call brackets#rule_motion(0)<cr>
+nno <silent><unique> ]- :<c-u>call brackets#rule_motion(1)<cr>
+
+xno <silent><unique> [- :<c-u>call brackets#rule_motion(0, 'vis')<cr>
+xno <silent><unique> ]- :<c-u>call brackets#rule_motion(1, 'vis')<cr>
+
+ono <silent><unique> [- :<c-u>norm V[-<cr>
+ono <silent><unique> ]- :<c-u>norm V]-<cr>
+
+nno <silent><unique> +[- :<c-u>call brackets#rule_put(0)<cr>
+nno <silent><unique> +]- :<c-u>call brackets#rule_put(1)<cr>
+
+" ]I {{{3
 
 "                                                           ┌ don't start to search at cursor,
 "                                                           │ but at beginning of file
@@ -201,7 +129,12 @@ xno <silent><unique> [D :<c-u>call brackets#di_list('d', 0, 0, 1)<cr>
 nno <silent><unique> ]D :<c-u>call brackets#di_list('d', 1, 1, 0)<cr>
 xno <silent><unique> ]D :<c-u>call brackets#di_list('d', 0, 1, 1)<cr>
 
-" ]p {{{2
+" ]e {{{3
+
+nno <silent><unique> [e :<c-u>call brackets#mv_line_save_dir('up')<bar>set opfunc=brackets#mv_line<bar>exe 'norm! '..v:count1..'g@l'<cr>
+nno <silent><unique> ]e :<c-u>call brackets#mv_line_save_dir('down')<bar>set opfunc=brackets#mv_line<bar>exe 'norm! '..v:count1..'g@l'<cr>
+
+" ]p {{{3
 
 " By default `]p` puts a copied line with the indentation of the current line.
 " But if the copied text is characterwise, `]p` puts it as a characterwise text.
@@ -240,7 +173,7 @@ nno <silent><unique> =p :<c-u>call brackets#put_save_param(']p', "=']")<bar>set 
 "
 " But with these ones, we would lose the linewise conversion.
 
-" ]sS {{{2
+" ]s  ]S {{{3
 
 " Why? {{{
 "
@@ -262,24 +195,4 @@ nno <unique> [s 5zh
 nno <unique> ]s 5zl
 "             │
 "             └ mnemonic: Scroll
-
-" ] space {{{2
-
-nno <silent><unique> =<space> :<c-u>set opfunc=brackets#put_lines_around<bar>exe 'norm! '..v:count1..'g@l'<cr>
-nno <silent><unique> [<space> :<c-u>call brackets#put_line_save_param(0)<bar>set opfunc=brackets#put_line<bar>exe 'norm! '..v:count1..'g@l'<cr>
-nno <silent><unique> ]<space> :<c-u>call brackets#put_line_save_param(1)<bar>set opfunc=brackets#put_line<bar>exe 'norm! '..v:count1..'g@l'<cr>
-
-" ] - {{{2
-
-nno <silent><unique> [- :<c-u>call brackets#rule_motion(0)<cr>
-nno <silent><unique> ]- :<c-u>call brackets#rule_motion(1)<cr>
-
-xno <silent><unique> [- :<c-u>call brackets#rule_motion(0, 'vis')<cr>
-xno <silent><unique> ]- :<c-u>call brackets#rule_motion(1, 'vis')<cr>
-
-ono <silent><unique> [- :<c-u>norm V[-<cr>
-ono <silent><unique> ]- :<c-u>norm V]-<cr>
-
-nno <silent><unique> +[- :<c-u>call brackets#rule_put(0)<cr>
-nno <silent><unique> +]- :<c-u>call brackets#rule_put(1)<cr>
 
