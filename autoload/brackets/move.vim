@@ -71,6 +71,11 @@ endfu
 
 fu brackets#move#cafter(lhs) abort "{{{2
     let cnt = v:count1
+
+    if &ft is# 'qf'
+        sil exe (a:lhs =~# 'q' ? 'cc ' : 'll ')..line('.')
+    endif
+
     " Nvim doesn't  support `:cafter`/`:cbefore`  yet; we  try to  emulate their
     " behavior in a special function.
     if has('nvim')
@@ -128,6 +133,9 @@ endfu
 
 fu brackets#move#cnfile(lhs) abort "{{{2
     let cnt = v:count1
+    if &ft is# 'qf'
+        sil exe (a:lhs =~# 'q' ? 'cc ' : 'll ')..line('.')
+    endif
     for i in range(cnt)
         call s:cnfile(a:lhs)
     endfor
@@ -137,8 +145,31 @@ endfu
 fu s:cafter(lhs) abort "{{{2
     let [cmd1, cmd2, cmd3, cmd4] = s:LHS2CMD[a:lhs]
     try
+        let pos = getcurpos()
         " for `]q`, try to visit next entry relative to current cursor position (via `:cafter`)
         exe cmd1
+        " `:cafter` failed silently because the next entry has been deleted/moved,{{{
+        " and its position does not exist anymore:
+        "
+        "     $ vim -Nu NONE +"%d|pu=['pat', '', 'xxx', 'xxx pat', '', '', 'pat']|sil vim /pat/ %" +'4j|1' /tmp/file
+        "     :cafter
+        "     " jumps on 1st "pat"
+        "     :cafter
+        "     " jumps on 5th line where the 2nd "pat" was originally (before `:j`)
+        "     :cafter
+        "     " no jump because the 5th column can't be reached;
+        "     " the cursor is forever stuck before the non-existing position "line 5 col 5";
+        "     " the third "pat" will never be reached unless the cursor is moved manually past "line 5 col 5"
+        "}}}
+        if pos == getcurpos()
+            try
+                " run `:cnext` to move past the non-existing position
+                exe cmd3
+            catch /^Vim\%((\a\+)\)\=:\%(E42\|E776\):/
+                " the qfl is empty
+                return lg#catch_error()
+            endtry
+        endif
     " What's the difference between{{{
     "}}}
     "   `E553` and `E42`?{{{
