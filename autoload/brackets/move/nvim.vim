@@ -35,8 +35,8 @@ fu brackets#move#nvim#qflist(lhs) abort "{{{2
         let s:was_invoked_recently = timer_start(50, {-> execute('unlet! s:was_invoked_recently')})
     endif
 
-    let orig_qfl = is_loclist ? getloclist(0) : getqflist()
-    let qfl = deepcopy(orig_qfl)
+    let _qfl = is_loclist ? getloclist(0) : getqflist()
+    let qfl = deepcopy(_qfl)
     call s:remove_entries_from_other_files(qfl, is_loclist)
 
     " there is no entry in the current file; we can't run anything before `:cnext`/`:cprevious`
@@ -46,16 +46,16 @@ fu brackets#move#nvim#qflist(lhs) abort "{{{2
     call call('s:remove_entries_'..(a:lhs =~# ']' ? 'before' : 'after')..'_cursor', [qfl, a:lhs])
     if !empty(qfl)
         let entry = a:lhs =~# ']' ? qfl[0] : qfl[-1]
-        let idx = index(orig_qfl, entry) + 1
+        let idx = index(_qfl, entry) + 1
         exe (is_loclist ? 'll ' : 'cc ')..idx
         return brackets#util#open_fold(a:lhs)
     endif
 
     " there is no next/previous entry in the current file; let's try in the next/previous file
-    let qfl = deepcopy(orig_qfl)
+    let qfl = deepcopy(_qfl)
     call s:remove_entries_from_other_files(qfl, is_loclist)
     let entry = a:lhs =~# ']' ? qfl[-1] : qfl[0]
-    let idx = index(orig_qfl, entry) + 1
+    let idx = index(_qfl, entry) + 1
     " first, let's jump to the last/first entry in the current file
     exe (is_loclist ? 'll ' : 'cc ')..idx
     " ok, now we can run `:cnext`/`:cprevious`

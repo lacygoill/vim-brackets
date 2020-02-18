@@ -112,15 +112,8 @@ endfu
 fu brackets#mv_line(_) abort "{{{1
     let cnt = v:count1
 
-    let where = s:mv_line_dir is# 'up'
-            \ ?     '-1-'
-            \ :     '+'
-
-    let where ..= cnt
-
     " disabling the folds may alter the view, so save it first
     let view = winsaveview()
-    let z_save = getpos("'z")
 
     " Why do you disable folding?{{{
     "
@@ -164,23 +157,48 @@ fu brackets#mv_line(_) abort "{{{1
 
     try
         " Why do we mark the line since we already saved the view?{{{
-        " Because, after the restoration of the view, the cursor will be
+        "
+        " Because,  after  the restoration  of  the  view,  the cursor  will  be
         " positioned on the old address of the line we moved.
         " We don't want that.
-        " We want the cursor to be positioned on the same line, whose address has
-        " changed. We can't rely on an address, so we need to mark the current
-        " line. The mark will follow the moved line, not an address.
-        "
-        " And why do we use a named mark? Why not m'?
-        " Probably because we could be using '' to go back and forth between
-        " 2 positions, and we don't want this function to disrupt these jumps.
+        " We want  the cursor to be  positioned on the same  line, whose address
+        " has  changed. We can't  rely on  an address,  so we  need to  mark the
+        " current line. The mark will follow the moved line, not an address.
         "}}}
-        norm! mz
+        if has('nvim')
+            let ns_id = nvim_create_namespace('tempmark')
+            let id = nvim_buf_set_extmark(0, ns_id, 0, line('.')-1, col('.'), {})
+            " move the line
+            let where = s:mv_line_dir is# 'up' ? '-1-' : '+'
+            let where ..= cnt
+            sil exe 'move '..where
+        else
+            " set a  dummy text property  on current location before  moving, so
+            " that we can use the info later to restore the cursor position
+            call prop_type_add('tempmark', {'bufnr': bufnr('%')})
+            call prop_add(line('.'), col('.'), {'type': 'tempmark'})
+            if s:mv_line_dir is# 'up'
+                " Why this convoluted `:move` just to move a line?  Why don't you simply move the line itself?{{{
+                "
+                " To preserve the text property.
+                "
+                " To move a line, internally, Vim  first copies it at some other
+                " location, then removes the original.
+                " The copy  does not inherit the  text property, so in  the end,
+                " the latter  is lost.   But we  need it  to restore  the cursor
+                " position.
+                "
+                " As a workaround, we don't move the line itself, but its direct
+                " neighbor.
+                "}}}
+                exe '-'..cnt..',-m.|-'..cnt
+            else
+                " `sil!` suppresses `E16` when reaching the end of the buffer
+                sil! exe '+,+1+'..(cnt-1)..'m-|+'
+            endif
+        endif
 
-        " move the line
-        sil exe 'move '..where
-
-        " indent it
+        " indent the line
         if &ft isnot# 'markdown' && &ft isnot# ''
             sil norm! ==
         endif
@@ -192,12 +210,13 @@ fu brackets#mv_line(_) abort "{{{1
             let [tabnr, winnr] = win_id2tabwin(winid)
             call settabwinvar(tabnr, winnr, '&fen', fen_save)
         endif
-        " restore the view *after* re-enabling folding,
-        " because the latter may alter the view
+        " restore the view *after* re-enabling folding, because the latter may alter the view
         call winrestview(view)
-        norm! `z
-
-        " FIXME: When we undo (u, :undo), `z` is put on the line which was moved. {{{
+        " restore cursor position
+        " Why not simply using a regular mark?{{{
+        "
+        " Even if  you save and  restore the original  position of the  mark, it
+        " will be altered after an undo.
         "
         " MWE:
         "
@@ -210,32 +229,28 @@ fu brackets#mv_line(_) abort "{{{1
         "         call setpos("'z", z_save)
         "     endfu
         "
-        "     put the mark `z` somewhere, hit `cd` somewhere else, undo,
-        "     then hit `z (the `z` mark has moved; we don't want that)
+        "     " put the mark `z` somewhere, hit `cd` somewhere else, undo,
+        "     " then hit `z (the `z` mark has moved; we don't want that)
         "
-        " The issue comes from the fact that Vim saves the state of the buffer right
-        " before a change. Here the change is caused by the `:move` command. So, Vim
-        " saves the state of the buffer right before `:m`, and thus with the `z` mark
-        " in the wrong and temporary position.
-        "
-        " Solution:
-        " Try to break the undo sequence before setting the `z` mark, and use `:undojoin`
-        " before `:m`:
-        "
-        "         nno cd :call Func()<cr>
-        "         fu Func() abort
-        "             let z_save = getpos("'z")
-        "             " isn't there a better way to break undo sequence?
-        "             exe "norm! i\<c-g>u"
-        "             norm! mz
-        "             undoj | m -1-
-        "             norm! `z
-        "             call setpos("'z", z_save)
-        "         endfu
-        "
-        " Doesn't work well. When we undo, some undesired edit is restored.
-        " }}}
-        call setpos("'z", z_save)
+        " The issue comes from  the fact that Vim saves the  state of the buffer
+        " right  before a  change. Here  the  change is  caused  by the  `:move`
+        " command. So, Vim saves the state of  the buffer right before `:m`, and
+        " thus with the `z` mark in the wrong and temporary position.
+        "}}}
+        if has('nvim')
+            let pos = nvim_buf_get_extmark_by_id(0, ns_id, id) | let pos[0] += 1
+            call call('cursor', pos)
+            call nvim_buf_del_extmark(0, ns_id, id)
+        else
+            " use the text property to restore the position
+            let info = [prop_find({'id': 0}, 'f'), prop_find({'id': 0}, 'b')]
+            call filter(info, {_,v -> !empty(v)})
+            if empty(info) | return | endif
+            call cursor(info[0].lnum, info[0].col)
+            " remove the text property
+            call prop_remove({'type': 'tempmark', 'all': v:true})
+            call prop_type_delete('tempmark', {'bufnr': bufnr('%')})
+        endif
     endtry
 endfu
 
