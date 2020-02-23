@@ -154,7 +154,6 @@ fu brackets#mv_line(_) abort "{{{1
     "}}}
     let [fen_save, winid, bufnr] = [&l:fen, win_getid(), bufnr('%')]
     let &l:fen = 0
-
     try
         " Why do we mark the line since we already saved the view?{{{
         "
@@ -166,17 +165,46 @@ fu brackets#mv_line(_) abort "{{{1
         " current line. The mark will follow the moved line, not an address.
         "}}}
         if has('nvim')
+            " set an extended mark on current location before moving, so that we
+            " can use the info later to restore the cursor position
+            " Why not simply using a regular mark?{{{
+            "
+            " Even if you save and restore the original position of the mark, it
+            " will be altered after an undo.
+            "
+            " MWE:
+            "
+            "     nno cd :call Func()<cr>
+            "     fu Func() abort
+            "         let z_save = getpos("'z")
+            "         norm! mz
+            "         m -1-
+            "         norm! `z
+            "         call setpos("'z", z_save)
+            "     endfu
+            "
+            "     " put the mark `z` somewhere, hit `cd` somewhere else, undo,
+            "     " then hit `z (the `z` mark has moved; we don't want that)
+            "
+            " The issue  comes from  the fact  that Vim saves  the state  of the
+            " buffer right  before a  change. Here the change  is caused  by the
+            " `:move`  command. So, Vim  saves  the state  of  the buffer  right
+            " before `:m`, and thus with the `z` mark in the wrong and temporary
+            " position.
+            "}}}
             let ns_id = nvim_create_namespace('tempmark')
             let id = nvim_buf_set_extmark(0, ns_id, 0, line('.')-1, col('.'), {})
+
             " move the line
             let where = s:mv_line_dir is# 'up' ? '-1-' : '+'
             let where ..= cnt
             sil exe 'move '..where
         else
-            " set a  dummy text property  on current location before  moving, so
-            " that we can use the info later to restore the cursor position
+            " Vim doesn't provide the concept of extended mark; use a dummy text property instead
             call prop_type_add('tempmark', {'bufnr': bufnr('%')})
             call prop_add(line('.'), col('.'), {'type': 'tempmark'})
+
+            " move the line
             if s:mv_line_dir is# 'up'
                 " Why this convoluted `:move` just to move a line?  Why don't you simply move the line itself?{{{
                 "
@@ -210,46 +238,30 @@ fu brackets#mv_line(_) abort "{{{1
             let [tabnr, winnr] = win_id2tabwin(winid)
             call settabwinvar(tabnr, winnr, '&fen', fen_save)
         endif
+        " Why getting the info now?  Doing it later would allow us to get rid of 1 `has('nvim')`...{{{
+        "
+        " It would  not work as  expected when the cursor  is on the  very first
+        " character of a line; see github issue #5663.
+        "}}}
+        if !has('nvim')
+            " use the text property to restore the position
+            let info = [prop_find({'type': 'tempmark'}, 'f'), prop_find({'type': 'tempmark'}, 'b')]
+        endif
         " restore the view *after* re-enabling folding, because the latter may alter the view
         call winrestview(view)
         " restore cursor position
-        " Why not simply using a regular mark?{{{
-        "
-        " Even if  you save and  restore the original  position of the  mark, it
-        " will be altered after an undo.
-        "
-        " MWE:
-        "
-        "     nno cd :call Func()<cr>
-        "     fu Func() abort
-        "         let z_save = getpos("'z")
-        "         norm! mz
-        "         m -1-
-        "         norm! `z
-        "         call setpos("'z", z_save)
-        "     endfu
-        "
-        "     " put the mark `z` somewhere, hit `cd` somewhere else, undo,
-        "     " then hit `z (the `z` mark has moved; we don't want that)
-        "
-        " The issue comes from  the fact that Vim saves the  state of the buffer
-        " right  before a  change. Here  the  change is  caused  by the  `:move`
-        " command. So, Vim saves the state of  the buffer right before `:m`, and
-        " thus with the `z` mark in the wrong and temporary position.
-        "}}}
         if has('nvim')
             let pos = nvim_buf_get_extmark_by_id(0, ns_id, id) | let pos[0] += 1
             call call('cursor', pos)
             call nvim_buf_del_extmark(0, ns_id, id)
         else
-            " use the text property to restore the position
-            let info = [prop_find({'id': 0}, 'f'), prop_find({'id': 0}, 'b')]
-            call filter(info, {_,v -> !empty(v)})
-            if empty(info) | return | endif
-            call cursor(info[0].lnum, info[0].col)
             " remove the text property
             call prop_remove({'type': 'tempmark', 'all': v:true})
             call prop_type_delete('tempmark', {'bufnr': bufnr('%')})
+            call filter(info, {_,v -> !empty(v)})
+            if !empty(info)
+                call cursor(info[0].lnum, info[0].col)
+            endif
         endif
     endtry
 endfu
