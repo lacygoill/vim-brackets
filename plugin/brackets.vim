@@ -46,11 +46,11 @@ nno <silent><unique> [f :<c-u>e <c-r>=fnameescape(brackets#next_file_to_edit(-v:
 
 " quickfix list {{{3
 
-nno <silent><unique> [q :<c-u>call brackets#move#cafter('[q')<cr>
-nno <silent><unique> ]q :<c-u>call brackets#move#cafter(']q')<cr>
+nno <silent><unique> [q :<c-u>call brackets#move#cnext('[q')<cr>
+nno <silent><unique> ]q :<c-u>call brackets#move#cnext(']q')<cr>
 
-nno <silent><unique> [l :<c-u>call brackets#move#cafter('[l')<cr>
-nno <silent><unique> ]l :<c-u>call brackets#move#cafter(']l')<cr>
+nno <silent><unique> [l :<c-u>call brackets#move#cnext('[l')<cr>
+nno <silent><unique> ]l :<c-u>call brackets#move#cnext(']l')<cr>
 
 nno <silent><unique> [Q :<c-u>cfirst<cr>
 nno <silent><unique> ]Q :<c-u>clast<cr>
@@ -58,11 +58,11 @@ nno <silent><unique> ]Q :<c-u>clast<cr>
 nno <silent><unique> [L :<c-u>lfirst<cr>
 nno <silent><unique> ]L :<c-u>llast<cr>
 
-nno <silent><unique> [<c-q> :<c-u>call brackets#move#cnfile('[q')<cr>
-nno <silent><unique> ]<c-q> :<c-u>call brackets#move#cnfile(']q')<cr>
+nno <silent><unique> [<c-q> :<c-u>call brackets#move#cnext('[ c-q')<cr>
+nno <silent><unique> ]<c-q> :<c-u>call brackets#move#cnext('] c-q')<cr>
 
-nno <silent><unique> [<c-l> :<c-u>call brackets#move#cnfile('[l')<cr>
-nno <silent><unique> ]<c-l> :<c-u>call brackets#move#cnfile(']l')<cr>
+nno <silent><unique> [<c-l> :<c-u>call brackets#move#cnext('[ c-l')<cr>
+nno <silent><unique> ]<c-l> :<c-u>call brackets#move#cnext('] c-l')<cr>
 
 " quickfix stack {{{3
 
