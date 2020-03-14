@@ -238,15 +238,6 @@ fu brackets#mv_line(_) abort "{{{1
             let [tabnr, winnr] = win_id2tabwin(winid)
             call settabwinvar(tabnr, winnr, '&fen', fen_save)
         endif
-        " Why getting the info now?  Doing it later would allow us to get rid of 1 `has('nvim')`...{{{
-        "
-        " It would  not work as  expected when the cursor  is on the  very first
-        " character of a line; see github issue #5663.
-        "}}}
-        if !has('nvim')
-            " use the text property to restore the position
-            let info = [prop_find({'type': 'tempmark'}, 'f'), prop_find({'type': 'tempmark'}, 'b')]
-        endif
         " restore the view *after* re-enabling folding, because the latter may alter the view
         call winrestview(view)
         " restore cursor position
@@ -255,13 +246,15 @@ fu brackets#mv_line(_) abort "{{{1
             call call('cursor', pos)
             call nvim_buf_del_extmark(0, ns_id, id)
         else
-            " remove the text property
-            call prop_remove({'type': 'tempmark', 'all': v:true})
-            call prop_type_delete('tempmark', {'bufnr': bufnr('%')})
+            " use the text property to restore the cursor position
+            let info = [prop_find({'type': 'tempmark'}, 'f'), prop_find({'type': 'tempmark'}, 'b')]
             call filter(info, {_,v -> !empty(v)})
             if !empty(info)
                 call cursor(info[0].lnum, info[0].col)
             endif
+            " remove the text property
+            call prop_remove({'type': 'tempmark', 'all': v:true})
+            call prop_type_delete('tempmark', {'bufnr': bufnr('%')})
         endif
     endtry
 endfu
