@@ -80,6 +80,19 @@ nno <silent><unique> ]t :<c-u>call brackets#move#tnext(']t')<cr>
 nno <silent><unique> [T :<c-u>tfirst<cr>
 nno <silent><unique> ]T :<c-u>tlast<cr>
 "}}}2
+" Move to text matching regex {{{2
+
+noremap <expr><silent><unique> [` brackets#move#regex('codespan', 0)
+noremap <expr><silent><unique> ]` brackets#move#regex('codespan', 1)
+noremap <expr><silent><unique> [h brackets#move#regex('path', 0)
+noremap <expr><silent><unique> ]h brackets#move#regex('path', 1)
+noremap <expr><silent><unique> [r brackets#move#regex('ref', 0)
+noremap <expr><silent><unique> ]r brackets#move#regex('ref', 1)
+noremap <expr><silent><unique> [u brackets#move#regex('url', 0)
+noremap <expr><silent><unique> ]u brackets#move#regex('url', 1)
+noremap <expr><silent><unique> [U brackets#move#regex('concealed_url', 0)
+noremap <expr><silent><unique> ]U brackets#move#regex('concealed_url', 1)
+
 " Miscellaneous {{{2
 " ] SPC {{{3
 

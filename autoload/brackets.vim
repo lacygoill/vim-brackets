@@ -231,7 +231,7 @@ fu brackets#mv_line(_) abort "{{{1
             sil norm! ==
         endif
     catch
-        return lg#catch_error()
+        return lg#catch()
     finally
         " restoration and cleaning
         if winbufnr(winid) == bufnr
@@ -438,7 +438,7 @@ fu brackets#put(_) abort "{{{1
         " make sure the cursor is on the first non-whitespace
         call search('\S', 'cW')
     catch
-        return lg#catch_error()
+        return lg#catch()
     finally
         " restore the type of the register
         call call('setreg', reg_save)
@@ -514,7 +514,7 @@ fu brackets#put_line(_) abort "{{{1
             sil! call fold#lazy#compute()
         endif
     catch
-        return lg#catch_error()
+        return lg#catch()
     endtry
 endfu
 
