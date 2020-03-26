@@ -201,8 +201,8 @@ fu brackets#mv_line(_) abort "{{{1
             sil exe 'move '..where
         else
             " Vim doesn't provide the concept of extended mark; use a dummy text property instead
-            call prop_type_add('tempmark', {'bufnr': bufnr('%')})
-            call prop_add(line('.'), col('.'), {'type': 'tempmark'})
+            call prop_type_add('tempmark', #{bufnr: bufnr('%')})
+            call prop_add(line('.'), col('.'), #{type: 'tempmark'})
 
             " move the line
             if s:mv_line_dir is# 'up'
@@ -247,14 +247,14 @@ fu brackets#mv_line(_) abort "{{{1
             call nvim_buf_del_extmark(0, ns_id, id)
         else
             " use the text property to restore the cursor position
-            let info = [prop_find({'type': 'tempmark'}, 'f'), prop_find({'type': 'tempmark'}, 'b')]
+            let info = [prop_find(#{type: 'tempmark'}, 'f'), prop_find(#{type: 'tempmark'}, 'b')]
             call filter(info, {_,v -> !empty(v)})
             if !empty(info)
                 call cursor(info[0].lnum, info[0].col)
             endif
             " remove the text property
-            call prop_remove({'type': 'tempmark', 'all': v:true})
-            call prop_type_delete('tempmark', {'bufnr': bufnr('%')})
+            call prop_remove(#{type: 'tempmark', all: v:true})
+            call prop_type_delete('tempmark', #{bufnr: bufnr('%')})
         endif
     endtry
 endfu

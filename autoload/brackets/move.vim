@@ -170,8 +170,8 @@ fu brackets#move#regex(kwd, is_fwd) abort "{{{2
         let mode = "\<c-v>\<c-v>"
     endif
 
-    return printf(":\<c-u>call "..s:snr.."jump(%s,%d,%s)\<cr>",
-        \ string(a:kwd), a:is_fwd, string(mode))
+    return printf(":\<c-u>call %sjump(%s,%d,%s)\<cr>",
+        \ s:snr, string(a:kwd), a:is_fwd, string(mode))
 endfu
 "}}}1
 " Core {{{1
