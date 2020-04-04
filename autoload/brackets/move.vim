@@ -131,7 +131,8 @@ fu brackets#move#cnewer(lhs) abort "{{{2
     " we've reached the end of the qf stack (or it's empty)
     " E380: At bottom of quickfix stack
     " E381: At top of quickfix stack
-    catch /^Vim\%((\a\+)\)\=:E38[01]:/
+    " E776: No location list
+    catch /^Vim\%((\a\+)\)\=:\%(E380\|E381\|E776\):/
         " 8.1.1281 has not been merged in Vim yet.
         if has('nvim')
             return lg#catch()
@@ -146,7 +147,7 @@ fu brackets#move#cnewer(lhs) abort "{{{2
                     \ }[a:lhs]
             " the qf stack is empty
             " E16: Invalid range
-            catch /^Vim\%((\a\+)\)\=:E16:/
+            catch /^Vim\%((\a\+)\)\=:\%(E16\|E776\):/
                 return lg#catch()
             endtry
         endif
