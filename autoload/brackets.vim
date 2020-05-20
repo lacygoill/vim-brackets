@@ -462,8 +462,8 @@ fu brackets#put_line(_) abort "{{{1
         if s:put_line_below && line =~# '┐' || !s:put_line_below && line =~# '┘'
             let line =  ''
         else
-            let line =  substitute(line, '[^├]', ' ', 'g')
-            let line =  substitute(line, '├', '│', 'g')
+            let line = substitute(line, '[^├]', ' ', 'g')
+            let line = substitute(line, '├', '│', 'g')
         endif
     elseif is_in_diagram
         let line = substitute(line, '\%([│┌┐└┘├┤].*\)\@<=[^│┌┐└┘├┤]', ' ', 'g')
