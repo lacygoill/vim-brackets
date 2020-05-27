@@ -96,9 +96,9 @@ noremap <expr><silent><unique> ]U brackets#move#regex('concealed_url', 1)
 " Miscellaneous {{{2
 " ] SPC {{{3
 
-nno <silent><unique> =<space> :<c-u>set opfunc=brackets#put_lines_around<bar>exe 'norm! '..v:count1..'g@l'<cr>
-nno <silent><unique> [<space> :<c-u>call brackets#put_line_save_param(0)<bar>set opfunc=brackets#put_line<bar>exe 'norm! '..v:count1..'g@l'<cr>
-nno <silent><unique> ]<space> :<c-u>call brackets#put_line_save_param(1)<bar>set opfunc=brackets#put_line<bar>exe 'norm! '..v:count1..'g@l'<cr>
+nno <expr><unique> =<space> brackets#put_lines_around()
+nno <expr><unique> [<space> brackets#put_line_setup('[')
+nno <expr><unique> ]<space> brackets#put_line_setup(']')
 
 " ] - {{{3
 
@@ -144,8 +144,8 @@ xno <silent><unique> ]D :<c-u>call brackets#di_list('d', 0, 1, 1)<cr>
 
 " ]e {{{3
 
-nno <silent><unique> [e :<c-u>call brackets#mv_line_save_dir('up')<bar>set opfunc=brackets#mv_line<bar>exe 'norm! '..v:count1..'g@l'<cr>
-nno <silent><unique> ]e :<c-u>call brackets#mv_line_save_dir('down')<bar>set opfunc=brackets#mv_line<bar>exe 'norm! '..v:count1..'g@l'<cr>
+nno <expr><unique> [e brackets#mv_line_setup('[')
+nno <expr><unique> ]e brackets#mv_line_setup(']')
 
 " ]p {{{3
 
@@ -154,26 +154,26 @@ nno <silent><unique> ]e :<c-u>call brackets#mv_line_save_dir('down')<bar>set opf
 " We don't want that, we want the text to be put as linewise even if it was
 " selected with a characterwise motion.
 
-"                                                           ┌ how to put internally{{{
-"                                                           │
-"                                                           │    ┌ how to indent afterwards
-"                                                           │    │}}}
-nno <silent><unique> [p :<c-u>call brackets#put_save_param('[p', '')<bar>set opfunc=brackets#put<bar>exe 'norm! '..v:count1..'g@l'<cr>
-nno <silent><unique> ]p :<c-u>call brackets#put_save_param(']p', '')<bar>set opfunc=brackets#put<bar>exe 'norm! '..v:count1..'g@l'<cr>
+"                                         ┌ how to put internally{{{
+"                                         │
+"                                         │    ┌ how to indent afterwards
+"                                         │    │}}}
+nno <expr><unique> [p brackets#put_setup('[p', '')
+nno <expr><unique> ]p brackets#put_setup(']p', '')
 
-" The following mappings put the unnamed register after the current line,
-" treating its contents as linewise (even if characterwise) AND perform another
+" The  following mappings  put  the  unnamed register  after  the current  line,
+" treating its contents as linewise  (even if characterwise) AND perform another
 " action:
 "
 "    - >p >P    add a level of indentation
 "    - <p <P    remove a level of indentation
 "    - =p =P    auto-indentation (respecting our indentation-relative options)
-nno <silent><unique> >P :<c-u>call brackets#put_save_param('[p', ">']")<bar>set opfunc=brackets#put<bar>exe 'norm! '..v:count1..'g@l'<cr>
-nno <silent><unique> >p :<c-u>call brackets#put_save_param(']p', ">']")<bar>set opfunc=brackets#put<bar>exe 'norm! '..v:count1..'g@l'<cr>
-nno <silent><unique> <P :<c-u>call brackets#put_save_param('[p', "<']")<bar>set opfunc=brackets#put<bar>exe 'norm! '..v:count1..'g@l'<cr>
-nno <silent><unique> <p :<c-u>call brackets#put_save_param(']p', "<']")<bar>set opfunc=brackets#put<bar>exe 'norm! '..v:count1..'g@l'<cr>
-nno <silent><unique> =P :<c-u>call brackets#put_save_param('[p', "=']")<bar>set opfunc=brackets#put<bar>exe 'norm! '..v:count1..'g@l'<cr>
-nno <silent><unique> =p :<c-u>call brackets#put_save_param(']p', "=']")<bar>set opfunc=brackets#put<bar>exe 'norm! '..v:count1..'g@l'<cr>
+nno <expr><unique> >P brackets#put_setup('[p', ">']")
+nno <expr><unique> >p brackets#put_setup(']p', ">']")
+nno <expr><unique> <P brackets#put_setup('[p', "<']")
+nno <expr><unique> <p brackets#put_setup(']p', "<']")
+nno <expr><unique> =P brackets#put_setup('[p', "=']")
+nno <expr><unique> =p brackets#put_setup(']p', "=']")
 
 " A simpler version of the same mappings would be:
 "

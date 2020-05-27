@@ -1,4 +1,17 @@
-fu brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, ...) abort "{{{1
+if exists('g:autoloaded_brackets')
+    finish
+endif
+let g:autoloaded_brackets = 1
+
+" Init {{{1
+
+fu s:snr() abort
+    return matchstr(expand('<sfile>'), '.*\zs<SNR>\d\+_')
+endfu
+let s:snr = get(s:, 'snr', s:snr())
+
+" Interface {{{1
+fu brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, ...) abort "{{{2
     " Derive the commands used below from the first argument.
     let excmd   = a:cmd..'list'..(a:search_in_comments ? '!' : '')
     let normcmd = toupper(a:cmd)
@@ -109,161 +122,13 @@ fu brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, .
     call qf#create_matches()
 endfu
 
-fu brackets#mv_line(_) abort "{{{1
-    let cnt = v:count1
-
-    " disabling the folds may alter the view, so save it first
-    let view = winsaveview()
-
-    " Why do you disable folding?{{{
-    "
-    " We're going to do 2 things:
-    "
-    "    1. move a / several line(s)
-    "    2. update its / their indentation
-    "
-    " If we're inside a fold, the `:move` command will close it.
-    " Why?
-    " Because of patch `7.4.700`. It solves one problem related to folds, and
-    " creates a new one:
-    " https://github.com/vim/vim/commit/d5f6933d5c57ea6f79bbdeab6c426cf66a393f33
-    "
-    " Then, it gets worse: because the fold is now closed, the indentation
-    " command will indent the whole fold, instead of the line(s) on which we
-    " were operating.
-    "
-    " MWE:
-    "
-    "     echo "fold\nfoo\nbar\nbaz\n" >file
-    "     vim -Nu NONE file
-    "     :set fdm=marker
-    "     VGzf
-    "     zv
-    "     j
-    "     :m + | norm! ==
-    "     5 lines indented ✘ it should be just one~
-    "
-    " Maybe we could use `norm! zv` to open the folds, but it would be tedious
-    " and error-prone in the future. Every time we would add a new command, we
-    " would have to remember to use `norm! zv`. It's better to temporarily disable
-    " folding entirely.
-    "
-    " Remember:
-    " Because of a quirk of Vim's implementation, always temporarily disable
-    " 'fen' before moving lines which could be in a fold.
-    "}}}
-    let [fen_save, winid, bufnr] = [&l:fen, win_getid(), bufnr('%')]
-    let &l:fen = 0
-    try
-        " Why do we mark the line since we already saved the view?{{{
-        "
-        " Because,  after  the restoration  of  the  view,  the cursor  will  be
-        " positioned on the old address of the line we moved.
-        " We don't want that.
-        " We want  the cursor to be  positioned on the same  line, whose address
-        " has  changed. We can't  rely on  an address,  so we  need to  mark the
-        " current line. The mark will follow the moved line, not an address.
-        "}}}
-        if has('nvim')
-            " set an extended mark on current location before moving, so that we
-            " can use the info later to restore the cursor position
-            " Why not simply using a regular mark?{{{
-            "
-            " Even if you save and restore the original position of the mark, it
-            " will be altered after an undo.
-            "
-            " MWE:
-            "
-            "     nno cd :call Func()<cr>
-            "     fu Func() abort
-            "         let z_save = getpos("'z")
-            "         norm! mz
-            "         m -1-
-            "         norm! `z
-            "         call setpos("'z", z_save)
-            "     endfu
-            "
-            "     " put the mark `z` somewhere, hit `cd` somewhere else, undo,
-            "     " then hit `z (the `z` mark has moved; we don't want that)
-            "
-            " The issue  comes from  the fact  that Vim saves  the state  of the
-            " buffer right  before a  change. Here the change  is caused  by the
-            " `:move`  command. So, Vim  saves  the state  of  the buffer  right
-            " before `:m`, and thus with the `z` mark in the wrong and temporary
-            " position.
-            "}}}
-            let ns_id = nvim_create_namespace('tempmark')
-            let id = nvim_buf_set_extmark(0, ns_id, 0, line('.')-1, col('.'), {})
-
-            " move the line
-            let where = s:mv_line_dir is# 'up' ? '-1-' : '+'
-            let where ..= cnt
-            sil exe 'move '..where
-        else
-            " Vim doesn't provide the concept of extended mark; use a dummy text property instead
-            call prop_type_add('tempmark', #{bufnr: bufnr('%')})
-            call prop_add(line('.'), col('.'), #{type: 'tempmark'})
-
-            " move the line
-            if s:mv_line_dir is# 'up'
-                " Why this convoluted `:move` just to move a line?  Why don't you simply move the line itself?{{{
-                "
-                " To preserve the text property.
-                "
-                " To move a line, internally, Vim  first copies it at some other
-                " location, then removes the original.
-                " The copy  does not inherit the  text property, so in  the end,
-                " the latter  is lost.   But we  need it  to restore  the cursor
-                " position.
-                "
-                " As a workaround, we don't move the line itself, but its direct
-                " neighbor.
-                "}}}
-                exe '-'..cnt..',-m.|-'..cnt
-            else
-                " `sil!` suppresses `E16` when reaching the end of the buffer
-                sil! exe '+,+1+'..(cnt-1)..'m-|+'
-            endif
-        endif
-
-        " indent the line
-        if &ft isnot# 'markdown' && &ft isnot# ''
-            sil norm! ==
-        endif
-    catch
-        return lg#catch()
-    finally
-        " restoration and cleaning
-        if winbufnr(winid) == bufnr
-            let [tabnr, winnr] = win_id2tabwin(winid)
-            call settabwinvar(tabnr, winnr, '&fen', fen_save)
-        endif
-        " restore the view *after* re-enabling folding, because the latter may alter the view
-        call winrestview(view)
-        " restore cursor position
-        if has('nvim')
-            let pos = nvim_buf_get_extmark_by_id(0, ns_id, id) | let pos[0] += 1
-            call call('cursor', pos)
-            call nvim_buf_del_extmark(0, ns_id, id)
-        else
-            " use the text property to restore the cursor position
-            let info = [prop_find(#{type: 'tempmark'}, 'f'), prop_find(#{type: 'tempmark'}, 'b')]
-            call filter(info, {_,v -> !empty(v)})
-            if !empty(info)
-                call cursor(info[0].lnum, info[0].col)
-            endif
-            " remove the text property
-            call prop_remove(#{type: 'tempmark', all: v:true})
-            call prop_type_delete('tempmark', #{bufnr: bufnr('%')})
-        endif
-    endtry
-endfu
-
-fu brackets#mv_line_save_dir(dir) abort
+fu brackets#mv_line_setup(dir) abort "{{{2
     let s:mv_line_dir = a:dir
+    let &opfunc = s:snr..'mv_line'
+    return 'g@l'
 endfu
 
-fu brackets#next_file_to_edit(cnt) abort "{{{1
+fu brackets#next_file_to_edit(cnt) abort "{{{2
     let here = expand('%:p')
     let cnt  = a:cnt
 
@@ -383,16 +248,234 @@ fu s:what_is_around(dir) abort
     return entries
 endfu
 
-fu brackets#put(_) abort "{{{1
+fu brackets#put_setup(where, how_to_indent) abort "{{{2
+    let s:put = {
+        \ 'where': a:where,
+        \ 'how_to_indent': a:how_to_indent,
+        \ 'register': v:register,
+        \ }
+    let &opfunc = s:snr..'put'
+    return 'g@l'
+endfu
+
+fu brackets#put_line_setup(dir) abort "{{{2
+    let s:put_line_below = a:dir is# ']'
+    let &opfunc = s:snr..'put_line'
+    return 'g@l'
+endfu
+
+fu brackets#put_lines_around(...) abort "{{{2
+    if !a:0
+        let &opfunc = 'brackets#put_lines_around'
+        return 'g@l'
+    endif
+    " above
+    let s:put_line_below = v:false
+    call s:put_line('')
+
+    " below
+    let s:put_line_below = v:true
+    call s:put_line('')
+endfu
+
+fu brackets#rule_motion(below, ...) abort "{{{2
+    " after this function has been called from the command-line, we're in normal
+    " mode; we need to get back to visual mode so that the search motion extends
+    " the visual selection, instead of just moving the cursor
+    if a:0 && a:1 is# 'vis' | exe 'norm! gv' | endif
+    let cml = '\V'..escape(matchstr(&l:cms, '\S*\ze\s*%s'), '\')..'\m'
+    let flags = (a:below ? '' : 'b')..'W'
+    if &ft is# 'markdown'
+        let pat = '^---$'
+        let stopline = search('^#', flags..'n')
+    else
+        let pat = '^\s*'..cml..' ---$'
+        let fmr = '\%('..join(split(&l:fmr, ','), '\|')..'\)\d*'
+        let stopline = search('^\s*'..cml..'.*'..fmr..'$', flags..'n')
+    endif
+    let lnum = search(pat, flags..'n')
+    if stopline == 0 || (a:below && lnum < stopline || !a:below && lnum > stopline)
+        call search(pat, flags, stopline)
+    endif
+endfu
+
+fu brackets#rule_put(below) abort "{{{2
+    call append('.', ["\x01", '---', "\x01", "\x01"])
+    if &ft isnot# 'markdown'
+        +,+4CommentToggle
+    endif
+    sil keepj keepp +,+4s/\s*\%x01$//e
+    if &ft isnot# 'markdown'
+        sil exe 'norm! V3k=3jA '
+    endif
+    if !a:below
+        -4m.
+        exe 'norm! '..(&ft is# 'markdown' ? '' : '==')..'k'
+    endif
+    startinsert!
+endfu
+"}}}1
+" Core {{{1
+fu s:mv_line(_) abort "{{{2
     let cnt = v:count1
 
-    if s:put_register =~# '[/:%#.]'
+    " disabling the folds may alter the view, so save it first
+    let view = winsaveview()
+
+    " Why do you disable folding?{{{
+    "
+    " We're going to do 2 things:
+    "
+    "    1. move a / several line(s)
+    "    2. update its / their indentation
+    "
+    " If we're inside a fold, the `:move` command will close it.
+    " Why?
+    " Because of patch `7.4.700`. It solves one problem related to folds, and
+    " creates a new one:
+    " https://github.com/vim/vim/commit/d5f6933d5c57ea6f79bbdeab6c426cf66a393f33
+    "
+    " Then, it gets worse: because the fold is now closed, the indentation
+    " command will indent the whole fold, instead of the line(s) on which we
+    " were operating.
+    "
+    " MWE:
+    "
+    "     echo "fold\nfoo\nbar\nbaz\n" >file
+    "     vim -Nu NONE file
+    "     :set fdm=marker
+    "     VGzf
+    "     zv
+    "     j
+    "     :m + | norm! ==
+    "     5 lines indented ✘ it should be just one~
+    "
+    " Maybe we could use `norm! zv` to open the folds, but it would be tedious
+    " and error-prone in the future. Every time we would add a new command, we
+    " would have to remember to use `norm! zv`. It's better to temporarily disable
+    " folding entirely.
+    "
+    " Remember:
+    " Because of a quirk of Vim's implementation, always temporarily disable
+    " 'fen' before moving lines which could be in a fold.
+    "}}}
+    let [fen_save, winid, bufnr] = [&l:fen, win_getid(), bufnr('%')]
+    let &l:fen = 0
+    try
+        " Why do we mark the line since we already saved the view?{{{
+        "
+        " Because,  after  the restoration  of  the  view,  the cursor  will  be
+        " positioned on the old address of the line we moved.
+        " We don't want that.
+        " We want  the cursor to be  positioned on the same  line, whose address
+        " has  changed. We can't  rely on  an address,  so we  need to  mark the
+        " current line. The mark will follow the moved line, not an address.
+        "}}}
+        if has('nvim')
+            " set an extended mark on current location before moving, so that we
+            " can use the info later to restore the cursor position
+            " Why not simply using a regular mark?{{{
+            "
+            " Even if you save and restore the original position of the mark, it
+            " will be altered after an undo.
+            "
+            " MWE:
+            "
+            "     nno cd :call Func()<cr>
+            "     fu Func() abort
+            "         let z_save = getpos("'z")
+            "         norm! mz
+            "         m -1-
+            "         norm! `z
+            "         call setpos("'z", z_save)
+            "     endfu
+            "
+            "     " put the mark `z` somewhere, hit `cd` somewhere else, undo,
+            "     " then hit `z (the `z` mark has moved; we don't want that)
+            "
+            " The issue  comes from  the fact  that Vim saves  the state  of the
+            " buffer right  before a  change. Here the change  is caused  by the
+            " `:move`  command. So, Vim  saves  the state  of  the buffer  right
+            " before `:m`, and thus with the `z` mark in the wrong and temporary
+            " position.
+            "}}}
+            let ns_id = nvim_create_namespace('tempmark')
+            let id = nvim_buf_set_extmark(0, ns_id, 0, line('.')-1, col('.'), {})
+
+            " move the line
+            let where = s:mv_line_dir is# '[' ? '-1-' : '+'
+            let where ..= cnt
+            sil exe 'move '..where
+        else
+            " Vim doesn't provide the concept of extended mark; use a dummy text property instead
+            call prop_type_add('tempmark', #{bufnr: bufnr('%')})
+            call prop_add(line('.'), col('.'), #{type: 'tempmark'})
+
+            " move the line
+            if s:mv_line_dir is# '['
+                " Why this convoluted `:move` just to move a line?  Why don't you simply move the line itself?{{{
+                "
+                " To preserve the text property.
+                "
+                " To move a line, internally, Vim  first copies it at some other
+                " location, then removes the original.
+                " The copy  does not inherit the  text property, so in  the end,
+                " the latter  is lost.   But we  need it  to restore  the cursor
+                " position.
+                "
+                " As a workaround, we don't move the line itself, but its direct
+                " neighbor.
+                "}}}
+                exe '-'..cnt..',-m.|-'..cnt
+            else
+                " `sil!` suppresses `E16` when reaching the end of the buffer
+                sil! exe '+,+1+'..(cnt-1)..'m-|+'
+            endif
+        endif
+
+        " indent the line
+        if &ft isnot# 'markdown' && &ft isnot# ''
+            sil norm! ==
+        endif
+    catch
+        return lg#catch()
+    finally
+        " restoration and cleaning
+        if winbufnr(winid) == bufnr
+            let [tabnr, winnr] = win_id2tabwin(winid)
+            call settabwinvar(tabnr, winnr, '&fen', fen_save)
+        endif
+        " restore the view *after* re-enabling folding, because the latter may alter the view
+        call winrestview(view)
+        " restore cursor position
+        if has('nvim')
+            let pos = nvim_buf_get_extmark_by_id(0, ns_id, id) | let pos[0] += 1
+            call call('cursor', pos)
+            call nvim_buf_del_extmark(0, ns_id, id)
+        else
+            " use the text property to restore the cursor position
+            let info = [prop_find(#{type: 'tempmark'}, 'f'), prop_find(#{type: 'tempmark'}, 'b')]
+            call filter(info, {_,v -> !empty(v)})
+            if !empty(info)
+                call cursor(info[0].lnum, info[0].col)
+            endif
+            " remove the text property
+            call prop_remove(#{type: 'tempmark', all: v:true})
+            call prop_type_delete('tempmark', #{bufnr: bufnr('%')})
+        endif
+    endtry
+endfu
+
+fu s:put(_) abort "{{{2
+    let cnt = v:count1
+
+    if s:put.register =~# '[/:%#.]'
         " The type of the register we put needs to be linewise.
         " But, some registers are special: we can't change their type.
         " So, we'll temporarily duplicate their contents into `z` instead.
         let reg_save = [getreg('z'), getregtype('z')]
     else
-        let reg_save = [getreg(s:put_register), getregtype(s:put_register)]
+        let reg_save = [getreg(s:put.register), getregtype(s:put.register)]
     endif
 
     " Warning: about folding interference{{{
@@ -411,11 +494,11 @@ fu brackets#put(_) abort "{{{1
     " So, we don't.
     "}}}
     try
-        if s:put_register =~# '[/:%#.]'
+        if s:put.register =~# '[/:%#.]'
             let reg_to_use = 'z'
-            call setreg('z', getreg(s:put_register), 'l')
+            call setreg('z', getreg(s:put.register), 'l')
         else
-            let reg_to_use = s:put_register
+            let reg_to_use = s:put.register
         endif
         let reg_save = [reg_to_use] + reg_save
 
@@ -432,8 +515,8 @@ fu brackets#put(_) abort "{{{1
         " force the type of the register to be linewise
         call setreg(reg_to_use, getreg(reg_to_use), 'l')
 
-        " put the register (`s:put_where` can be `]p` or `[p`)
-        exe 'norm! "'..reg_to_use..cnt..s:put_where..s:put_how_to_indent
+        " put the register (`s:put.where` can be `]p` or `[p`)
+        exe 'norm! "'..reg_to_use..cnt..s:put.where..s:put.how_to_indent
 
         " make sure the cursor is on the first non-whitespace
         call search('\S', 'cW')
@@ -445,13 +528,7 @@ fu brackets#put(_) abort "{{{1
     endtry
 endfu
 
-fu brackets#put_save_param(where, how_to_indent) abort "{{{1
-    let s:put_where = a:where
-    let s:put_how_to_indent = a:how_to_indent
-    let s:put_register = v:register
-endfu
-
-fu brackets#put_line(_) abort "{{{1
+fu s:put_line(_) abort "{{{2
     let cnt = v:count1
     let line = getline('.')
     let cml = '\V'..escape(matchstr(&l:cms, '\S*\ze\s*%s'), '\')..'\m'
@@ -516,56 +593,5 @@ fu brackets#put_line(_) abort "{{{1
     catch
         return lg#catch()
     endtry
-endfu
-
-fu brackets#put_line_save_param(below) abort "{{{1
-    let s:put_line_below = a:below
-endfu
-
-fu brackets#put_lines_around(_) abort "{{{1
-    " above
-    call brackets#put_line_save_param(0)
-    call brackets#put_line('')
-
-    " below
-    call brackets#put_line_save_param(1)
-    call brackets#put_line('')
-endfu
-
-fu brackets#rule_motion(below, ...) abort "{{{1
-    " after this function has been called from the command-line, we're in normal
-    " mode; we need to get back to visual mode so that the search motion extends
-    " the visual selection, instead of just moving the cursor
-    if a:0 && a:1 is# 'vis' | exe 'norm! gv' | endif
-    let cml = '\V'..escape(matchstr(&l:cms, '\S*\ze\s*%s'), '\')..'\m'
-    let flags = (a:below ? '' : 'b')..'W'
-    if &ft is# 'markdown'
-        let pat = '^---$'
-        let stopline = search('^#', flags..'n')
-    else
-        let pat = '^\s*'..cml..' ---$'
-        let fmr = '\%('..join(split(&l:fmr, ','), '\|')..'\)\d*'
-        let stopline = search('^\s*'..cml..'.*'..fmr..'$', flags..'n')
-    endif
-    let lnum = search(pat, flags..'n')
-    if stopline == 0 || (a:below && lnum < stopline || !a:below && lnum > stopline)
-        call search(pat, flags, stopline)
-    endif
-endfu
-
-fu brackets#rule_put(below) abort "{{{1
-    call append('.', ["\x01", '---', "\x01", "\x01"])
-    if &ft isnot# 'markdown'
-        +,+4CommentToggle
-    endif
-    sil keepj keepp +,+4s/\s*\%x01$//e
-    if &ft isnot# 'markdown'
-        sil exe 'norm! V3k=3jA '
-    endif
-    if !a:below
-        -4m.
-        exe 'norm! '..(&ft is# 'markdown' ? '' : '==')..'k'
-    endif
-    startinsert!
 endfu
 
