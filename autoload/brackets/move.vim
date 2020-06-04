@@ -137,6 +137,7 @@ fu brackets#move#cnewer(lhs) abort "{{{2
         if has('nvim')
             return lg#catch()
         else
+            " message from last list + message from first list = hit-enter prompt
             redraw
             try
                 exe {
