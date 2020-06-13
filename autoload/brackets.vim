@@ -371,66 +371,29 @@ fu s:mv_line(_) abort "{{{2
         " has  changed. We can't  rely on  an address,  so we  need to  mark the
         " current line. The mark will follow the moved line, not an address.
         "}}}
-        if has('nvim')
-            " set an extended mark on current location before moving, so that we
-            " can use the info later to restore the cursor position
-            " Why not simply using a regular mark?{{{
+        " Vim doesn't provide the concept of extended mark; use a dummy text property instead
+        call prop_type_add('tempmark', #{bufnr: bufnr('%')})
+        call prop_add(line('.'), col('.'), #{type: 'tempmark'})
+
+        " move the line
+        if s:mv_line_dir is# '['
+            " Why this convoluted `:move` just to move a line?  Why don't you simply move the line itself?{{{
             "
-            " Even if you save and restore the original position of the mark, it
-            " will be altered after an undo.
+            " To preserve the text property.
             "
-            " MWE:
-            "
-            "     nno cd :call Func()<cr>
-            "     fu Func() abort
-            "         let z_save = getpos("'z")
-            "         norm! mz
-            "         m -1-
-            "         norm! `z
-            "         call setpos("'z", z_save)
-            "     endfu
-            "
-            "     " put the mark `z` somewhere, hit `cd` somewhere else, undo,
-            "     " then hit `z (the `z` mark has moved; we don't want that)
-            "
-            " The issue  comes from  the fact  that Vim saves  the state  of the
-            " buffer right  before a  change. Here the change  is caused  by the
-            " `:move`  command. So, Vim  saves  the state  of  the buffer  right
-            " before `:m`, and thus with the `z` mark in the wrong and temporary
+            " To move a line, internally, Vim  first copies it at some other
+            " location, then removes the original.
+            " The copy  does not inherit the  text property, so in  the end,
+            " the latter  is lost.   But we  need it  to restore  the cursor
             " position.
+            "
+            " As a workaround, we don't move the line itself, but its direct
+            " neighbor.
             "}}}
-            let ns_id = nvim_create_namespace('tempmark')
-            let id = nvim_buf_set_extmark(0, ns_id, 0, line('.')-1, col('.'), {})
-
-            " move the line
-            let where = s:mv_line_dir is# '[' ? '-1-' : '+'
-            let where ..= cnt
-            sil exe 'move '..where
+            exe '-'..cnt..',-m.|-'..cnt
         else
-            " Vim doesn't provide the concept of extended mark; use a dummy text property instead
-            call prop_type_add('tempmark', #{bufnr: bufnr('%')})
-            call prop_add(line('.'), col('.'), #{type: 'tempmark'})
-
-            " move the line
-            if s:mv_line_dir is# '['
-                " Why this convoluted `:move` just to move a line?  Why don't you simply move the line itself?{{{
-                "
-                " To preserve the text property.
-                "
-                " To move a line, internally, Vim  first copies it at some other
-                " location, then removes the original.
-                " The copy  does not inherit the  text property, so in  the end,
-                " the latter  is lost.   But we  need it  to restore  the cursor
-                " position.
-                "
-                " As a workaround, we don't move the line itself, but its direct
-                " neighbor.
-                "}}}
-                exe '-'..cnt..',-m.|-'..cnt
-            else
-                " `sil!` suppresses `E16` when reaching the end of the buffer
-                sil! exe '+,+1+'..(cnt-1)..'m-|+'
-            endif
+            " `sil!` suppresses `E16` when reaching the end of the buffer
+            sil! exe '+,+1+'..(cnt-1)..'m-|+'
         endif
 
         " indent the line
@@ -448,21 +411,15 @@ fu s:mv_line(_) abort "{{{2
         " restore the view *after* re-enabling folding, because the latter may alter the view
         call winrestview(view)
         " restore cursor position
-        if has('nvim')
-            let pos = nvim_buf_get_extmark_by_id(0, ns_id, id) | let pos[0] += 1
-            call call('cursor', pos)
-            call nvim_buf_del_extmark(0, ns_id, id)
-        else
-            " use the text property to restore the cursor position
-            let info = [prop_find(#{type: 'tempmark'}, 'f'), prop_find(#{type: 'tempmark'}, 'b')]
-            call filter(info, {_,v -> !empty(v)})
-            if !empty(info)
-                call cursor(info[0].lnum, info[0].col)
-            endif
-            " remove the text property
-            call prop_remove(#{type: 'tempmark', all: v:true})
-            call prop_type_delete('tempmark', #{bufnr: bufnr('%')})
+        " use the text property to restore the cursor position
+        let info = [prop_find(#{type: 'tempmark'}, 'f'), prop_find(#{type: 'tempmark'}, 'b')]
+        call filter(info, {_,v -> !empty(v)})
+        if !empty(info)
+            call cursor(info[0].lnum, info[0].col)
         endif
+        " remove the text property
+        call prop_remove(#{type: 'tempmark', all: v:true})
+        call prop_type_delete('tempmark', #{bufnr: bufnr('%')})
     endtry
 endfu
 

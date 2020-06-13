@@ -133,25 +133,20 @@ fu brackets#move#cnewer(lhs) abort "{{{2
     " E381: At top of quickfix stack
     " E776: No location list
     catch /^Vim\%((\a\+)\)\=:\%(E380\|E381\|E776\):/
-        " 8.1.1281 has not been merged in Vim yet.
-        if has('nvim')
+        " message from last list + message from first list = hit-enter prompt
+        redraw
+        try
+            exe {
+                \ '<q': getqflist({'nr': '$'}).nr ..'chi',
+                \ '>q': '1chi',
+                \ '<l': getloclist(0, {'nr': '$'}).nr ..'lhi',
+                \ '>l': '1lhi',
+                \ }[a:lhs]
+        " the qf stack is empty
+        " E16: Invalid range
+        catch /^Vim\%((\a\+)\)\=:\%(E16\|E776\):/
             return lg#catch()
-        else
-            " message from last list + message from first list = hit-enter prompt
-            redraw
-            try
-                exe {
-                    \ '<q': getqflist({'nr': '$'}).nr ..'chi',
-                    \ '>q': '1chi',
-                    \ '<l': getloclist(0, {'nr': '$'}).nr ..'lhi',
-                    \ '>l': '1lhi',
-                    \ }[a:lhs]
-            " the qf stack is empty
-            " E16: Invalid range
-            catch /^Vim\%((\a\+)\)\=:\%(E16\|E776\):/
-                return lg#catch()
-            endtry
-        endif
+        endtry
     endtry
 endfu
 
