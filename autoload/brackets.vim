@@ -33,7 +33,7 @@ fu brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, .
             " (visual mapping): use the visual selection as the pattern
             let cb_save  = &cb
             let sel_save = &sel
-            let reg_save = ['"', getreg('"'), getregtype('"')]
+            let reg_save = ['"', getreg('"', 1, 1), getregtype('"')]
             try
                 set cb-=unnamed cb-=unnamedplus
                 set sel=inclusive
@@ -453,7 +453,7 @@ fu s:put(_) abort "{{{2
     try
         if s:put.register =~# '[/:%#.]'
             let reg_to_use = 'z'
-            call setreg('z', getreg(s:put.register), 'l')
+            call setreg('z', getreg(s:put.register, 1, 1), 'l')
         else
             let reg_to_use = s:put.register
         endif
@@ -470,7 +470,7 @@ fu s:put(_) abort "{{{2
         endif
 
         " force the type of the register to be linewise
-        call setreg(reg_to_use, getreg(reg_to_use), 'l')
+        call setreg(reg_to_use, getreg(reg_to_use, 1, 1), 'l')
 
         " put the register (`s:put.where` can be `]p` or `[p`)
         exe 'norm! "'..reg_to_use..cnt..s:put.where..s:put.how_to_indent
