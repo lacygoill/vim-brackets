@@ -13,7 +13,7 @@ let s:snr = get(s:, 'snr', s:snr())
 " Interface {{{1
 fu brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, ...) abort "{{{2
     " Derive the commands used below from the first argument.
-    let excmd   = a:cmd..'list'..(a:search_in_comments ? '!' : '')
+    let excmd = a:cmd..'list'..(a:search_in_comments ? '!' : '')
     let normcmd = toupper(a:cmd)
 
     " if we call the function from a normal mode mapping, the pattern is the
@@ -21,7 +21,7 @@ fu brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, .
     if a:search_cur_word
         " `silent!` because pressing `]I` on a unique word raises `E389`
         let output = execute('norm! '..(a:start_at_cursor ? ']' : '[')..normcmd, 'silent!')
-        let title  = (a:start_at_cursor ? ']' : '[')..normcmd
+        let title = (a:start_at_cursor ? ']' : '[')..normcmd
 
     else
         " otherwise if the function was called with a fifth optional argument,
@@ -31,37 +31,33 @@ fu brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, .
         else
             " otherwise the function must have been called from visual mode
             " (visual mapping): use the visual selection as the pattern
-            let cb_save  = &cb
-            let sel_save = &sel
-            let reg_save = ['"', getreg('"', 1, 1), getregtype('"')]
+            let [cb_save, sel_save] = [&cb, &sel]
+            let reg_save = getreginfo('"')
             try
-                set cb-=unnamed cb-=unnamedplus
-                set sel=inclusive
+                set cb-=unnamed cb-=unnamedplus sel=inclusive
                 norm! gvy
-                let pat = substitute('\V'..escape(getreg('"'), '\/'), '\\n', '\\n', 'g')
-                "                     │                                │{{{
-                "                     │                                └ make sure newlines are not
-                "                     │                                  converted into NULs
-                "                     │                                  on the search command-line
-                "                     │
-                "                     └ make sure the contents of the pattern is interpreted literally
-                "}}}
+                let pat = getreg('"', 1, 1)
             finally
-                let &cb  = cb_save
-                let &sel = sel_save
-                call call('setreg', reg_save)
+                let [&cb, &sel] = [cb_save, sel_save]
+                call setreg('"', reg_save)
             endtry
+
+            " `:ilist` can't find a multiline pattern
+            if len(pat) != 1 | return s:error('E389: Couldn''t find pattern') | endif
+            let pat = pat[0]
+
+            " make sure the pattern is interpreted literally
+            let pat = '\V'..escape(pat, '\/')
         endif
 
         let output = execute((a:start_at_cursor ? '+,$' : '')..excmd..' /'..pat, 'silent!')
-        let title  = excmd..' /'..pat
+        let title = excmd..' /'..pat
     endif
 
     let lines = split(output, '\n')
-    " Bail out on errors. (bail out = se désister)
+    " bail out on errors
     if get(lines, 0, '') =~ '^Error detected\|^$'
-        echom 'Could not find '..string(a:search_cur_word ? expand('<cword>') : pat)
-        return
+        return s:error('Could not find '..string(a:search_cur_word ? expand('<cword>') : pat))
     endif
 
     " Our results may span multiple files so we need to build a relatively
@@ -95,13 +91,13 @@ fu brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, .
 
             let text = substitute(line, '^\s*\d\{-}\s*:\s*\d\{-}\s', '', '')
 
-            let col  = match(text, a:search_cur_word ? '\C\<'..expand('<cword>')..'\>' : pat) + 1
-            call add(ll_entries,
-            \ { 'filename' : filename,
-            \   'lnum'     : lnum,
-            \   'col'      : col,
-            \   'text'     : text,
-            \ })
+            let col = match(text, a:search_cur_word ? '\C\<'..expand('<cword>')..'\>' : pat) + 1
+            call add(ll_entries, #{
+                \ filename: filename,
+                \ lnum: lnum,
+                \ col: col,
+                \ text: text,
+                \ })
         endif
     endfor
 
@@ -430,9 +426,9 @@ fu s:put(_) abort "{{{2
         " The type of the register we put needs to be linewise.
         " But, some registers are special: we can't change their type.
         " So, we'll temporarily duplicate their contents into `z` instead.
-        let reg_save = [getreg('z'), getregtype('z')]
+        let reg_save = getreginfo('z')
     else
-        let reg_save = [getreg(s:put.register), getregtype(s:put.register)]
+        let reg_save = getreginfo(s:put.register)
     endif
 
     " Warning: about folding interference{{{
@@ -457,7 +453,6 @@ fu s:put(_) abort "{{{2
         else
             let reg_to_use = s:put.register
         endif
-        let reg_save = [reg_to_use] + reg_save
 
         " If  we've just  sourced some  line of  code in  a markdown  file, with
         " `+s{text-object}`, the register `o` contains its output.
@@ -466,11 +461,17 @@ fu s:put(_) abort "{{{2
         if reg_to_use is# 'o'
             \ && &ft is# 'markdown'
             \ && synIDattr(synID(line('.'), col('.'), 1), 'name') =~# '^markdown.*CodeBlock$'
-            let @o = join(map(split(@o, '\n'), {_,v -> v !~ '^$' ? v..'~' : v}), "\n")
+            let info = getreginfo('o')
+            let contents = get(info, 'regcontents', [])
+            call map(contents, {_,v -> v != '' ? v..'~' : v})
+            call extend(info, #{regcontents: contents})
+            call setreg('o', info)
         endif
 
         " force the type of the register to be linewise
-        call setreg(reg_to_use, getreg(reg_to_use, 1, 1), 'l')
+        let info = getreginfo(reg_to_use)
+        call extend(info, #{regtype: 'l'})
+        call setreg(reg_to_use, info)
 
         " put the register (`s:put.where` can be `]p` or `[p`)
         exe 'norm! "'..reg_to_use..cnt..s:put.where..s:put.how_to_indent
@@ -480,8 +481,7 @@ fu s:put(_) abort "{{{2
     catch
         return lg#catch()
     finally
-        " restore the type of the register
-        call call('setreg', reg_save)
+        call setreg(reg_to_use, reg_save)
     endtry
 endfu
 
@@ -551,4 +551,10 @@ fu s:put_line(_) abort "{{{2
         return lg#catch()
     endtry
 endfu
-
+"}}}1
+" Util {{{1
+fu s:error(msg) abort "{{{2
+    echohl ErrorMsg
+    echom a:msg
+    echohl NONE
+endfu
