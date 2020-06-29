@@ -34,7 +34,7 @@ fu brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, .
             let [cb_save, sel_save] = [&cb, &sel]
             let reg_save = getreginfo('"')
             try
-                set cb-=unnamed cb-=unnamedplus sel=inclusive
+                set cb= sel=inclusive
                 norm! gvy
                 let pat = getreg('"', 1, 1)
             finally
@@ -422,9 +422,29 @@ endfu
 fu s:put(_) abort "{{{2
     let cnt = v:count1
 
+    " If the register is empty, an error should be raised.{{{
+    "
+    " And we want the exact message we would  have, if we were to try to put the
+    " register without our mapping.
+    "
+    " That's the whole purpose of the next `:norm`:
+    "
+    "     Vim(normal):E353: Nothing in register "~
+    "     Vim(normal):E32: No file name~
+    "     Vim(normal):E30: No previous command line~
+    "     ...~
+    "}}}
+    if getreg(s:put.register, 1, 1) == []
+        try
+            exe 'norm! "'..s:put.register..'p'
+        catch
+            return lg#catch()
+        endtry
+    endif
+
     if s:put.register =~# '[/:%#.]'
         " The type of the register we put needs to be linewise.
-        " But, some registers are special: we can't change their type.
+        " But some registers are special: we can't change their type.
         " So, we'll temporarily duplicate their contents into `z` instead.
         let reg_save = getreginfo('z')
     else
@@ -449,7 +469,7 @@ fu s:put(_) abort "{{{2
     try
         if s:put.register =~# '[/:%#.]'
             let reg_to_use = 'z'
-            call setreg('z', getreg(s:put.register, 1, 1), 'l')
+            call getreginfo(s:put.register)->extend({'regtype': 'l'})->setreg('z')
         else
             let reg_to_use = s:put.register
         endif
@@ -461,20 +481,16 @@ fu s:put(_) abort "{{{2
         if reg_to_use is# 'o'
             \ && &ft is# 'markdown'
             \ && synIDattr(synID(line('.'), col('.'), 1), 'name') =~# '^markdown.*CodeBlock$'
-            let info = getreginfo('o')
-            let contents = get(info, 'regcontents', [])
+            let contents = getreg('o', 1, 1)
             call map(contents, {_,v -> v != '' ? v..'~' : v})
-            call extend(info, #{regcontents: contents})
-            call setreg('o', info)
+            call setreg('o', contents, 'l')
         endif
 
         " force the type of the register to be linewise
-        let info = getreginfo(reg_to_use)
-        call extend(info, #{regtype: 'l'})
-        call setreg(reg_to_use, info)
+        call getreginfo(reg_to_use)->extend({'regtype': 'l'})->setreg(reg_to_use)
 
         " put the register (`s:put.where` can be `]p` or `[p`)
-        exe 'norm! "'..reg_to_use..cnt..s:put.where..s:put.how_to_indent
+        exe 'norm! "' .. reg_to_use .. cnt .. s:put.where .. s:put.how_to_indent
 
         " make sure the cursor is on the first non-whitespace
         call search('\S', 'cW')
