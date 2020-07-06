@@ -17,8 +17,8 @@ const s:LHS2CMD = {
     \ }
 
 const s:PATTERNS = {
-    \ 'fu':            '^\s*fu\%[nction]!\=\s\+',
-    \ 'endfu':         '^\s*endf\%[unction]\%(\s\|"\|$\)',
+    \ 'fu':            '^\s*\%(fu\%[nction]\|def\)!\=\s\+',
+    \ 'endfu':         '^\s*\%(endf\%[unction]\|enddef\)\%(\s\|"\|$\)',
     \ 'sh_fu':         '^\s*\S\+\s*()\s*{\%(\s*#\s*{{'..'{\d*\s*\)\=$',
     \ 'sh_endfu':      '^}$',
     \ 'ref':           '\[.\{-1,}\](\zs.\{-1,})',

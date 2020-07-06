@@ -31,16 +31,7 @@ fu brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, .
         else
             " otherwise the function must have been called from visual mode
             " (visual mapping): use the visual selection as the pattern
-            let [cb_save, sel_save] = [&cb, &sel]
-            let reg_save = getreginfo('"')
-            try
-                set cb= sel=inclusive
-                norm! gvy
-                let pat = getreg('"', 1, 1)
-            finally
-                let [&cb, &sel] = [cb_save, sel_save]
-                call setreg('"', reg_save)
-            endtry
+            let pat = lg#getselection()
 
             " `:ilist` can't find a multiline pattern
             if len(pat) != 1 | return s:error('E389: Couldn''t find pattern') | endif
