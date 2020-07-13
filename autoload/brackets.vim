@@ -5,10 +5,11 @@ let g:autoloaded_brackets = 1
 
 " Init {{{1
 
-fu s:snr() abort
-    return matchstr(expand('<sfile>'), '.*\zs<SNR>\d\+_')
+fu s:SID() abort
+    return expand('<sfile>')->matchstr('<SNR>\zs\d\+\ze_SID$')->str2nr()
 endfu
-let s:snr = get(s:, 'snr', s:snr())
+let s:SID = s:SID()->printf('<SNR>%d_')
+delfu s:SID
 
 " Interface {{{1
 fu brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, ...) abort "{{{2
@@ -111,7 +112,7 @@ endfu
 
 fu brackets#mv_line_setup(dir) abort "{{{2
     let s:mv_line_dir = a:dir
-    let &opfunc = s:snr..'mv_line'
+    let &opfunc = s:SID .. 'mv_line'
     return 'g@l'
 endfu
 
@@ -241,13 +242,13 @@ fu brackets#put_setup(where, how_to_indent) abort "{{{2
         \ 'how_to_indent': a:how_to_indent,
         \ 'register': v:register,
         \ }
-    let &opfunc = s:snr..'put'
+    let &opfunc = s:SID .. 'put'
     return 'g@l'
 endfu
 
 fu brackets#put_line_setup(dir) abort "{{{2
     let s:put_line_below = a:dir is# ']'
-    let &opfunc = s:snr..'put_line'
+    let &opfunc = s:SID .. 'put_line'
     return 'g@l'
 endfu
 

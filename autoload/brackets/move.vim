@@ -29,11 +29,6 @@ const s:PATTERNS = {
     \ 'shell_prompt':  '^٪',
     \ }
 
-fu s:snr() abort
-    return matchstr(expand('<sfile>'), '.*\zs<SNR>\d\+_')
-endfu
-let s:snr = get(s:, 'snr', s:snr())
-
 " Interface {{{1
 fu brackets#move#next(lhs) abort "{{{2
     let cnt = v:count1
@@ -167,8 +162,8 @@ fu brackets#move#regex(kwd, is_fwd) abort "{{{2
         let mode = "\<c-v>\<c-v>"
     endif
 
-    return printf(":\<c-u>call %sjump(%s,%d,%s)\<cr>",
-        \ s:snr, string(a:kwd), a:is_fwd, string(mode))
+    return printf(":\<c-u>call %s(%s,%d,%s)\<cr>",
+        \ function('s:jump'), string(a:kwd), a:is_fwd, string(mode))
 endfu
 "}}}1
 " Core {{{1
