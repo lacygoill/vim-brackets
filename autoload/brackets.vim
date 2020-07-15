@@ -329,8 +329,7 @@ fu s:mv_line(_) abort "{{{2
     "
     " MWE:
     "
-    "     echo "fold\nfoo\nbar\nbaz\n" >file
-    "     vim -Nu NONE file
+    "     $ echo "fold\nfoo\nbar\nbaz\n" >/tmp/file && vim -Nu NONE /tmp/file
     "     :set fdm=marker
     "     VGzf
     "     zv
