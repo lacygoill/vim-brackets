@@ -1,28 +1,18 @@
-if exists('g:autoloaded_brackets')
-    finish
-endif
-let g:autoloaded_brackets = 1
-
-" Init {{{1
-
-fu s:SID() abort
-    return expand('<sfile>')->matchstr('<SNR>\zs\d\+\ze_SID$')->str2nr()
-endfu
-const s:SID = s:SID()->printf('<SNR>%d_')
-delfu s:SID
+import Catch from 'lg.vim'
+import Getselection from 'lg.vim'
 
 " Interface {{{1
 fu brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, ...) abort "{{{2
     " Derive the commands used below from the first argument.
-    let excmd = a:cmd..'list'..(a:search_in_comments ? '!' : '')
+    let excmd = a:cmd .. 'list' .. (a:search_in_comments ? '!' : '')
     let normcmd = toupper(a:cmd)
 
     " if we call the function from a normal mode mapping, the pattern is the
     " word under the cursor
     if a:search_cur_word
         " `silent!` because pressing `]I` on a unique word raises `E389`
-        let output = execute('norm! '..(a:start_at_cursor ? ']' : '[')..normcmd, 'silent!')
-        let title = (a:start_at_cursor ? ']' : '[')..normcmd
+        let output = execute('norm! ' .. (a:start_at_cursor ? ']' : '[') .. normcmd, 'silent!')
+        let title = (a:start_at_cursor ? ']' : '[') .. normcmd
 
     else
         " otherwise if the function was called with a fifth optional argument,
@@ -32,29 +22,29 @@ fu brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, .
         else
             " otherwise the function must have been called from visual mode
             " (visual mapping): use the visual selection as the pattern
-            let pat = lg#getselection()
+            let pat = s:Getselection()
 
             " `:ilist` can't find a multiline pattern
             if len(pat) != 1 | return s:error('E389: Couldn''t find pattern') | endif
             let pat = pat[0]
 
             " make sure the pattern is interpreted literally
-            let pat = '\V'..escape(pat, '\/')
+            let pat = '\V' .. escape(pat, '\/')
         endif
 
-        let output = execute((a:start_at_cursor ? '+,$' : '')..excmd..' /'..pat, 'silent!')
-        let title = excmd..' /'..pat
+        let output = execute((a:start_at_cursor ? '+,$' : '') .. excmd .. ' /' .. pat, 'silent!')
+        let title = excmd .. ' /' .. pat
     endif
 
     let lines = split(output, '\n')
     " bail out on errors
     if get(lines, 0, '') =~ '^Error detected\|^$'
-        return s:error('Could not find '..string(a:search_cur_word ? expand('<cword>') : pat))
+        return s:error('Could not find ' .. string(a:search_cur_word ? expand('<cword>') : pat))
     endif
 
     " Our results may span multiple files so we need to build a relatively
     " complex list based on filenames.
-    let filename   = ''
+    let filename = ''
     let ll_entries = []
     for line in lines
         " A line in the output of `:ilist` and `dlist` can be a filename.
@@ -83,7 +73,7 @@ fu brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, .
 
             let text = substitute(line, '^\s*\d\{-}\s*:\s*\d\{-}\s', '', '')
 
-            let col = match(text, a:search_cur_word ? '\C\<'..expand('<cword>')..'\>' : pat) + 1
+            let col = match(text, a:search_cur_word ? '\C\<' .. expand('<cword>') .. '\>' : pat) + 1
             call add(ll_entries, #{
                 \ filename: filename,
                 \ lnum: lnum,
@@ -112,13 +102,13 @@ endfu
 
 fu brackets#mv_line_setup(dir) abort "{{{2
     let s:mv_line_dir = a:dir
-    let &opfunc = s:SID .. 'mv_line'
+    let &opfunc = expand('<SID>') .. 'mv_line'
     return 'g@l'
 endfu
 
 fu brackets#next_file_to_edit(cnt) abort "{{{2
     let here = expand('%:p')
-    let cnt  = a:cnt
+    let cnt = a:cnt
 
     " If we start Vim without any file argument, `here` is empty.
     " It doesn't cause any pb to move forward (`]f`), but it does if we try
@@ -126,7 +116,7 @@ fu brackets#next_file_to_edit(cnt) abort "{{{2
     "
     " To fix this, we reset `here` by giving it the path to the working directory.
     if empty(here)
-        let here = getcwd()..'/'
+        let here = getcwd() .. '/'
     endif
 
     " The main code of this function is a double nested loop.
@@ -141,19 +131,19 @@ fu brackets#next_file_to_edit(cnt) abort "{{{2
     " It needs to be done exactly `cnt` times (by default 1).
     " So, at the end of each iteration, we update `cnt`, by [in|de]crementing it.
     while cnt != 0
-        let entries = s:what_is_around(fnamemodify(here, ':h'))
+        let entries = fnamemodify(here, ':h')->s:what_is_around()
 
         " We use `a:cnt` instead of `cnt` in our test, because `cnt` is going
         " to be [in|de]cremented during the execution of the outer loop.
         if a:cnt > 0
             " remove the entries whose names come BEFORE the one of the current
             " entry, and sort the resulting list
-            call sort(filter(entries,{_,v -> v ># here}))
+            call filter(entries, {_, v -> v ># here})->sort()
         else
             " remove the entries whose names come AFTER the one of the current
             " entry, sort the resulting list, and reverse the order
             " (so that the previous entry comes first instead of last)
-            call reverse(sort(filter(entries, {_,v -> v <# here})))
+            call filter(entries, {_, v -> v <# here})->sort()->reverse()
         endif
         let next_entry = get(entries, 0, '')
 
@@ -176,7 +166,7 @@ fu brackets#next_file_to_edit(cnt) abort "{{{2
             " And if it's a directory, we don't know how far is the next file.
             " It could be right inside, or inside a sub-sub-directory …
             " So, we need to check whether what we found is a directory, and go on
-            " until we find an entry which is a file. Thus a 2nd loop.
+            " until we find an entry which is a file.  Thus a 2nd loop.
             "
             " Each time we find an entry which is a directory, we look at its
             " contents.
@@ -199,8 +189,8 @@ fu brackets#next_file_to_edit(cnt) abort "{{{2
                 let here = entries[cnt > 0 ? 0 : -1]
             endwhile
 
-            " Now that `here` has been updated, we also need to update the
-            " counter. For example, if we've hit `3]f`, we need to decrement
+            " Now  that `here`  has been  updated, we  also need  to update  the
+            " counter.  For  example, if we've  hit `3]f`, we need  to decrement
             " `cnt` by one.
             " But, we only update it if we didn't ended up in an empty directory
             " during the inner loop.
@@ -219,8 +209,8 @@ fu s:what_is_around(dir) abort
     " If `dir` is the root of the tree, we need to get rid of the
     " slash, because we're going to add a slash when calling `glob('/*')`.
     let dir = substitute(a:dir, '/$', '', '')
-    let entries  = glob(dir..'/.*', 0, 1)
-    let entries += glob(dir..'/*', 0, 1)
+    let entries = glob(dir .. '/.*', 0, 1)
+    let entries += glob(dir .. '/*', 0, 1)
 
     " The first call to `glob()` was meant to include the hidden entries,
     " but it produces 2 garbage entries which do not exist.
@@ -231,7 +221,7 @@ fu s:what_is_around(dir) abort
     "         /tmp/..
     "
     " We need to get rid of them.
-    call filter(entries, {_,v -> v !~# '/\.\.\?$'})
+    call filter(entries, {_, v -> v !~# '/\.\.\=$'})
 
     return entries
 endfu
@@ -242,13 +232,13 @@ fu brackets#put_setup(where, how_to_indent) abort "{{{2
         \ 'how_to_indent': a:how_to_indent,
         \ 'register': v:register,
         \ }
-    let &opfunc = s:SID .. 'put'
+    let &opfunc = expand('<SID>') .. 'put'
     return 'g@l'
 endfu
 
 fu brackets#put_line_setup(dir) abort "{{{2
     let s:put_line_below = a:dir is# ']'
-    let &opfunc = s:SID .. 'put_line'
+    let &opfunc = expand('<SID>') .. 'put_line'
     return 'g@l'
 endfu
 
@@ -271,17 +261,17 @@ fu brackets#rule_motion(below, ...) abort "{{{2
     " mode; we need to get back to visual mode so that the search motion extends
     " the visual selection, instead of just moving the cursor
     if a:0 && a:1 is# 'vis' | exe 'norm! gv' | endif
-    let cml = '\V'..escape(matchstr(&l:cms, '\S*\ze\s*%s'), '\')..'\m'
-    let flags = (a:below ? '' : 'b')..'W'
+    let cml = '\V' .. matchstr(&l:cms, '\S*\ze\s*%s')->escape('\') .. '\m'
+    let flags = (a:below ? '' : 'b') .. 'W'
     if &ft is# 'markdown'
         let pat = '^---$'
-        let stopline = search('^#', flags..'n')
+        let stopline = search('^#', flags .. 'n')
     else
-        let pat = '^\s*'..cml..' ---$'
-        let fmr = '\%('..join(split(&l:fmr, ','), '\|')..'\)\d*'
-        let stopline = search('^\s*'..cml..'.*'..fmr..'$', flags..'n')
+        let pat = '^\s*' .. cml .. ' ---$'
+        let fmr = '\%(' .. split(&l:fmr, ',')->join('\|') .. '\)\d*'
+        let stopline = search('^\s*' .. cml .. '.*' .. fmr .. '$', flags .. 'n')
     endif
-    let lnum = search(pat, flags..'n')
+    let lnum = search(pat, flags .. 'n')
     if stopline == 0 || (a:below && lnum < stopline || !a:below && lnum > stopline)
         call search(pat, flags, stopline)
     endif
@@ -298,7 +288,7 @@ fu brackets#rule_put(below) abort "{{{2
     endif
     if !a:below
         -4m.
-        exe 'norm! '..(&ft is# 'markdown' ? '' : '==')..'k'
+        exe 'norm! ' .. (&ft is# 'markdown' ? '' : '==') .. 'k'
     endif
     startinsert!
 endfu
@@ -319,7 +309,7 @@ fu s:mv_line(_) abort "{{{2
     "
     " If we're inside a fold, the `:move` command will close it.
     " Why?
-    " Because of patch `7.4.700`. It solves one problem related to folds, and
+    " Because of patch  `7.4.700`.  It solves one problem related  to folds, and
     " creates a new one:
     " https://github.com/vim/vim/commit/d5f6933d5c57ea6f79bbdeab6c426cf66a393f33
     "
@@ -337,10 +327,10 @@ fu s:mv_line(_) abort "{{{2
     "     :m + | norm! ==
     "     5 lines indented ✘ it should be just one~
     "
-    " Maybe we could use `norm! zv` to open the folds, but it would be tedious
-    " and error-prone in the future. Every time we would add a new command, we
-    " would have to remember to use `norm! zv`. It's better to temporarily disable
-    " folding entirely.
+    " Maybe we could use  `norm! zv` to open the folds, but  it would be tedious
+    " and error-prone in the future.  Every time  we would add a new command, we
+    " would have  to remember  to use  `norm! zv`.   It's better  to temporarily
+    " disable folding entirely.
     "
     " Remember:
     " Because of a quirk of Vim's implementation, always temporarily disable
@@ -355,8 +345,8 @@ fu s:mv_line(_) abort "{{{2
         " positioned on the old address of the line we moved.
         " We don't want that.
         " We want  the cursor to be  positioned on the same  line, whose address
-        " has  changed. We can't  rely on  an address,  so we  need to  mark the
-        " current line. The mark will follow the moved line, not an address.
+        " has changed.   We can't  rely on an  address, so we  need to  mark the
+        " current line.  The mark will follow the moved line, not an address.
         "}}}
         " Vim doesn't provide the concept of extended mark; use a dummy text property instead
         call prop_type_add('tempmark', #{bufnr: bufnr('%')})
@@ -377,18 +367,18 @@ fu s:mv_line(_) abort "{{{2
             " As a workaround, we don't move the line itself, but its direct
             " neighbor.
             "}}}
-            exe '-'..cnt..',-m.|-'..cnt
+            exe '-' .. cnt .. ',-m.|-' .. cnt
         else
             " `sil!` suppresses `E16` when reaching the end of the buffer
-            sil! exe '+,+1+'..(cnt-1)..'m-|+'
+            sil! exe '+,+1+' .. (cnt-1) .. 'm-|+'
         endif
 
         " indent the line
-        if &ft isnot# 'markdown' && &ft isnot# ''
+        if &ft isnot# 'markdown' && &ft != ''
             sil norm! ==
         endif
     catch
-        return lg#catch()
+        return s:Catch()
     finally
         " restoration and cleaning
         if winbufnr(winid) == bufnr
@@ -400,7 +390,7 @@ fu s:mv_line(_) abort "{{{2
         " restore cursor position
         " use the text property to restore the cursor position
         let info = [prop_find(#{type: 'tempmark'}, 'f'), prop_find(#{type: 'tempmark'}, 'b')]
-        call filter(info, {_,v -> !empty(v)})
+        call filter(info, {_, v -> !empty(v)})
         if !empty(info)
             call cursor(info[0].lnum, info[0].col)
         endif
@@ -427,9 +417,9 @@ fu s:put(_) abort "{{{2
     "}}}
     if getreg(s:put.register, 1, 1) == []
         try
-            exe 'norm! "'..s:put.register..'p'
+            exe 'norm! "' .. s:put.register .. 'p'
         catch
-            return lg#catch()
+            return s:Catch()
         endtry
     endif
 
@@ -471,9 +461,9 @@ fu s:put(_) abort "{{{2
         " end of every non-empty line.
         if reg_to_use is# 'o'
             \ && &ft is# 'markdown'
-            \ && synIDattr(synID(line('.'), col('.'), 1), 'name') =~# '^markdown.*CodeBlock$'
+            \ && synID('.', col('.'), 1)->synIDattr('name') =~# '^markdown.*CodeBlock$'
             let contents = getreg('o', 1, 1)
-            call map(contents, {_,v -> v != '' ? v..'~' : v})
+            call map(contents, {_, v -> v != '' ? v .. '~' : v})
             call setreg('o', contents, 'l')
         endif
 
@@ -486,7 +476,7 @@ fu s:put(_) abort "{{{2
         " make sure the cursor is on the first non-whitespace
         call search('\S', 'cW')
     catch
-        return lg#catch()
+        return s:Catch()
     finally
         call setreg(reg_to_use, reg_save)
     endtry
@@ -495,13 +485,13 @@ endfu
 fu s:put_line(_) abort "{{{2
     let cnt = v:count1
     let line = getline('.')
-    let cml = '\V'..escape(matchstr(&l:cms, '\S*\ze\s*%s'), '\')..'\m'
+    let cml = '\V' .. matchstr(&l:cms, '\S*\ze\s*%s')->escape('\') .. '\m'
 
-    let is_first_line_in_diagram = line =~# '^\s*\%('..cml..'\)\=├[─┐┘ ├]*$'
-    let is_in_diagram = line =~# '^\s*\%('..cml..'\)\=\s*[│┌┐└┘├┤]'
+    let is_first_line_in_diagram = line =~# '^\s*\%(' .. cml .. '\)\=├[─┐┘ ├]*$'
+    let is_in_diagram = line =~# '^\s*\%(' .. cml .. '\)\=\s*[│┌┐└┘├┤]'
     if is_first_line_in_diagram
         if s:put_line_below && line =~# '┐' || !s:put_line_below && line =~# '┘'
-            let line =  ''
+            let line = ''
         else
             let line = substitute(line, '[^├]', ' ', 'g')
             let line = substitute(line, '├', '│', 'g')
@@ -528,13 +518,13 @@ fu s:put_line(_) abort "{{{2
     if is_in_closed_fold && &ft is# 'markdown'
         " for  a  markdown  buffer,  where  we  use  a  foldexpr,  a  visual
         " separation means an empty fold
-        let prefix = matchstr(getline(fold_begin), '^#\+')
+        let prefix = getline(fold_begin)->matchstr('^#\+')
         " fold marked by a line starting with `#`
         if prefix =~# '#'
             if prefix is# '#' | let prefix = '##' | endif
             let lines = repeat([prefix], cnt)
         " fold marked by a line starting with `===` or `---`
-        elseif matchstr(getline(fold_begin+1), '^===\|^---') isnot# ''
+        elseif getline(fold_begin+1)->matchstr('^===\|^---') != ''
             let lines = repeat(['---', '---'], cnt)
         endif
         let lnum = s:put_line_below ? fold_end : fold_begin - 1
@@ -555,7 +545,7 @@ fu s:put_line(_) abort "{{{2
             sil! call fold#lazy#compute()
         endif
     catch
-        return lg#catch()
+        return s:Catch()
     endtry
 endfu
 "}}}1

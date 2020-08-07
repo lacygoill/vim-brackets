@@ -5,10 +5,12 @@ let g:autoloaded_brackets#move = 1
 
 " Init {{{1
 
+import Catch from 'lg.vim'
+
 const s:LHS2CMD = {
-    \ ']q': ['cnext', 'cfirst'],
+    \ ']q': ['cnext',     'cfirst'],
     \ '[q': ['cprevious', 'clast'],
-    \ ']l': ['lnext', 'lfirst'],
+    \ ']l': ['lnext',     'lfirst'],
     \ '[l': ['lprevious', 'llast'],
     \ '] c-q': ['cnfile', 'cfirst'],
     \ '[ c-q': ['cpfile', 'clast'],
@@ -17,13 +19,13 @@ const s:LHS2CMD = {
     \ }
 
 const s:PATTERNS = {
-    \ 'fu':            '^\s*\%(fu\%[nction]\|def\)!\=\s\+',
-    \ 'endfu':         '^\s*\%(endf\%[unction]\|enddef\)\%(\s\|"\|$\)',
-    \ 'sh_fu':         '^\s*\S\+\s*()\s*{\%(\s*#\s*{{'..'{\d*\s*\)\=$',
+    \ 'fu':            '^\C\s*\%(fu\%[nction]\|\%(export\s*\)\=def\)!\=\s\+',
+    \ 'endfu':         '^\C\s*\%(endf\%[unction]\|enddef\)\%(\s\|"\|$\)',
+    \ 'sh_fu':         '^\s*\S\+\s*()\s*{\%(\s*#\s*{{' .. '{\d*\s*\)\=$',
     \ 'sh_endfu':      '^}$',
     \ 'ref':           '\[.\{-1,}\](\zs.\{-1,})',
     \ 'path':          '\f*/\&\%(\%(^\|\s\|`\)\)\@1<=[./~]\f\+',
-    \ 'url':           '\%(https\=\|ftps\=\|www\)://\|!\=\[.\{-}\]\%((.\{-})\|\[.\{-}\]\)',
+    \ 'url':           '\C\%(https\=\|ftps\=\|www\)://\|!\=\[.\{-}\]\%((.\{-})\|\[.\{-}\]\)',
     \ 'concealed_url': '\[.\{-}\zs\](.\{-})',
     \ 'codespan':      '`.\{-1,}`',
     \ 'shell_prompt':  '^٪',
@@ -67,10 +69,10 @@ fu brackets#move#tnext(lhs) abort "{{{2
         \ }[a:lhs]
 
     try
-        exe cnt..cmd1
+        exe cnt .. cmd1
     " E73: tag stack empty
     catch /^Vim\%((\a\+)\)\=:E73:/
-        return lg#catch()
+        return s:Catch()
     " E425: Cannot go before first matching tag
     " E428: Cannot go beyond last matching tag
     catch /^Vim\%((\a\+)\)\=:\%(E425\|E428\):/
@@ -97,7 +99,7 @@ fu brackets#move#cnext(lhs) abort "{{{2
             exe cmd1
         " no entry in the qfl
         catch /^Vim\%((\a\+)\)\=:E\%(42\|776\):/
-            return lg#catch()
+            return s:Catch()
         " no more entry in the qfl; wrap around the edge
         catch /^Vim\%((\a\+)\)\=:E553:/
             exe cmd2
@@ -111,7 +113,7 @@ fu brackets#move#cnewer(lhs) abort "{{{2
     let cnt = v:count1
     try
         for i in range(1, cnt)
-            let cmd =  {
+            let cmd = {
                 \ '<q': 'colder',
                 \ '>q': 'cnewer',
                 \ '<l': 'lolder',
@@ -132,15 +134,15 @@ fu brackets#move#cnewer(lhs) abort "{{{2
         redraw
         try
             exe {
-                \ '<q': getqflist({'nr': '$'}).nr ..'chi',
-                \ '>q': '1chi',
-                \ '<l': getloclist(0, {'nr': '$'}).nr ..'lhi',
-                \ '>l': '1lhi',
-                \ }[a:lhs]
+            \ '<q': getqflist({'nr': '$'}).nr .. 'chi',
+            \ '>q': '1chi',
+            \ '<l': getloclist(0, {'nr': '$'}).nr .. 'lhi',
+            \ '>l': '1lhi',
+            \ }[a:lhs]
         " the qf stack is empty
         " E16: Invalid range
         catch /^Vim\%((\a\+)\)\=:\%(E16\|E776\):/
-            return lg#catch()
+            return s:Catch()
         endtry
     endtry
 endfu
@@ -162,7 +164,7 @@ fu brackets#move#regex(kwd, is_fwd) abort "{{{2
         let mode = "\<c-v>\<c-v>"
     endif
 
-    return printf(":\<c-u>call %s(%s,%d,%s)\<cr>",
+    return printf(":\<c-u>call %s(%s, %d, %s)\<cr>",
         \ function('s:jump'), string(a:kwd), a:is_fwd, string(mode))
 endfu
 "}}}1
@@ -189,7 +191,7 @@ fu s:jump(kwd, is_fwd, mode) abort "{{{2
         " searching for some link, I like knowing that I've visited them all.
         " If you remove `W`, we keep cycling as long as we press the mapping.
         "}}}
-        call search(pat, (a:is_fwd ? '' : 'b')..'W')
+        call search(pat, (a:is_fwd ? '' : 'b') .. 'W')
         let cnt -= 1
     endwhile
 

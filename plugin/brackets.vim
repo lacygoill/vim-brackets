@@ -33,16 +33,16 @@ nno <silent><unique> ]A :<c-u>last<cr>
 " buffer list {{{3
 
 " `:bnext` wrap around the end of the buffer list by default
-nno <silent><unique> [b :<c-u>exe v:count..'bprevious'<cr>
-nno <silent><unique> ]b :<c-u>exe v:count..'bnext'<cr>
+nno <silent><unique> [b :<c-u>exe v:count .. 'bprevious'<cr>
+nno <silent><unique> ]b :<c-u>exe v:count .. 'bnext'<cr>
 
 nno <silent><unique> [B :<c-u>bfirst<cr>
 nno <silent><unique> ]B :<c-u>blast<cr>
 
 " file list {{{3
 
-nno <silent><unique> ]f :<c-u>e <c-r>=fnameescape(brackets#next_file_to_edit(v:count1))<cr><cr>
-nno <silent><unique> [f :<c-u>e <c-r>=fnameescape(brackets#next_file_to_edit(-v:count1))<cr><cr>
+nno <silent><unique> ]f :<c-u>e <c-r>=brackets#next_file_to_edit(v:count1)->fnameescape()<cr><cr>
+nno <silent><unique> [f :<c-u>e <c-r>=brackets#next_file_to_edit(-v:count1)->fnameescape()<cr><cr>
 
 " quickfix list {{{3
 
