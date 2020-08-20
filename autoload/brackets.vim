@@ -1,5 +1,4 @@
-import Catch from 'lg.vim'
-import Getselection from 'lg.vim'
+import {Catch, GetSelection} from 'lg.vim'
 
 " Interface {{{1
 fu brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, ...) abort "{{{2
@@ -22,7 +21,7 @@ fu brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, .
         else
             " otherwise the function must have been called from visual mode
             " (visual mapping): use the visual selection as the pattern
-            let pat = s:Getselection()
+            let pat = s:GetSelection()
 
             " `:ilist` can't find a multiline pattern
             if len(pat) != 1 | return s:error('E389: Couldn''t find pattern') | endif
