@@ -256,24 +256,27 @@ fu brackets#put_lines_around(...) abort "{{{2
 endfu
 
 fu brackets#rule_motion(below, ...) abort "{{{2
+    let cnt = v:count1
     " after this function has been called from the command-line, we're in normal
     " mode; we need to get back to visual mode so that the search motion extends
     " the visual selection, instead of just moving the cursor
     if a:0 && a:1 is# 'vis' | exe 'norm! gv' | endif
     let cml = '\V' .. matchstr(&l:cms, '\S*\ze\s*%s')->escape('\') .. '\m'
     let flags = (a:below ? '' : 'b') .. 'W'
-    if &ft is# 'markdown'
-        let pat = '^---$'
-        let stopline = search('^#', flags .. 'n')
-    else
-        let pat = '^\s*' .. cml .. ' ---$'
-        let fmr = '\%(' .. split(&l:fmr, ',')->join('\|') .. '\)\d*'
-        let stopline = search('^\s*' .. cml .. '.*' .. fmr .. '$', flags .. 'n')
-    endif
-    let lnum = search(pat, flags .. 'n')
-    if stopline == 0 || (a:below && lnum < stopline || !a:below && lnum > stopline)
-        call search(pat, flags, stopline)
-    endif
+    for i in range(1, cnt)
+        if &ft is# 'markdown'
+            let pat = '^---$'
+            let stopline = search('^#', flags .. 'n')
+        else
+            let pat = '^\s*' .. cml .. ' ---$'
+            let fmr = '\%(' .. split(&l:fmr, ',')->join('\|') .. '\)\d*'
+            let stopline = search('^\s*' .. cml .. '.*' .. fmr .. '$', flags .. 'n')
+        endif
+        let lnum = search(pat, flags .. 'n')
+        if stopline == 0 || (a:below && lnum < stopline || !a:below && lnum > stopline)
+            call search(pat, flags, stopline)
+        endif
+    endfor
 endfu
 
 fu brackets#rule_put(below) abort "{{{2

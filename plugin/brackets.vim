@@ -108,8 +108,8 @@ nno <silent><unique> ]- :<c-u>call brackets#rule_motion(1)<cr>
 xno <silent><unique> [- :<c-u>call brackets#rule_motion(0, 'vis')<cr>
 xno <silent><unique> ]- :<c-u>call brackets#rule_motion(1, 'vis')<cr>
 
-ono <silent><unique> [- :<c-u>norm V[-<cr>
-ono <silent><unique> ]- :<c-u>norm V]-<cr>
+ono <silent><unique> [- :<c-u>norm V<c-r>=v:count1<cr>[-<cr>
+ono <silent><unique> ]- :<c-u>norm V<c-r>=v:count1<cr>]-<cr>
 
 nno <silent><unique> +[- :<c-u>call brackets#rule_put(0)<cr>
 nno <silent><unique> +]- :<c-u>call brackets#rule_put(1)<cr>
