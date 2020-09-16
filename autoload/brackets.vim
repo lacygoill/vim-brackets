@@ -504,7 +504,7 @@ fu s:put_line(_) abort "{{{2
             \    m[0] is# '└' && s:put_line_below
             \ || m[0] is# '┌' && !s:put_line_below
             \ ? '' : '│'}
-        let line = substitute(line, '[└┌]', l:Rep, 'g')
+        let line = substitute(line, '[└┌]', Rep, 'g')
     else
         let line = ''
     endif
