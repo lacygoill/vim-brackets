@@ -1,4 +1,4 @@
-import {Catch, GetSelection} from 'lg.vim'
+import {Catch, GetSelection, IsVim9} from 'lg.vim'
 
 " Interface {{{1
 fu brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, ...) abort "{{{2
@@ -261,7 +261,7 @@ fu brackets#rule_motion(below, ...) abort "{{{2
     " mode; we need to get back to visual mode so that the search motion extends
     " the visual selection, instead of just moving the cursor
     if a:0 && a:1 is# 'vis' | exe 'norm! gv' | endif
-    let cml = '\V' .. matchstr(&l:cms, '\S*\ze\s*%s')->escape('\') .. '\m'
+    let cml = s:IsVim9() ? '#' : '\V' .. matchstr(&l:cms, '\S*\ze\s*%s')->escape('\') .. '\m'
     let flags = (a:below ? '' : 'b') .. 'W'
     for i in range(1, cnt)
         if &ft is# 'markdown'
@@ -487,7 +487,7 @@ endfu
 fu s:put_line(_) abort "{{{2
     let cnt = v:count1
     let line = getline('.')
-    let cml = '\V' .. matchstr(&l:cms, '\S*\ze\s*%s')->escape('\') .. '\m'
+    let cml = s:IsVim9() ? '#' : '\V' .. matchstr(&l:cms, '\S*\ze\s*%s')->escape('\') .. '\m'
 
     let is_first_line_in_diagram = line =~# '^\s*\%(' .. cml .. '\)\=├[─┐┘ ├]*$'
     let is_in_diagram = line =~# '^\s*\%(' .. cml .. '\)\=\s*[│┌┐└┘├┤]'
