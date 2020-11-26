@@ -164,7 +164,7 @@ fu brackets#move#regex(kwd, is_fwd) abort "{{{2
         let mode = "\<c-v>\<c-v>"
     endif
 
-    return printf(":\<c-u>call %s(%s, %d, %s)\<cr>",
+    return printf("\<cmd>call %s(%s, %d, %s)\<cr>",
         \ function('s:jump'), string(a:kwd), a:is_fwd, string(mode))
 endfu
 "}}}1
@@ -177,11 +177,6 @@ fu s:jump(kwd, is_fwd, mode) abort "{{{2
 
     if a:mode is# 'n'
         norm! m'
-    elseif a:mode =~# "^[vV\<c-v>]$"
-        " If we  were initially  in visual mode,  we've left it  as soon  as the
-        " mapping pressed Enter  to execute the call to this  function.  We need
-        " to get back in visual mode, before the search.
-        norm! gv
     endif
 
     while cnt > 0

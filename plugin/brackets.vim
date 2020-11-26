@@ -24,74 +24,74 @@ com -bang -nargs=1 Dlist call brackets#di_list('d', 0, 0, <bang>0, <q-args>)
 " Move in lists {{{2
 " arglist {{{3
 
-nno <silent><unique> [a :<c-u>call brackets#move#next('[a')<cr>
-nno <silent><unique> ]a :<c-u>call brackets#move#next(']a')<cr>
+nno <unique> [a <cmd>call brackets#move#next('[a')<cr>
+nno <unique> ]a <cmd>call brackets#move#next(']a')<cr>
 
-nno <silent><unique> [A :<c-u>first<cr>
-nno <silent><unique> ]A :<c-u>last<cr>
+nno <unique> [A <cmd>first<cr>
+nno <unique> ]A <cmd>last<cr>
 
 " buffer list {{{3
 
 " `:bnext` wrap around the end of the buffer list by default
-nno <silent><unique> [b :<c-u>exe v:count .. 'bprevious'<cr>
-nno <silent><unique> ]b :<c-u>exe v:count .. 'bnext'<cr>
+nno <unique> [b <cmd>exe v:count .. 'bprevious'<cr>
+nno <unique> ]b <cmd>exe v:count .. 'bnext'<cr>
 
-nno <silent><unique> [B :<c-u>bfirst<cr>
-nno <silent><unique> ]B :<c-u>blast<cr>
+nno <unique> [B <cmd>bfirst<cr>
+nno <unique> ]B <cmd>blast<cr>
 
 " file list {{{3
 
-nno <silent><unique> ]f :<c-u>e <c-r>=brackets#next_file_to_edit(v:count1)->fnameescape()<cr><cr>
-nno <silent><unique> [f :<c-u>e <c-r>=brackets#next_file_to_edit(-v:count1)->fnameescape()<cr><cr>
+nno <silent><unique> ]f :<c-u>e <c-r><c-r>=brackets#next_file_to_edit(v:count1)->fnameescape()<cr><cr>
+nno <silent><unique> [f :<c-u>e <c-r><c-r>=brackets#next_file_to_edit(-v:count1)->fnameescape()<cr><cr>
 
 " quickfix list {{{3
 
-nno <silent><unique> [q :<c-u>call brackets#move#cnext('[q')<cr>
-nno <silent><unique> ]q :<c-u>call brackets#move#cnext(']q')<cr>
+nno <unique> [q <cmd>call brackets#move#cnext('[q')<cr>
+nno <unique> ]q <cmd>call brackets#move#cnext(']q')<cr>
 
-nno <silent><unique> [l :<c-u>call brackets#move#cnext('[l')<cr>
-nno <silent><unique> ]l :<c-u>call brackets#move#cnext(']l')<cr>
+nno <unique> [l <cmd>call brackets#move#cnext('[l')<cr>
+nno <unique> ]l <cmd>call brackets#move#cnext(']l')<cr>
 
-nno <silent><unique> [Q :<c-u>cfirst<cr>
-nno <silent><unique> ]Q :<c-u>clast<cr>
+nno <unique> [Q <cmd>cfirst<cr>
+nno <unique> ]Q <cmd>clast<cr>
 
-nno <silent><unique> [L :<c-u>lfirst<cr>
-nno <silent><unique> ]L :<c-u>llast<cr>
+nno <unique> [L <cmd>lfirst<cr>
+nno <unique> ]L <cmd>llast<cr>
 
-nno <silent><unique> [<c-q> :<c-u>call brackets#move#cnext('[ c-q')<cr>
-nno <silent><unique> ]<c-q> :<c-u>call brackets#move#cnext('] c-q')<cr>
+nno <unique> [<c-q> <cmd>call brackets#move#cnext('[ c-q')<cr>
+nno <unique> ]<c-q> <cmd>call brackets#move#cnext('] c-q')<cr>
 
-nno <silent><unique> [<c-l> :<c-u>call brackets#move#cnext('[ c-l')<cr>
-nno <silent><unique> ]<c-l> :<c-u>call brackets#move#cnext('] c-l')<cr>
+nno <unique> [<c-l> <cmd>call brackets#move#cnext('[ c-l')<cr>
+nno <unique> ]<c-l> <cmd>call brackets#move#cnext('] c-l')<cr>
 
 " quickfix stack {{{3
 
-nno <silent><unique> <q :<c-u>call brackets#move#cnewer('<q')<cr>
-nno <silent><unique> >q :<c-u>call brackets#move#cnewer('>q')<cr>
+nno <unique> <q <cmd>call brackets#move#cnewer('<q')<cr>
+nno <unique> >q <cmd>call brackets#move#cnewer('>q')<cr>
 
-nno <silent><unique> <l :<c-u>call brackets#move#cnewer('<l')<cr>
-nno <silent><unique> >l :<c-u>call brackets#move#cnewer('>l')<cr>
+nno <unique> <l <cmd>call brackets#move#cnewer('<l')<cr>
+nno <unique> >l <cmd>call brackets#move#cnewer('>l')<cr>
 
 " tag list {{{3
 
-nno <silent><unique> [t :<c-u>call brackets#move#tnext('[t')<cr>
-nno <silent><unique> ]t :<c-u>call brackets#move#tnext(']t')<cr>
+nno <unique> [t <cmd>call brackets#move#tnext('[t')<cr>
+nno <unique> ]t <cmd>call brackets#move#tnext(']t')<cr>
 
-nno <silent><unique> [T :<c-u>tfirst<cr>
-nno <silent><unique> ]T :<c-u>tlast<cr>
+nno <unique> [T <cmd>tfirst<cr>
+nno <unique> ]T <cmd>tlast<cr>
 "}}}2
 " Move to text matching regex {{{2
 
-noremap <expr><silent><unique> [` brackets#move#regex('codespan', 0)
-noremap <expr><silent><unique> ]` brackets#move#regex('codespan', 1)
-noremap <expr><silent><unique> [h brackets#move#regex('path', 0)
-noremap <expr><silent><unique> ]h brackets#move#regex('path', 1)
-noremap <expr><silent><unique> [r brackets#move#regex('ref', 0)
-noremap <expr><silent><unique> ]r brackets#move#regex('ref', 1)
-noremap <expr><silent><unique> [u brackets#move#regex('url', 0)
-noremap <expr><silent><unique> ]u brackets#move#regex('url', 1)
-noremap <expr><silent><unique> [U brackets#move#regex('concealed_url', 0)
-noremap <expr><silent><unique> ]U brackets#move#regex('concealed_url', 1)
+noremap <expr><unique> [` brackets#move#regex('codespan', 0)
+noremap <expr><unique> ]` brackets#move#regex('codespan', 1)
+noremap <expr><unique> [h brackets#move#regex('path', 0)
+noremap <expr><unique> ]h brackets#move#regex('path', 1)
+noremap <expr><unique> [r brackets#move#regex('ref', 0)
+noremap <expr><unique> ]r brackets#move#regex('ref', 1)
+noremap <expr><unique> [u brackets#move#regex('url', 0)
+noremap <expr><unique> ]u brackets#move#regex('url', 1)
+noremap <expr><unique> [U brackets#move#regex('concealed_url', 0)
+noremap <expr><unique> ]U brackets#move#regex('concealed_url', 1)
 
 " Miscellaneous {{{2
 " ] SPC {{{3
@@ -102,45 +102,45 @@ nno <expr><unique> ]<space> brackets#put_line_setup(']')
 
 " ] - {{{3
 
-nno <silent><unique> [- :<c-u>call brackets#rule_motion(0)<cr>
-nno <silent><unique> ]- :<c-u>call brackets#rule_motion(1)<cr>
+nno <unique> ]- <cmd>call brackets#rule_motion()<cr>
+nno <unique> [- <cmd>call brackets#rule_motion(v:false)<cr>
 
-xno <silent><unique> [- :<c-u>call brackets#rule_motion(0, 'vis')<cr>
-xno <silent><unique> ]- :<c-u>call brackets#rule_motion(1, 'vis')<cr>
+xno <unique> ]- <cmd>call brackets#rule_motion()<cr>
+xno <unique> [- <cmd>call brackets#rule_motion(v:false)<cr>
 
-ono <silent><unique> [- :<c-u>norm V<c-r>=v:count1<cr>[-<cr>
-ono <silent><unique> ]- :<c-u>norm V<c-r>=v:count1<cr>]-<cr>
+ono <unique> ]- <cmd>exe 'norm V' .. v:count1 .. ']-'<cr>
+ono <unique> [- <cmd>exe 'norm V' .. v:count1 .. '[-'<cr>
 
-nno <silent><unique> +[- :<c-u>call brackets#rule_put(0)<cr>
-nno <silent><unique> +]- :<c-u>call brackets#rule_put(1)<cr>
+nno <unique> +]- <cmd>call brackets#rule_put()<cr>
+nno <unique> +[- <cmd>call brackets#rule_put(v:false)<cr>
 
 " ]I {{{3
 
-"                                                           ┌ don't start to search at cursor,
-"                                                           │ but at beginning of file
-"                                                           │
-"                                                           │  ┌ don't pass a bang to the commands
-"                                                           │  │ normal commands don't accept one anyway
-nno <silent><unique> [I :<c-u>call brackets#di_list('i', 1, 0, 0)<cr>
-"                                                    │   │
-"                                                    │   └ search current word
-"                                                    └ command to execute (ilist or dlist)
+"                                                  ┌ don't start to search at cursor,
+"                                                  │ but at beginning of file
+"                                                  │
+"                                                  │  ┌ don't pass a bang to the commands
+"                                                  │  │ normal commands don't accept one anyway
+nno <unique> [I <cmd>call brackets#di_list('i', 1, 0, 0)<cr>
+"                                           │   │
+"                                           │   └ search current word
+"                                           └ command to execute (ilist or dlist)
 
-xno <silent><unique> [I :<c-u>call brackets#di_list('i', 0, 0, 1)<cr>
-"                                                        │
-"                                                        └ don't search current word, but visual selection
+xno <unique> [I <c-\><c-n><cmd>call brackets#di_list('i', 0, 0, 1)<cr>
+"                                                         │
+"                                                         └ don't search current word, but visual selection
 
-nno <silent><unique> ]I :<c-u>call brackets#di_list('i', 1, 1, 0)<cr>
-"                                                           │
-"                                                           └ start to search after the line where the cursor is
+nno <unique> ]I <cmd>call brackets#di_list('i', 1, 1, 0)<cr>
+"                                                  │
+"                                                  └ start to search after the line where the cursor is
 
-xno <silent><unique> ]I :<c-u>call brackets#di_list('i', 0, 1, 1)<cr>
+xno <unique> ]I <c-\><c-n><cmd>call brackets#di_list('i', 0, 1, 1)<cr>
 
-nno <silent><unique> [D :<c-u>call brackets#di_list('d', 1, 0, 0)<cr>
-xno <silent><unique> [D :<c-u>call brackets#di_list('d', 0, 0, 1)<cr>
+nno <unique> [D <cmd>call brackets#di_list('d', 1, 0, 0)<cr>
+xno <unique> [D <c-\><c-n><cmd>call brackets#di_list('d', 0, 0, 1)<cr>
 
-nno <silent><unique> ]D :<c-u>call brackets#di_list('d', 1, 1, 0)<cr>
-xno <silent><unique> ]D :<c-u>call brackets#di_list('d', 0, 1, 1)<cr>
+nno <unique> ]D <cmd>call brackets#di_list('d', 1, 1, 0)<cr>
+xno <unique> ]D <c-\><c-n><cmd>call brackets#di_list('d', 0, 1, 1)<cr>
 
 " ]e {{{3
 
