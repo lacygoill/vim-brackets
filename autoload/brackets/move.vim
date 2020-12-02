@@ -152,18 +152,14 @@ fu brackets#move#regex(kwd, is_fwd) abort "{{{2
     "               │ operator-pending mode, we would get 'n' instead of 'no'
     "               │
     let mode = mode(1)
-
-    " If we're in visual block mode, we can't pass `C-v` directly.
-    " It's going to by directly typed on the command-line.
-    " On the command-line, `C-v` means:
+    " If we're in visual block mode, we can't pass `C-v` directly.{{{
     "
-    "     “insert the next character literally”
+    " Since  8.2.2062,  `<cmd>`  handles  `C-v`  just like  it  would  be  on  a
+    " command-line entered  with `:`. That  is, it's interpreted as  "insert the
+    " next character literally".
     "
-    " The solution is to double `C-v`.
-    if mode is# "\<c-v>"
-        let mode = "\<c-v>\<c-v>"
-    endif
-
+    " Solution: double `<C-v>`.
+    "}}}
     return printf("\<cmd>call %s(%s, %d, %s)\<cr>",
         \ function('s:jump'), string(a:kwd), a:is_fwd, string(mode))
 endfu

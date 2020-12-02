@@ -41,8 +41,8 @@ nno <unique> ]B <cmd>blast<cr>
 
 " file list {{{3
 
-nno <silent><unique> ]f :<c-u>e <c-r><c-r>=brackets#next_file_to_edit(v:count1)->fnameescape()<cr><cr>
-nno <silent><unique> [f :<c-u>e <c-r><c-r>=brackets#next_file_to_edit(-v:count1)->fnameescape()<cr><cr>
+nno <unique> ]f <cmd>exe 'e ' .. brackets#next_file_to_edit(v:count1)->fnameescape()<cr>
+nno <unique> [f <cmd>exe 'e ' .. brackets#next_file_to_edit(-v:count1)->fnameescape()<cr>
 
 " quickfix list {{{3
 
