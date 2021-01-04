@@ -95,8 +95,8 @@ fu brackets#di_list(cmd, search_cur_word, start_at_cursor, search_in_comments, .
     if &bt isnot# 'quickfix' | return | endif
 
     " hide location
-    call qf#set_matches('brackets:di_list', 'Conceal', 'location')
-    call qf#create_matches()
+    call qf#setMatches('brackets:di_list', 'Conceal', 'location')
+    call qf#createMatches()
 endfu
 
 fu brackets#mv_line_setup(dir) abort "{{{2
