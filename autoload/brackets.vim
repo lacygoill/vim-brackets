@@ -208,8 +208,8 @@ fu s:what_is_around(dir) abort
     " If `dir` is the root of the tree, we need to get rid of the
     " slash, because we're going to add a slash when calling `glob('/*')`.
     let dir = substitute(a:dir, '/$', '', '')
-    let entries = glob(dir .. '/.*', 0, 1)
-    let entries += glob(dir .. '/*', 0, 1)
+    let entries = glob(dir .. '/.*', v:false, v:true)
+    let entries += glob(dir .. '/*', v:false, v:true)
 
     " The first call to `glob()` was meant to include the hidden entries,
     " but it produces 2 garbage entries which do not exist.

@@ -103,6 +103,10 @@ fu brackets#move#cnext(lhs) abort "{{{2
         " no more entry in the qfl; wrap around the edge
         catch /^Vim\%((\a\+)\)\=:E553:/
             exe cmd2
+        " E92: Buffer 123 not found
+        " can happen if the buffer has been wiped out since the last time you visited it
+        catch /^Vim\%((\a\+)\)\=:E92:/
+            return s:Catch()
         endtry
     endfor
 
