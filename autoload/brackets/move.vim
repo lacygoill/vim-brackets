@@ -1,198 +1,210 @@
-if exists('g:autoloaded_brackets#move')
-    finish
-endif
-let g:autoloaded_brackets#move = 1
+vim9 noclear
 
-" Init {{{1
+if exists('loaded') | finish | endif
+var loaded = true
+
+# Init {{{1
 
 import Catch from 'lg.vim'
 
-const s:LHS2CMD = {
-    \ ']q': ['cnext',     'cfirst'],
-    \ '[q': ['cprevious', 'clast'],
-    \ ']l': ['lnext',     'lfirst'],
-    \ '[l': ['lprevious', 'llast'],
-    \ '] c-q': ['cnfile', 'cfirst'],
-    \ '[ c-q': ['cpfile', 'clast'],
-    \ '] c-l': ['lnfile', 'lfirst'],
-    \ '[ c-l': ['lpfile', 'llast'],
-    \ }
+const LHS2CMD: dict<list<string>> = {
+    ']q': ['cnext',     'cfirst'],
+    '[q': ['cprevious', 'clast'],
+    ']l': ['lnext',     'lfirst'],
+    '[l': ['lprevious', 'llast'],
+    '] c-q': ['cnfile', 'cfirst'],
+    '[ c-q': ['cpfile', 'clast'],
+    '] c-l': ['lnfile', 'lfirst'],
+    '[ c-l': ['lpfile', 'llast'],
+    }
 
-const s:PATTERNS = {
-    \ 'fu':            '^\C\s*\%(fu\%[nction]\|\%(export\s*\)\=def\)!\=\s\+',
-    \ 'endfu':         '^\C\s*\%(endf\%[unction]\|enddef\)\%(\s\|"\|$\)',
-    \ 'sh_fu':         '^\s*\S\+\s*()\s*{\%(\s*#\s*{{' .. '{\d*\s*\)\=$',
-    \ 'sh_endfu':      '^}$',
-    \ 'ref':           '\[.\{-1,}\](\zs.\{-1,})',
-    \ 'path':          '\f*/\&\%(\%(^\|\s\|`\)\)\@1<=[./~]\f\+',
-    \ 'url':           '\C\%(https\=\|ftps\=\|www\)://\|!\=\[.\{-}\]\%((.\{-})\|\[.\{-}\]\)',
-    \ 'concealed_url': '\[.\{-}\zs\](.\{-})',
-    \ 'codespan':      '`.\{-1,}`',
-    \ 'shell_prompt':  '^٪',
-    \ }
+const PATTERNS: dict<string> = {
+    fu:            '^\C\s*\%(fu\%[nction]\|\%(export\s*\)\=def\)!\=\s\+',
+    endfu:         '^\C\s*\%(endf\%[unction]\|enddef\)\%(\s\|"\|$\)',
+    sh_fu:         '^\s*\S\+\s*()\s*{\%(\s*#\s*{{' .. '{\d*\s*\)\=$',
+    sh_endfu:      '^}$',
+    ref:           '\[.\{-1,}\](\zs.\{-1,})',
+    path:          '\f*/\&\%(\%(^\|\s\|`\)\)\@1<=[./~]\f\+',
+    url:           '\C\%(https\=\|ftps\=\|www\)://\|!\=\[.\{-}\]\%((.\{-})\|\[.\{-}\]\)',
+    concealed_url: '\[.\{-}\zs\](.\{-})',
+    codespan:      '`.\{-1,}`',
+    shell_prompt:  '^٪',
+    }
 
-" Interface {{{1
-fu brackets#move#next(lhs) abort "{{{2
-    let cnt = v:count1
-    " Do *not* use a `:try` conditional inside this function.{{{
-    "
-    " Inside a try conditional, `:next`/`:prev` fail when the next/previous argument
-    " is not readable.
-    "
-    " https://github.com/vim/vim/issues/5451
-    "}}}
-    let argc = argc()
+# Interface {{{1
+def brackets#move#next(lhs: string) #{{{2
+    var cnt: number = v:count1
+    # Do *not* use a `:try` conditional inside this function.{{{
+    #
+    # Inside a try conditional, `:next`/`:prev` fail when the next/previous argument
+    # is not readable.
+    #
+    # https://github.com/vim/vim/issues/5451
+    #}}}
+    var argc: number = argc()
     if argc < 2
-        echohl ErrorMsg | echo 'E163: There is only one file to edit' | echohl NONE
+        echohl ErrorMsg
+        echo 'E163: There is only one file to edit'
+        echohl NONE
         return
     endif
     for i in range(cnt)
-        let argidx = argidx()
-        if a:lhs is# ']a' && argidx == argc - 1
+        var argidx: number = argidx()
+        if lhs == ']a' && argidx == argc - 1
             first
-        elseif a:lhs is# '[a' && argidx == 0
+        elseif lhs == '[a' && argidx == 0
             last
-        elseif a:lhs is# ']a'
+        elseif lhs == ']a'
             next
-        elseif a:lhs =~# '[a'
+        elseif lhs =~ '[a'
             prev
         endif
     endfor
-endfu
+enddef
 
-fu brackets#move#tnext(lhs) abort "{{{2
-    let cnt = v:count ? v:count : ''
+def brackets#move#tnext(lhs: string) #{{{2
+    var cnt: string = v:count ? v:count->string() : ''
 
-    let [cmd1, cmd2] = {
-        \ ']t': ['tnext', 'tfirst'],
-        \ '[t': ['tprevious', 'tlast'],
-        \ }[a:lhs]
+    var cmd1: string
+    var cmd2: string
+    [cmd1, cmd2] = {
+        ']t': ['tnext', 'tfirst'],
+        '[t': ['tprevious', 'tlast'],
+        }[lhs]
 
     try
         exe cnt .. cmd1
-    " E73: tag stack empty
+    # E73: tag stack empty
     catch /^Vim\%((\a\+)\)\=:E73:/
-        return s:Catch()
-    " E425: Cannot go before first matching tag
-    " E428: Cannot go beyond last matching tag
+        Catch()
+        return
+    # E425: Cannot go before first matching tag
+    # E428: Cannot go beyond last matching tag
     catch /^Vim\%((\a\+)\)\=:\%(E425\|E428\):/
         exe cmd2
     endtry
-endfu
+enddef
 
-fu brackets#move#cnext(lhs) abort "{{{2
-    " Do *not* try to use `:cafter` & friends.{{{
-    "
-    " It  may seem  useful to  make our  custom commands  take into  account the
-    " current cursor position.  However:
-    "
-    "    - it needs a lot of code to get it right (see commit ef1ea5b89864969e0725b64b5a1159396344ce81)
-    "
-    "    - it only works under the assumption that your qf entries are sorted by their buffer,
-    "      line and column number; this is not always the case (e.g. `:WTF`)
-    "}}}
-    let cnt = v:count1
-    let [cmd1, cmd2] = s:LHS2CMD[a:lhs]
+def brackets#move#cnext(lhs: string) #{{{2
+    # Do *not* try to use `:cafter` & friends.{{{
+    #
+    # It  may seem  useful to  make our  custom commands  take into  account the
+    # current cursor position.  However:
+    #
+    #    - it needs a lot of code to get it right (see commit ef1ea5b89864969e0725b64b5a1159396344ce81)
+    #
+    #    - it only works under the assumption that your qf entries are sorted by their buffer,
+    #      line and column number; this is not always the case (e.g. `:WTF`)
+    #}}}
+    var cnt: number = v:count1
+    var cmd1: string
+    var cmd2: string
+    [cmd1, cmd2] = LHS2CMD[lhs]
 
     for i in range(cnt)
         try
             exe cmd1
-        " no entry in the qfl
+        # no entry in the qfl
         catch /^Vim\%((\a\+)\)\=:E\%(42\|776\):/
-            return s:Catch()
-        " no more entry in the qfl; wrap around the edge
+            Catch()
+            return
+        # no more entry in the qfl; wrap around the edge
         catch /^Vim\%((\a\+)\)\=:E553:/
             exe cmd2
-        " E92: Buffer 123 not found
-        " can happen if the buffer has been wiped out since the last time you visited it
+        # E92: Buffer 123 not found
+        # can happen if the buffer has been wiped out since the last time you visited it
         catch /^Vim\%((\a\+)\)\=:E92:/
-            return s:Catch()
+            Catch()
+            return
         endtry
     endfor
 
-    call brackets#util#open_fold(a:lhs)
-endfu
+    brackets#util#openFold(lhs)
+enddef
 
-fu brackets#move#cnewer(lhs) abort "{{{2
-    let cnt = v:count1
+def brackets#move#cnewer(lhs: string) #{{{2
+    var cnt: number = v:count1
     try
         for i in range(1, cnt)
-            let cmd = {
-                \ '<q': 'colder',
-                \ '>q': 'cnewer',
-                \ '<l': 'lolder',
-                \ '>l': 'lnewer',
-                \ }[a:lhs]
+            var cmd: string = {
+                '<q': 'colder',
+                '>q': 'cnewer',
+                '<l': 'lolder',
+                '>l': 'lnewer',
+                }[lhs]
             if i < cnt
                 sil exe cmd
             else
                 exe cmd
             endif
         endfor
-    " we've reached the end of the qf stack (or it's empty)
-    " E380: At bottom of quickfix stack
-    " E381: At top of quickfix stack
-    " E776: No location list
+    # we've reached the end of the qf stack (or it's empty)
+    # E380: At bottom of quickfix stack
+    # E381: At top of quickfix stack
+    # E776: No location list
     catch /^Vim\%((\a\+)\)\=:\%(E380\|E381\|E776\):/
-        " message from last list + message from first list = hit-enter prompt
+        # message from last list + message from first list = hit-enter prompt
         redraw
         try
             exe {
-            \ '<q': getqflist({'nr': '$'}).nr .. 'chi',
-            \ '>q': '1chi',
-            \ '<l': getloclist(0, {'nr': '$'}).nr .. 'lhi',
-            \ '>l': '1lhi',
-            \ }[a:lhs]
-        " the qf stack is empty
-        " E16: Invalid range
+                '<q': getqflist({nr: '$'}).nr .. 'chi',
+                '>q': '1chi',
+                '<l': getloclist(0, {nr: '$'}).nr .. 'lhi',
+                '>l': '1lhi',
+                }[lhs]
+        # the qf stack is empty
+        # E16: Invalid range
         catch /^Vim\%((\a\+)\)\=:\%(E16\|E776\):/
-            return s:Catch()
+            Catch()
+            return
         endtry
     endtry
-endfu
+enddef
 
-fu brackets#move#regex(kwd, is_fwd) abort "{{{2
-    "               ┌ necessary to get the full  name of the mode, otherwise in
-    "               │ operator-pending mode, we would get 'n' instead of 'no'
-    "               │
-    let mode = mode(1)
-    " If we're in visual block mode, we can't pass `C-v` directly.{{{
-    "
-    " Since  8.2.2062,  `<cmd>`  handles  `C-v`  just like  it  would  be  on  a
-    " command-line entered  with `:`. That  is, it's interpreted as  "insert the
-    " next character literally".
-    "
-    " Solution: double `<C-v>`.
-    "}}}
+def brackets#move#regex(kwd: string, is_fwd: bool): string #{{{2
+    #                       ┌ necessary to get the full  name of the mode, otherwise in
+    #                       │ operator-pending mode, we would get 'n' instead of 'no'
+    #                       │
+    var mode: string = mode(1)
+    # If we're in visual block mode, we can't pass `C-v` directly.{{{
+    #
+    # Since  8.2.2062,  `<cmd>`  handles  `C-v`  just like  it  would  be  on  a
+    # command-line entered  with `:`. That  is, it's interpreted as  "insert the
+    # next character literally".
+    #
+    # Solution: double `<C-v>`.
+    #}}}
     return printf("\<cmd>call %s(%s, %d, %s)\<cr>",
-        \ function('s:jump'), string(a:kwd), a:is_fwd, string(mode))
-endfu
-"}}}1
-" Core {{{1
-fu s:jump(kwd, is_fwd, mode) abort "{{{2
-    let cnt = v:count1
-    let pat = get(s:PATTERNS, a:kwd, '')
+        Jump, string(kwd), is_fwd ? 1 : 0, string(mode))
+enddef
+#}}}1
+# Core {{{1
+def Jump(kwd: string, is_fwd: bool, mode: string) #{{{2
+    var cnt: number = v:count1
+    var pat: string = get(PATTERNS, kwd, '')
 
-    if empty(pat) | return | endif
+    if empty(pat)
+        return
+    endif
 
-    if a:mode is# 'n'
+    if mode == 'n'
         norm! m'
     endif
 
     while cnt > 0
-        " Don't remove `W`; I like it.{{{
-        "
-        " For  example,  when I'm  cycling  through  urls  in a  markdown  files
-        " searching for some link, I like knowing that I've visited them all.
-        " If you remove `W`, we keep cycling as long as we press the mapping.
-        "}}}
-        call search(pat, (a:is_fwd ? '' : 'b') .. 'W')
-        let cnt -= 1
+        # Don't remove `W`; I like it.{{{
+        #
+        # For  example,  when I'm  cycling  through  urls  in a  markdown  files
+        # searching for some link, I like knowing that I've visited them all.
+        # If you remove `W`, we keep cycling as long as we press the mapping.
+        #}}}
+        search(pat, (is_fwd ? '' : 'b') .. 'W')
+        cnt -= 1
     endwhile
 
-    " the function shouldn't do anything in operator-pending mode
-    if a:mode =~# "[nvV\<c-v>]"
+    # the function shouldn't do anything in operator-pending mode
+    if mode =~ "[nvV\<c-v>]"
         norm! zv
     endif
-endfu
+enddef
 
