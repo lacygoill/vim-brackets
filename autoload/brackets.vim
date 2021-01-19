@@ -544,7 +544,7 @@ def PutLine(_: any) #{{{2
         endif
     elseif is_in_diagram
         line = substitute(line, '\%([│┌┐└┘├┤].*\)\@<=[^│┌┐└┘├┤]', ' ', 'g')
-        var Rep: func = (m: string): string =>
+        var Rep: func = (m: list<string>): string =>
                m[0] == '└' && put_line_below
             || m[0] == '┌' && !put_line_below
             ? '' : '│'
