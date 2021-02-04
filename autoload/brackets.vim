@@ -372,6 +372,8 @@ def MvLine(_: any) #{{{2
     var winid: number = win_getid()
     var bufnr: number = bufnr('%')
     &l:fen = false
+    # TODO: Save and restore all possible text properties on a moved line.
+    # Use `prop_list()` to get the list.
     try
         # Why do we mark the line since we already saved the view?{{{
         #
@@ -560,7 +562,7 @@ def PutLine(_: any) #{{{2
     # we want to create a visual separation between folds
     var fold_begin: number = foldclosed('.')
     var fold_end: number = foldclosedend('.')
-    var is_in_closed_fold: bool = fold_begin != -1
+    var is_in_closed_fold: bool = fold_begin >= 0
 
     if is_in_closed_fold && &ft == 'markdown'
         # for  a  markdown  buffer,  where  we  use  a  foldexpr,  a  visual
