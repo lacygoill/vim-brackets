@@ -3,7 +3,11 @@ vim9script noclear
 if exists('loaded') | finish | endif
 var loaded = true
 
-import {Catch, GetSelectionText, IsVim9} from 'lg.vim'
+import {
+    Catch,
+    GetSelectionText,
+    IsVim9,
+    } from 'lg.vim'
 
 # Interface {{{1
 def brackets#diList( #{{{2
@@ -163,12 +167,12 @@ def brackets#nextFileToEdit(arg_cnt: number): string #{{{2
         if arg_cnt > 0
             # remove the entries whose names come BEFORE the one of the current
             # entry, and sort the resulting list
-            filter(entries, (_, v) => v > here)->sort()
+            filter(entries, (_, v: string): bool => v > here)->sort()
         else
             # remove the entries whose names come AFTER the one of the current
             # entry, sort the resulting list, and reverse the order
             # (so that the previous entry comes first instead of last)
-            filter(entries, (_, v) => v < here)->sort()->reverse()
+            filter(entries, (_, v: string): bool => v < here)->sort()->reverse()
         endif
         var next_entry: string = get(entries, 0, '')
 
@@ -246,7 +250,7 @@ def WhatIsAround(arg_dir: string): list<string>
     #         /tmp/..
     #
     # We need to get rid of them.
-    filter(entries, (_, v) => v !~ '/\.\.\=$')
+    filter(entries, (_, v: string): bool => v !~ '/\.\.\=$')
 
     return entries
 enddef
@@ -432,7 +436,7 @@ def MvLine(_: any) #{{{2
             prop_find({type: 'tempmark'}, 'f'),
             prop_find({type: 'tempmark'}, 'b')
             ]
-        filter(info, (_, v) => !empty(v))
+        filter(info, (_, v: dict<any>): bool => !empty(v))
         if !empty(info)
             cursor(info[0].lnum, info[0].col)
         endif
@@ -508,7 +512,7 @@ def Put(_: any) #{{{2
             && &ft == 'markdown'
             && synID('.', col('.'), true)->synIDattr('name') =~ '^markdown.*CodeBlock$'
             var contents: list<string> = getreg('o', true, true)
-            map(contents, (_, v) => v != '' ? v .. '~' : v)
+            map(contents, (_, v: string): string => v != '' ? v .. '~' : v)
             setreg('o', contents, 'l')
         endif
 
