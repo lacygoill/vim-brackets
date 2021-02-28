@@ -165,7 +165,7 @@ def brackets#move#regex(kwd: string, is_fwd: bool): string #{{{2
     #                       ┌ necessary to get the full  name of the mode, otherwise in
     #                       │ operator-pending mode, we would get 'n' instead of 'no'
     #                       │
-    var mode: string = mode(1)
+    var mode: string = mode(true)
     # If we're in visual block mode, we can't pass `C-v` directly.{{{
     #
     # Since  8.2.2062,  `<cmd>`  handles  `C-v`  just like  it  would  be  on  a

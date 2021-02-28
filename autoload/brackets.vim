@@ -69,7 +69,7 @@ def brackets#diList( #{{{2
     # Our results may span multiple files so we need to build a relatively
     # complex list based on filenames.
     var filename: string = ''
-    var ll_entries: list<dict<any>> = []
+    var ll_entries: list<dict<any>>
     for line in lines
         # A line in the output of `:ilist` and `dlist` can be a filename.
         # It happens when there are matches in other included files.
@@ -438,7 +438,7 @@ def MvLine(_: any) #{{{2
             ]
         filter(info, (_, v: dict<any>): bool => !empty(v))
         if !empty(info)
-            cursor(info[0].lnum, info[0].col)
+            cursor(info[0]['lnum'], info[0]['col'])
         endif
         # remove the text property
         prop_remove({type: 'tempmark', all: true})
