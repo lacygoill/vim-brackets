@@ -95,7 +95,7 @@ def brackets#diList( #{{{2
             # ^__________^
             #     noise
 
-            var text: string = substitute(line, '^\s*\d\{-}\s*:\s*\d\{-}\s', '', '')
+            var text: string = line->substitute('^\s*\d\{-}\s*:\s*\d\{-}\s', '', '')
 
             var col: number = match(text,
                 search_cur_word ? '\C\<' .. expand('<cword>') .. '\>' : pat
@@ -167,12 +167,17 @@ def brackets#nextFileToEdit(arg_cnt: number): string #{{{2
         if arg_cnt > 0
             # remove the entries whose names come BEFORE the one of the current
             # entry, and sort the resulting list
-            filter(entries, (_, v: string): bool => v > here)->sort()
+            entries
+                ->filter((_, v: string): bool => v > here)
+                ->sort()
         else
             # remove the entries whose names come AFTER the one of the current
             # entry, sort the resulting list, and reverse the order
             # (so that the previous entry comes first instead of last)
-            filter(entries, (_, v: string): bool => v < here)->sort()->reverse()
+            entries
+                ->filter((_, v: string): bool => v < here)
+                ->sort()
+                ->reverse()
         endif
         var next_entry: string = get(entries, 0, '')
 
@@ -237,7 +242,7 @@ enddef
 def WhatIsAround(arg_dir: string): list<string>
     # If `arg_dir`  is the root of  the tree, we need  to get rid of  the slash,
     # because we're going to add a slash when calling `glob('/*')`.
-    var dir: string = substitute(arg_dir, '/$', '', '')
+    var dir: string = arg_dir->substitute('/$', '', '')
     var entries: list<string> = glob(dir .. '/.*', false, true)
         + glob(dir .. '/*', false, true)
 
@@ -250,7 +255,7 @@ def WhatIsAround(arg_dir: string): list<string>
     #         /tmp/..
     #
     # We need to get rid of them.
-    filter(entries, (_, v: string): bool => v !~ '/\.\.\=$')
+    entries->filter((_, v: string): bool => v !~ '/\.\.\=$')
 
     return entries
 enddef
@@ -330,7 +335,7 @@ def brackets#rulePut(below = true) #{{{2
 enddef
 #}}}1
 # Core {{{1
-def MvLine(_: any) #{{{2
+def MvLine(_a: any) #{{{2
     var cnt: number = v:count1
 
     # disabling the folds may alter the view, so save it first
@@ -436,7 +441,7 @@ def MvLine(_: any) #{{{2
             prop_find({type: 'tempmark'}, 'f'),
             prop_find({type: 'tempmark'}, 'b')
             ]
-        filter(info, (_, v: dict<any>): bool => !empty(v))
+            ->filter((_, v: dict<any>): bool => !empty(v))
         if !empty(info)
             cursor(info[0]['lnum'], info[0]['col'])
         endif
@@ -446,7 +451,7 @@ def MvLine(_: any) #{{{2
     endtry
 enddef
 
-def Put(_: any) #{{{2
+def Put(_a: any) #{{{2
     var cnt: number = v:count1
 
     # If the register is empty, an error should be raised.{{{
@@ -511,9 +516,9 @@ def Put(_: any) #{{{2
         if reg_to_use == 'o'
             && &ft == 'markdown'
             && synID('.', col('.'), true)->synIDattr('name') =~ '^markdown.*CodeBlock$'
-            var contents: list<string> = getreg('o', true, true)
-            map(contents, (_, v: string): string => v != '' ? v .. '~' : v)
-            setreg('o', contents, 'l')
+            getreg('o', true, true)
+                ->map((_, v: string): string => v != '' ? v .. '~' : v)
+                ->setreg('o', 'l')
         endif
 
         # force the type of the register to be linewise
@@ -532,7 +537,7 @@ def Put(_: any) #{{{2
     endtry
 enddef
 
-def PutLine(_: any) #{{{2
+def PutLine(_a: any) #{{{2
     var cnt: number = v:count1
     var line: string = getline('.')
     var cml: string = IsVim9()
@@ -545,20 +550,21 @@ def PutLine(_: any) #{{{2
         if put_line_below && line =~ '┐' || !put_line_below && line =~ '┘'
             line = ''
         else
-            line = substitute(line, '[^├]', ' ', 'g')
-                 ->substitute('├', '│', 'g')
+            line = line
+                    ->substitute('[^├]', ' ', 'g')
+                    ->substitute('├', '│', 'g')
         endif
     elseif is_in_diagram
-        line = substitute(line, '\%([│┌┐└┘├┤].*\)\@<=[^│┌┐└┘├┤]', ' ', 'g')
+        line = line->substitute('\%([│┌┐└┘├┤].*\)\@<=[^│┌┐└┘├┤]', ' ', 'g')
         var Rep: func = (m: list<string>): string =>
                m[0] == '└' && put_line_below
             || m[0] == '┌' && !put_line_below
             ? '' : '│'
-        line = substitute(line, '[└┌]', Rep, 'g')
+        line = line->substitute('[└┌]', Rep, 'g')
     else
         line = ''
     endif
-    line = substitute(line, '\s*$', '', '')
+    line = line->substitute('\s*$', '', '')
     var lines: list<string> = repeat([line], cnt)
 
     var lnum: number = line('.') + (put_line_below ? 0 : -1)
