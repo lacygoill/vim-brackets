@@ -240,24 +240,8 @@ def brackets#nextFileToEdit(arg_cnt: number): string #{{{2
 enddef
 
 def WhatIsAround(arg_dir: string): list<string>
-    # If `arg_dir`  is the root of  the tree, we need  to get rid of  the slash,
-    # because we're going to add a slash when calling `glob('/*')`.
-    var dir: string = arg_dir->substitute('/$', '', '')
-    var entries: list<string> = glob(dir .. '/.*', false, true)
-        + glob(dir .. '/*', false, true)
-
-    # The first call to `glob()` was meant to include the hidden entries, but it
-    # produces 2 garbage entries which do not exist.
-    # For example, if  `arg_dir` is `/tmp`, the 1st command  will produce, among
-    # other valid entries:
-    #
-    #         /tmp/.
-    #         /tmp/..
-    #
-    # We need to get rid of them.
-    entries->filter((_, v: string): bool => v !~ '/\.\.\=$')
-
-    return entries
+    return readdir(arg_dir)
+        ->map((_, v: string): string => arg_dir .. '/' .. v)
 enddef
 
 def brackets#putSetup(where: string, how_to_indent: string): string #{{{2
