@@ -569,7 +569,7 @@ def PutLine(_a: any) #{{{2
             endif
             lines = repeat([prefix], cnt)
         # fold marked by a line starting with `===` or `---`
-        elseif getline(fold_begin + 1)->matchstr('^===\|^---') != ''
+        elseif getline(fold_begin + 1)->match('^===\|^---') != -1
             lines = repeat(['---', '---'], cnt)
         endif
         lnum = put_line_below ? fold_end : fold_begin - 1

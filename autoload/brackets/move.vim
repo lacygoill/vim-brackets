@@ -169,7 +169,7 @@ def brackets#move#regex(kwd: string, is_fwd: bool): string #{{{2
     # If we're in visual block mode, we can't pass `C-v` directly.{{{
     #
     # Since  8.2.2062,  `<cmd>`  handles  `C-v`  just like  it  would  be  on  a
-    # command-line entered  with `:`. That  is, it's interpreted as  "insert the
+    # command-line entered  with `:`.  That  is, it's interpreted as  "insert the
     # next character literally".
     #
     # Solution: double `<C-v>`.
