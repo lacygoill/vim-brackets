@@ -16,7 +16,7 @@ const LHS2CMD: dict<list<string>> = {
     '[ c-q': ['cpfile', 'clast'],
     '] c-l': ['lnfile', 'lfirst'],
     '[ c-l': ['lpfile', 'llast'],
-    }
+}
 
 const PATTERNS: dict<string> = {
     fu:            '^\C\s*\%(fu\%[nction]\|\%(export\s*\)\=def\)!\=\s\+',
@@ -29,7 +29,7 @@ const PATTERNS: dict<string> = {
     concealed_url: '\[.\{-}\zs\](.\{-})',
     codespan:      '`.\{-1,}`',
     shell_prompt:  '^٪',
-    }
+}
 
 # Interface {{{1
 def brackets#move#next(lhs: string) #{{{2
@@ -179,7 +179,11 @@ def brackets#move#regex(kwd: string, is_fwd: bool): string #{{{2
 enddef
 #}}}1
 # Core {{{1
-def Jump(kwd: string, is_fwd: bool, mode: string) #{{{2
+def Jump( #{{{2
+    kwd: string,
+    is_fwd: bool,
+    mode: string
+)
     var cnt: number = v:count1
     var pat: string = get(PATTERNS, kwd, '')
 

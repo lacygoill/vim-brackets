@@ -7,7 +7,7 @@ import {
     Catch,
     GetSelectionText,
     IsVim9,
-    } from 'lg.vim'
+} from 'lg.vim'
 
 # Interface {{{1
 def brackets#diList( #{{{2
@@ -16,7 +16,7 @@ def brackets#diList( #{{{2
     start_at_cursor: bool,
     search_in_comments: bool,
     pattern = ''
-    )
+)
     # Derive the commands used below from the first argument.
     var excmd: string = cmd .. 'list' .. (search_in_comments ? '!' : '')
     var normcmd: string = toupper(cmd)
@@ -105,7 +105,7 @@ def brackets#diList( #{{{2
                 lnum: lnum,
                 col: col,
                 text: text,
-                })
+            })
         endif
     endfor
 
@@ -249,7 +249,7 @@ def brackets#putSetup(where: string, how_to_indent: string): string #{{{2
         where: where,
         how_to_indent: how_to_indent,
         register: v:register,
-        }
+    }
     &opfunc = expand('<SID>') .. 'Put'
     return 'g@l'
 enddef
@@ -319,7 +319,7 @@ def brackets#rulePut(below = true) #{{{2
 enddef
 #}}}1
 # Core {{{1
-def MvLine(_a: any) #{{{2
+def MvLine(_) #{{{2
     var cnt: number = v:count1
 
     # disabling the folds may alter the view, so save it first
@@ -424,18 +424,19 @@ def MvLine(_a: any) #{{{2
         var info: list<dict<any>> = [
             prop_find({type: 'tempmark'}, 'f'),
             prop_find({type: 'tempmark'}, 'b')
-            ]
-            ->filter((_, v: dict<any>): bool => !empty(v))
+        ]->filter((_, v: dict<any>): bool => !empty(v))
+
         if !empty(info)
             cursor(info[0]['lnum'], info[0]['col'])
         endif
+
         # remove the text property
         prop_remove({type: 'tempmark', all: true})
         prop_type_delete('tempmark', {bufnr: bufnr('%')})
     endtry
 enddef
 
-def Put(_a: any) #{{{2
+def Put(_) #{{{2
     var cnt: number = v:count1
 
     # If the register is empty, an error should be raised.{{{
@@ -521,7 +522,7 @@ def Put(_a: any) #{{{2
     endtry
 enddef
 
-def PutLine(_a: any) #{{{2
+def PutLine(_) #{{{2
     var cnt: number = v:count1
     var line: string = getline('.')
     var cml: string = IsVim9()
