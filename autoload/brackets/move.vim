@@ -133,7 +133,7 @@ def brackets#move#cnewer(lhs: string) #{{{2
                 '>l': 'lnewer',
                 }[lhs]
             if i < cnt
-                sil exe cmd
+                exe 'sil ' .. cmd
             else
                 exe cmd
             endif
@@ -203,7 +203,7 @@ def Jump( #{{{2
         # If you remove `W`, we keep cycling as long as we press the mapping.
         #}}}
         search(pat, (is_fwd ? '' : 'b') .. 'W')
-        cnt -= 1
+        --cnt
     endwhile
 
     # the function shouldn't do anything in operator-pending mode

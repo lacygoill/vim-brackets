@@ -81,7 +81,7 @@ def brackets#diList( #{{{2
         # We use it to update the variable `filename`, which in turn is used
         # to generate valid entries in the ll.
         if line !~ '^\s*\d\+:'
-            filename = fnamemodify(line, ':p:.')
+            filename = line->fnamemodify(':p:.')
             #                              │ │{{{
             #                              │ └ relative to current working directory
             #                              └ full path
@@ -119,7 +119,7 @@ def brackets#diList( #{{{2
     # relies on  the name  of the  command (how its  name begins),  to determine
     # whether it must open the ll or qfl window.
     do <nomodeline> QuickFixCmdPost lwindow
-    if &bt != 'quickfix'
+    if &buftype != 'quickfix'
         return
     endif
 
@@ -160,7 +160,7 @@ def brackets#nextFileToEdit(arg_cnt: number): string #{{{2
     # It needs to be done exactly `cnt` times (by default 1).
     # So, at the end of each iteration, we update `cnt`, by [in|de]crementing it.
     while cnt != 0
-        var entries: list<string> = fnamemodify(here, ':h')->WhatIsAround()
+        var entries: list<string> = here->fnamemodify(':h')->WhatIsAround()
 
         # We use `arg_cnt` instead of `cnt` in our test, because `cnt` is going
         # to be [in|de]cremented during the execution of the outer loop.
@@ -189,7 +189,7 @@ def brackets#nextFileToEdit(arg_cnt: number): string #{{{2
         # If we end up in an empty directory, deep inside the tree, this will
         # allow us to climb up as far as needed.
         if empty(next_entry)
-            here = fnamemodify(here, ':h')
+            here = here->fnamemodify(':h')
 
         else
             # If there IS another entry before/after the current one, store it
@@ -282,12 +282,12 @@ def brackets#ruleMotion(below = true) #{{{2
     var cnt: number = v:count1
     var cml: string = IsVim9()
         ? '#'
-        : '\V' .. matchstr(&l:cms, '\S*\ze\s*%s')->escape('\') .. '\m'
+        : '\V' .. &l:cms->matchstr('\S*\ze\s*%s')->escape('\') .. '\m'
     var flags: string = (below ? '' : 'b') .. 'W'
     var pat: string
     var stopline: number
     for i in range(1, cnt)
-        if &ft == 'markdown'
+        if &filetype == 'markdown'
             pat = '^---$'
             stopline = search('^#', flags .. 'n')
         else
@@ -304,16 +304,16 @@ enddef
 
 def brackets#rulePut(below = true) #{{{2
     append('.', ["\x01", '---', "\x01", "\x01"])
-    if &ft != 'markdown'
+    if &filetype != 'markdown'
         :+,+4CommentToggle
     endif
     sil keepj keepp :+,+4s/\s*\%x01$//e
-    if &ft != 'markdown'
-        sil exe 'norm! V3k=3jA '
+    if &filetype != 'markdown'
+        exe 'sil norm! V3k=3jA '
     endif
     if !below
         :-4m .
-        exe 'norm! ' .. (&ft == 'markdown' ? '' : '==') .. 'k'
+        exe 'norm! ' .. (&filetype == 'markdown' ? '' : '==') .. 'k'
     endif
     startinsert!
 enddef
@@ -399,11 +399,11 @@ def MvLine(_) #{{{2
             exe ':-' .. cnt .. ',-m . | :-' .. cnt
         else
             # `sil!` suppresses `E16` when reaching the end of the buffer
-            sil! exe ':+,+1+' .. (cnt - 1) .. 'm - | +'
+            exe 'sil! :+,+1+' .. (cnt - 1) .. 'm - | :+'
         endif
 
         # indent the line
-        if &ft != 'markdown' && &ft != ''
+        if &filetype != 'markdown' && &filetype != ''
             sil norm! ==
         endif
     catch
@@ -499,7 +499,7 @@ def Put(_) #{{{2
         # We want it to be highlighted as a code output, so we append `~` at the
         # end of every non-empty line.
         if reg_to_use == 'o'
-            && &ft == 'markdown'
+            && &filetype == 'markdown'
             && synID('.', col('.'), true)->synIDattr('name') =~ '^markdown.*CodeBlock$'
             getreg('o', true, true)
                 ->map((_, v: string): string => v != '' ? v .. '~' : v)
@@ -527,7 +527,7 @@ def PutLine(_) #{{{2
     var line: string = getline('.')
     var cml: string = IsVim9()
         ? '#'
-        : '\V' .. matchstr(&l:cms, '\S*\ze\s*%s')->escape('\') .. '\m'
+        : '\V' .. &l:cms->matchstr('\S*\ze\s*%s')->escape('\') .. '\m'
 
     var is_first_line_in_diagram: bool = line =~ '^\s*\%(' .. cml .. '\)\=├[─┐┘ ├]*$'
     var is_in_diagram: bool = line =~ '^\s*\%(' .. cml .. '\)\=\s*[│┌┐└┘├┤]'
@@ -559,7 +559,7 @@ def PutLine(_) #{{{2
     var fold_end: number = foldclosedend('.')
     var is_in_closed_fold: bool = fold_begin >= 0
 
-    if is_in_closed_fold && &ft == 'markdown'
+    if is_in_closed_fold && &filetype == 'markdown'
         # for  a  markdown  buffer,  where  we  use  a  foldexpr,  a  visual
         # separation means an empty fold
         var prefix: string = getline(fold_begin)->matchstr('^#\+')
@@ -587,7 +587,7 @@ def PutLine(_) #{{{2
         # detected as such; not until you've temporarily switched to `expr`.
         # That's what `#compute()` does.
         #}}}
-        if &ft == 'markdown' && lines[0] =~ '^[#=-]'
+        if &filetype == 'markdown' && lines[0] =~ '^[#=-]'
             sil! fold#lazy#compute()
         endif
     catch
