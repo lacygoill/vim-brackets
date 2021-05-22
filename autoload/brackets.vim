@@ -350,7 +350,7 @@ def MvLine(_) #{{{2
     #     zv
     #     j
     #     :m + | norm! ==
-    #     5 lines indented ✘ it should be just one~
+    #     5 lines indented ✘ it should be just one˜
     #
     # Maybe we could use  `norm! zv` to open the folds, but  it would be tedious
     # and error-prone in the future.  Every time  we would add a new command, we
@@ -446,10 +446,10 @@ def Put(_) #{{{2
     #
     # That's the whole purpose of the next `:norm`:
     #
-    #     Vim(normal):E353: Nothing in register "~
-    #     Vim(normal):E32: No file name~
-    #     Vim(normal):E30: No previous command line~
-    #     ...~
+    #     Vim(normal):E353: Nothing in register "˜
+    #     Vim(normal):E32: No file name˜
+    #     Vim(normal):E30: No previous command line˜
+    #     ...˜
     #}}}
     if getreg(put_info.register, true, true) == []
         try
