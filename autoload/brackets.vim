@@ -100,7 +100,7 @@ def brackets#diList( #{{{2
             var col: number = match(text,
                 search_cur_word ? '\C\<' .. expand('<cword>') .. '\>' : pat
                 ) + 1
-            add(ll_entries, {
+            ll_entries->add({
                 filename: filename,
                 lnum: lnum,
                 col: col,
