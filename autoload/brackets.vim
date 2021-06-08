@@ -130,7 +130,7 @@ enddef
 
 def brackets#mvLineSetup(dir: string): string #{{{2
     mv_line_dir = dir
-    &opfunc = expand('<SID>') .. 'MvLine'
+    &operatorfunc = expand('<SID>') .. 'MvLine'
     return 'g@l'
 enddef
 var mv_line_dir: string
@@ -198,7 +198,7 @@ def brackets#nextFileToEdit(arg_cnt: number): string #{{{2
 
             # We're only interested in a file, not a directory.
             # And if it's a directory, we don't know how far is the next file.
-            # It could be right inside, or inside a sub-sub-directory …
+            # It could be right inside, or inside a sub-sub-directory ...
             # So, we need to check whether what we found is a directory, and go on
             # until we find an entry which is a file.  Thus a 2nd loop.
             #
@@ -250,21 +250,21 @@ def brackets#putSetup(where: string, how_to_indent: string): string #{{{2
         how_to_indent: how_to_indent,
         register: v:register,
     }
-    &opfunc = expand('<SID>') .. 'Put'
+    &operatorfunc = expand('<SID>') .. 'Put'
     return 'g@l'
 enddef
 var put_info: dict<string>
 
 def brackets#putLineSetup(dir: string): string #{{{2
     put_line_below = dir == ']'
-    &opfunc = expand('<SID>') .. 'PutLine'
+    &operatorfunc = expand('<SID>') .. 'PutLine'
     return 'g@l'
 enddef
 var put_line_below: bool
 
 def brackets#putLinesAround(type = ''): string #{{{2
     if type == ''
-        &opfunc = 'brackets#putLinesAround'
+        &operatorfunc = 'brackets#putLinesAround'
         return 'g@l'
     endif
     # above
@@ -282,7 +282,7 @@ def brackets#ruleMotion(below = true) #{{{2
     var cnt: number = v:count1
     var cml: string = IsVim9()
         ? '#'
-        : '\V' .. &l:cms->matchstr('\S*\ze\s*%s')->escape('\') .. '\m'
+        : '\V' .. &l:commentstring->matchstr('\S*\ze\s*%s')->escape('\') .. '\m'
     var flags: string = (below ? '' : 'b') .. 'W'
     var pat: string
     var stopline: number
@@ -292,8 +292,8 @@ def brackets#ruleMotion(below = true) #{{{2
             stopline = search('^#', flags .. 'n')
         else
             pat = '^\s*' .. cml .. ' ---$'
-            var fmr: string = '\%(' .. split(&l:fmr, ',')->join('\|') .. '\)\d*'
-            stopline = search('^\s*' .. cml .. '.*' .. fmr .. '$', flags .. 'n')
+            var foldmarker: string = '\%(' .. split(&l:foldmarker, ',')->join('\|') .. '\)\d*'
+            stopline = search('^\s*' .. cml .. '.*' .. foldmarker .. '$', flags .. 'n')
         endif
         var lnum: number = search(pat, flags .. 'n')
         if stopline == 0 || (below && lnum < stopline || !below && lnum > stopline)
@@ -345,7 +345,7 @@ def MvLine(_) #{{{2
     # MWE:
     #
     #     $ echo "fold\nfoo\nbar\nbaz\n" >/tmp/file && vim -Nu NONE /tmp/file
-    #     :set fdm=marker
+    #     :set foldmethod=marker
     #     VGzf
     #     zv
     #     j
@@ -359,12 +359,12 @@ def MvLine(_) #{{{2
     #
     # Remember:
     # Because of a quirk of Vim's implementation, always temporarily disable
-    # 'fen' before moving lines which could be in a fold.
+    # 'foldenable' before moving lines which could be in a fold.
     #}}}
-    var fen_save: bool = &l:fen
+    var foldenable_save: bool = &l:foldenable
     var winid: number = win_getid()
     var bufnr: number = bufnr('%')
-    &l:fen = false
+    &l:foldenable = false
     # TODO: Save and restore all possible text properties on a moved line.
     # Use `prop_list()` to get the list.
     try
@@ -415,7 +415,7 @@ def MvLine(_) #{{{2
             var tabnr: number
             var winnr: number
             [tabnr, winnr] = win_id2tabwin(winid)
-            settabwinvar(tabnr, winnr, '&fen', fen_save)
+            settabwinvar(tabnr, winnr, '&foldenable', foldenable_save)
         endif
         # restore the view *after* re-enabling folding, because the latter may alter the view
         winrestview(view)
@@ -477,7 +477,7 @@ def Put(_) #{{{2
     # and you  paste using  `<p` or  `>p`, the  folding mechanism  may interfere
     # unexpectedly, causing too many lines to be indented.
     #
-    # You could prevent that by temporarily disabling 'fen'.
+    # You could prevent that by temporarily disabling 'foldenable'.
     # But doing so will sometimes make the view change.
     # So, you would also need to save/restore the view.
     # But doing so  will position the cursor right back  where you were, instead
@@ -527,7 +527,7 @@ def PutLine(_) #{{{2
     var line: string = getline('.')
     var cml: string = IsVim9()
         ? '#'
-        : '\V' .. &l:cms->matchstr('\S*\ze\s*%s')->escape('\') .. '\m'
+        : '\V' .. &l:commentstring->matchstr('\S*\ze\s*%s')->escape('\') .. '\m'
 
     var is_first_line_in_diagram: bool = line =~ '^\s*\%(' .. cml .. '\)\=├[─┐┘ ├]*$'
     var is_in_diagram: bool = line =~ '^\s*\%(' .. cml .. '\)\=\s*[│┌┐└┘├┤]'
