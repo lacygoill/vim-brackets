@@ -305,14 +305,14 @@ enddef
 def brackets#rulePut(below = true) #{{{2
     append('.', ["\x01", '---', "\x01", "\x01"])
     if &filetype != 'markdown'
-        :+,+4CommentToggle
+        :+,+4 CommentToggle
     endif
-    sil keepj keepp :+,+4s/\s*\%x01$//e
+    sil keepj keepp :+,+4 s/\s*\%x01$//e
     if &filetype != 'markdown'
         exe 'sil norm! V3k=3jA '
     endif
     if !below
-        :-4m .
+        :-4 m .
         exe 'norm! ' .. (&filetype == 'markdown' ? '' : '==') .. 'k'
     endif
     startinsert!
@@ -396,10 +396,10 @@ def MvLine(_) #{{{2
             # As a workaround, we don't move the line itself, but its direct
             # neighbor.
             #}}}
-            exe ':-' .. cnt .. ',-m . | :-' .. cnt
+            exe ':-' .. cnt .. ',- m . | :-' .. cnt
         else
             # `sil!` suppresses `E16` when reaching the end of the buffer
-            exe 'sil! :+,+1+' .. (cnt - 1) .. 'm - | :+'
+            exe 'sil! :+,+1+' .. (cnt - 1) .. ' m - | :+'
         endif
 
         # indent the line
