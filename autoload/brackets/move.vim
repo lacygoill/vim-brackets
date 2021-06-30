@@ -12,23 +12,23 @@ const LHS2CMD: dict<list<string>> = {
     '[q': ['cprevious', 'clast'],
     ']l': ['lnext',     'lfirst'],
     '[l': ['lprevious', 'llast'],
-    '] c-q': ['cnfile', 'cfirst'],
-    '[ c-q': ['cpfile', 'clast'],
-    '] c-l': ['lnfile', 'lfirst'],
-    '[ c-l': ['lpfile', 'llast'],
+    '] C-q': ['cnfile', 'cfirst'],
+    '[ C-q': ['cpfile', 'clast'],
+    '] C-l': ['lnfile', 'lfirst'],
+    '[ C-l': ['lpfile', 'llast'],
 }
 
 const PATTERNS: dict<string> = {
-    fu:            '^\C\s*\%(fu\%[nction]\|\%(export\s*\)\=def\)!\=\s\+',
-    endfu:         '^\C\s*\%(endf\%[unction]\|enddef\)\%(\s\|"\|$\)',
-    sh_fu:         '^\s*\S\+\s*()\s*{\%(\s*#\s*{{' .. '{\d*\s*\)\=$',
-    sh_endfu:      '^}$',
-    ref:           '\[.\{-1,}\](\zs.\{-1,})',
-    path:          '\f*/\&\%(\%(^\|\s\|`\)\)\@1<=[./~]\f\+',
-    url:           '\C\%(https\=\|ftps\=\|www\)://\|!\=\[.\{-}\]\%((.\{-})\|\[.\{-}\]\)',
-    concealed_url: '\[.\{-}\zs\](.\{-})',
-    codespan:      '`.\{-1,}`',
-    shell_prompt:  '^٪',
+    function:       '^\C\s*\%(fu\%[nction]\|\%(export\s*\)\=def\)!\=\s\+',
+    endfunction:    '^\C\s*\%(endf\%[unction]\|enddef\)\%(\s\|"\|$\)',
+    sh_function:    '^\s*\S\+\s*()\s*{\%(\s*#\s*{{' .. '{\d*\s*\)\=$',
+    sh_endfunction: '^}$',
+    ref:            '\[.\{-1,}\](\zs.\{-1,})',
+    path:           '\f*/\&\%(\%(^\|\s\|`\)\)\@1<=[./~]\f\+',
+    url:            '\C\%(https\=\|ftps\=\|www\)://\|!\=\[.\{-}\]\%((.\{-})\|\[.\{-}\]\)',
+    concealed_url:  '\[.\{-}\zs\](.\{-})',
+    codespan:       '`.\{-1,}`',
+    shell_prompt:   '^٪',
 }
 
 # Interface {{{1
@@ -36,8 +36,8 @@ def brackets#move#next(lhs: string) #{{{2
     var cnt: number = v:count1
     # Do *not* use a `:try` conditional inside this function.{{{
     #
-    # Inside a try conditional, `:next`/`:prev` fail when the next/previous argument
-    # is not readable.
+    # Inside a try conditional,  `:next`/`:previous` fail when the next/previous
+    # argument is not readable.
     #
     # https://github.com/vim/vim/issues/5451
     #}}}
@@ -57,7 +57,7 @@ def brackets#move#next(lhs: string) #{{{2
         elseif lhs == ']a'
             next
         elseif lhs =~ '[a'
-            prev
+            previous
         endif
     endfor
 enddef
@@ -73,7 +73,7 @@ def brackets#move#tnext(lhs: string) #{{{2
         }[lhs]
 
     try
-        exe cnt .. cmd1
+        execute cnt .. cmd1
     # E73: tag stack empty
     catch /^Vim\%((\a\+)\)\=:E73:/
         Catch()
@@ -81,7 +81,7 @@ def brackets#move#tnext(lhs: string) #{{{2
     # E425: Cannot go before first matching tag
     # E428: Cannot go beyond last matching tag
     catch /^Vim\%((\a\+)\)\=:\%(E425\|E428\):/
-        exe cmd2
+        execute cmd2
     endtry
 enddef
 
@@ -103,14 +103,14 @@ def brackets#move#cnext(lhs: string) #{{{2
 
     for i in range(cnt)
         try
-            exe cmd1
+            execute cmd1
         # no entry in the qfl
         catch /^Vim\%((\a\+)\)\=:E\%(42\|776\):/
             Catch()
             return
         # no more entry in the qfl; wrap around the edge
         catch /^Vim\%((\a\+)\)\=:E553:/
-            exe cmd2
+            execute cmd2
         # E92: Buffer 123 not found
         # can happen if the buffer has been wiped out since the last time you visited it
         catch /^Vim\%((\a\+)\)\=:E92:/
@@ -133,9 +133,9 @@ def brackets#move#cnewer(lhs: string) #{{{2
                 '>l': 'lnewer',
                 }[lhs]
             if i < cnt
-                exe 'sil ' .. cmd
+                execute 'silent ' .. cmd
             else
-                exe cmd
+                execute cmd
             endif
         endfor
     # we've reached the end of the qf stack (or it's empty)
@@ -146,12 +146,12 @@ def brackets#move#cnewer(lhs: string) #{{{2
         # message from last list + message from first list = hit-enter prompt
         redraw
         try
-            exe {
-                '<q': getqflist({nr: '$'}).nr .. 'chi',
-                '>q': '1chi',
-                '<l': getloclist(0, {nr: '$'}).nr .. 'lhi',
-                '>l': '1lhi',
-                }[lhs]
+            execute {
+                '<q': ':' .. getqflist({nr: '$'}).nr .. 'chistory',
+                '>q': ':1 chistory',
+                '<l': ':' .. getloclist(0, {nr: '$'}).nr .. 'lhistory',
+                '>l': ':1 lhistory',
+            }[lhs]
         # the qf stack is empty
         # E16: Invalid range
         catch /^Vim\%((\a\+)\)\=:\%(E16\|E776\):/
@@ -168,13 +168,13 @@ def brackets#move#regex(kwd: string, is_fwd: bool): string #{{{2
     var mode: string = mode(true)
     # If we're in visual block mode, we can't pass `C-v` directly.{{{
     #
-    # Since  8.2.2062,  `<cmd>`  handles  `C-v`  just like  it  would  be  on  a
+    # Since  8.2.2062,  `<Cmd>`  handles  `C-v`  just like  it  would  be  on  a
     # command-line entered  with `:`.  That  is, it's interpreted as  "insert the
     # next character literally".
     #
     # Solution: double `<C-v>`.
     #}}}
-    return printf("\<cmd>call %s(%s, %d, %s)\<cr>",
+    return printf("\<Cmd>call %s(%s, %d, %s)\<CR>",
         Jump, string(kwd), is_fwd ? 1 : 0, string(mode))
 enddef
 #}}}1
@@ -192,7 +192,7 @@ def Jump( #{{{2
     endif
 
     if mode == 'n'
-        norm! m'
+        normal! m'
     endif
 
     while cnt > 0
@@ -207,8 +207,8 @@ def Jump( #{{{2
     endwhile
 
     # the function shouldn't do anything in operator-pending mode
-    if mode =~ "[nvV\<c-v>]"
-        norm! zv
+    if mode =~ "[nvV\<C-V>]"
+        normal! zv
     endif
 enddef
 

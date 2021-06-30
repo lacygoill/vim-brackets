@@ -6,79 +6,79 @@ var loaded = true
 # Commands {{{1
 # Ilist {{{2
 
-#                                         ┌ command{{{
-#                                         │
-#                                         │   ┌ pattern is NOT word under cursor
-#                                         │   │
-#                                         │   │      ┌ do NOT start searching after current line
-#                                         │   │      │  start from beginning of file
-#                                         │   │      │
-#                                         │   │      │      ┌ search in comments only if a bang is added
-#                                         │   │      │      │
-#                                         │   │      │      │        ┌ pattern
-#                                         │   │      │      │        │}}}
-com -bang -nargs=1 Ilist brackets#diList('i', false, false, <bang>0, <q-args>)
-com -bang -nargs=1 Dlist brackets#diList('d', false, false, <bang>0, <q-args>)
+#                                             ┌ command{{{
+#                                             │
+#                                             │   ┌ pattern is NOT word under cursor
+#                                             │   │
+#                                             │   │      ┌ do NOT start searching after current line
+#                                             │   │      │  start from beginning of file
+#                                             │   │      │
+#                                             │   │      │      ┌ search in comments only if a bang is added
+#                                             │   │      │      │
+#                                             │   │      │      │        ┌ pattern
+#                                             │   │      │      │        │}}}
+command -bang -nargs=1 Ilist brackets#diList('i', false, false, <bang>0, <q-args>)
+command -bang -nargs=1 Dlist brackets#diList('d', false, false, <bang>0, <q-args>)
 #}}}1
 # Mappings {{{1
 # Move in lists {{{2
 # arglist {{{3
 
-nno <unique> [a <cmd>call brackets#move#next('[a')<cr>
-nno <unique> ]a <cmd>call brackets#move#next(']a')<cr>
+nnoremap <unique> [a <Cmd>call brackets#move#next('[a')<CR>
+nnoremap <unique> ]a <Cmd>call brackets#move#next(']a')<CR>
 
-nno <unique> [A <cmd>first<cr>
-nno <unique> ]A <cmd>last<cr>
+nnoremap <unique> [A <Cmd>first<CR>
+nnoremap <unique> ]A <Cmd>last<CR>
 
 # buffer list {{{3
 
 # `:bnext` wrap around the end of the buffer list by default
-nno <unique> [b <cmd>exe v:count .. 'bprevious'<cr>
-nno <unique> ]b <cmd>exe v:count .. 'bnext'<cr>
+nnoremap <unique> [b <Cmd>execute v:count .. 'bprevious'<CR>
+nnoremap <unique> ]b <Cmd>execute v:count .. 'bnext'<CR>
 
-nno <unique> [B <cmd>bfirst<cr>
-nno <unique> ]B <cmd>blast<cr>
+nnoremap <unique> [B <Cmd>bfirst<CR>
+nnoremap <unique> ]B <Cmd>blast<CR>
 
 # file list {{{3
 
-nno <unique> ]f <cmd>exe 'e ' .. brackets#nextFileToEdit(v:count1)->fnameescape()<cr>
-nno <unique> [f <cmd>exe 'e ' .. brackets#nextFileToEdit(-v:count1)->fnameescape()<cr>
+nnoremap <unique> ]f <Cmd>execute 'edit ' .. brackets#nextFileToEdit(v:count1)->fnameescape()<CR>
+nnoremap <unique> [f <Cmd>execute 'edit ' .. brackets#nextFileToEdit(-v:count1)->fnameescape()<CR>
 
 # quickfix list {{{3
 
-nno <unique> [q <cmd>call brackets#move#cnext('[q')<cr>
-nno <unique> ]q <cmd>call brackets#move#cnext(']q')<cr>
+nnoremap <unique> [q <Cmd>call brackets#move#cnext('[q')<CR>
+nnoremap <unique> ]q <Cmd>call brackets#move#cnext(']q')<CR>
 
-nno <unique> [l <cmd>call brackets#move#cnext('[l')<cr>
-nno <unique> ]l <cmd>call brackets#move#cnext(']l')<cr>
+nnoremap <unique> [l <Cmd>call brackets#move#cnext('[l')<CR>
+nnoremap <unique> ]l <Cmd>call brackets#move#cnext(']l')<CR>
 
-nno <unique> [Q <cmd>cfirst<cr>
-nno <unique> ]Q <cmd>clast<cr>
+nnoremap <unique> [Q <Cmd>cfirst<CR>
+nnoremap <unique> ]Q <Cmd>clast<CR>
 
-nno <unique> [L <cmd>lfirst<cr>
-nno <unique> ]L <cmd>llast<cr>
+nnoremap <unique> [L <Cmd>lfirst<CR>
+nnoremap <unique> ]L <Cmd>llast<CR>
 
-nno <unique> [<c-q> <cmd>call brackets#move#cnext('[ c-q')<cr>
-nno <unique> ]<c-q> <cmd>call brackets#move#cnext('] c-q')<cr>
+nnoremap <unique> [<C-Q> <Cmd>call brackets#move#cnext('[ C-q')<CR>
+nnoremap <unique> ]<C-Q> <Cmd>call brackets#move#cnext('] C-q')<CR>
 
-nno <unique> [<c-l> <cmd>call brackets#move#cnext('[ c-l')<cr>
-nno <unique> ]<c-l> <cmd>call brackets#move#cnext('] c-l')<cr>
+nnoremap <unique> [<C-L> <Cmd>call brackets#move#cnext('[ C-l')<CR>
+nnoremap <unique> ]<C-L> <Cmd>call brackets#move#cnext('] C-l')<CR>
 
 # quickfix stack {{{3
 
-nno <unique> <q <cmd>call brackets#move#cnewer('<q')<cr>
-nno <unique> >q <cmd>call brackets#move#cnewer('>q')<cr>
+nnoremap <unique> <q <Cmd>call brackets#move#cnewer('<q')<CR>
+nnoremap <unique> >q <Cmd>call brackets#move#cnewer('>q')<CR>
 
-nno <unique> <l <cmd>call brackets#move#cnewer('<l')<cr>
-nno <unique> >l <cmd>call brackets#move#cnewer('>l')<cr>
+nnoremap <unique> <l <Cmd>call brackets#move#cnewer('<l')<CR>
+nnoremap <unique> >l <Cmd>call brackets#move#cnewer('>l')<CR>
 
 # tag list {{{3
 
-nno <unique> [t <cmd>call brackets#move#tnext('[t')<cr>
-nno <unique> ]t <cmd>call brackets#move#tnext(']t')<cr>
+nnoremap <unique> [t <Cmd>call brackets#move#tnext('[t')<CR>
+nnoremap <unique> ]t <Cmd>call brackets#move#tnext(']t')<CR>
 
-nno <unique> [T <cmd>tfirst<cr>
-nno <unique> ]T <cmd>tlast<cr>
+nnoremap <unique> [T <Cmd>tfirst<CR>
+nnoremap <unique> ]T <Cmd>tlast<CR>
 #}}}2
 # Move to text matching regex {{{2
 
@@ -96,56 +96,56 @@ noremap <expr><unique> ]U brackets#move#regex('concealed_url', v:true)
 # Miscellaneous {{{2
 # ] SPC {{{3
 
-nno <expr><unique> =<space> brackets#putLinesAround()
-nno <expr><unique> [<space> brackets#putLineSetup('[')
-nno <expr><unique> ]<space> brackets#putLineSetup(']')
+nnoremap <expr><unique> =<Space> brackets#putLinesAround()
+nnoremap <expr><unique> [<Space> brackets#putLineSetup('[')
+nnoremap <expr><unique> ]<Space> brackets#putLineSetup(']')
 
 # ] - {{{3
 
-nno <unique> ]- <cmd>call brackets#ruleMotion()<cr>
-nno <unique> [- <cmd>call brackets#ruleMotion(v:false)<cr>
+nnoremap <unique> ]- <Cmd>call brackets#ruleMotion()<CR>
+nnoremap <unique> [- <Cmd>call brackets#ruleMotion(v:false)<CR>
 
-xno <unique> ]- <cmd>call brackets#ruleMotion()<cr>
-xno <unique> [- <cmd>call brackets#ruleMotion(v:false)<cr>
+xnoremap <unique> ]- <Cmd>call brackets#ruleMotion()<CR>
+xnoremap <unique> [- <Cmd>call brackets#ruleMotion(v:false)<CR>
 
-ono <unique> ]- <cmd>exe 'norm V' .. v:count1 .. ']-'<cr>
-ono <unique> [- <cmd>exe 'norm V' .. v:count1 .. '[-'<cr>
+onoremap <unique> ]- <Cmd>execute 'normal V' .. v:count1 .. ']-'<CR>
+onoremap <unique> [- <Cmd>execute 'normal V' .. v:count1 .. '[-'<CR>
 
-nno <unique> +]- <cmd>call brackets#rulePut()<cr>
-nno <unique> +[- <cmd>call brackets#rulePut(v:false)<cr>
+nnoremap <unique> +]- <Cmd>call brackets#rulePut()<CR>
+nnoremap <unique> +[- <Cmd>call brackets#rulePut(v:false)<CR>
 
 # ]I {{{3
 
-#                                                      ┌ don't start to search at cursor,
-#                                                      │ but at beginning of file
-#                                                      │
-#                                                      │        ┌ don't pass a bang to the commands
-#                                                      │        │ normal commands don't accept one anyway
-nno <unique> [I <cmd>call brackets#diList('i', v:true, v:false, v:false)<cr>
-#                                          │   │
-#                                          │   └ search current word
-#                                          └ command to execute (ilist or dlist)
+#                                                           ┌ don't start to search at cursor,
+#                                                           │ but at beginning of file
+#                                                           │
+#                                                           │        ┌ don't pass a bang to the commands
+#                                                           │        │ normal commands don't accept one anyway
+nnoremap <unique> [I <Cmd>call brackets#diList('i', v:true, v:false, v:false)<CR>
+#                                               │   │
+#                                               │   └ search current word
+#                                               └ command to execute (ilist or dlist)
 
-xno <unique> [I <c-\><c-n><cmd>call brackets#diList('i', v:false, v:false, v:true)<cr>
-#                                                        │
-#                                                        └ don't search current word, but visual selection
+xnoremap <unique> [I <C-\><C-N><Cmd>call brackets#diList('i', v:false, v:false, v:true)<CR>
+#                                                             │
+#                                                             └ don't search current word, but visual selection
 
-nno <unique> ]I <cmd>call brackets#diList('i', v:true, v:true, v:false)<cr>
-#                                                      │
-#                                                      └ start to search after the line where the cursor is
+nnoremap <unique> ]I <Cmd>call brackets#diList('i', v:true, v:true, v:false)<CR>
+#                                                           │
+#                                                           └ start to search after the line where the cursor is
 
-xno <unique> ]I <c-\><c-n><cmd>call brackets#diList('i', v:false, v:true, v:true)<cr>
+xnoremap <unique> ]I <C-\><C-N><Cmd>call brackets#diList('i', v:false, v:true, v:true)<CR>
 
-nno <unique> [D <cmd>call brackets#diList('d', v:true, v:false, v:false)<cr>
-xno <unique> [D <c-\><c-n><cmd>call brackets#diList('d', v:false, v:false, v:true)<cr>
+nnoremap <unique> [D <Cmd>call brackets#diList('d', v:true, v:false, v:false)<CR>
+xnoremap <unique> [D <C-\><C-N><Cmd>call brackets#diList('d', v:false, v:false, v:true)<CR>
 
-nno <unique> ]D <cmd>call brackets#diList('d', v:true, v:true, v:false)<cr>
-xno <unique> ]D <c-\><c-n><cmd>call brackets#diList('d', v:false, v:true, v:true)<cr>
+nnoremap <unique> ]D <Cmd>call brackets#diList('d', v:true, v:true, v:false)<CR>
+xnoremap <unique> ]D <C-\><C-N><Cmd>call brackets#diList('d', v:false, v:true, v:true)<CR>
 
 # ]e {{{3
 
-nno <expr><unique> [e brackets#mvLineSetup('[')
-nno <expr><unique> ]e brackets#mvLineSetup(']')
+nnoremap <expr><unique> [e brackets#mvLineSetup('[')
+nnoremap <expr><unique> ]e brackets#mvLineSetup(']')
 
 # ]p {{{3
 
@@ -154,12 +154,12 @@ nno <expr><unique> ]e brackets#mvLineSetup(']')
 # We don't want that, we want the text to be put as linewise even if it was
 # selected with a characterwise motion.
 
-#                                        ┌ how to put internally{{{
-#                                        │
-#                                        │    ┌ how to indent afterwards
-#                                        │    │}}}
-nno <expr><unique> [p brackets#putSetup('[p', '')
-nno <expr><unique> ]p brackets#putSetup(']p', '')
+#                                             ┌ how to put internally{{{
+#                                             │
+#                                             │    ┌ how to indent afterwards
+#                                             │    │}}}
+nnoremap <expr><unique> [p brackets#putSetup('[p', '')
+nnoremap <expr><unique> ]p brackets#putSetup(']p', '')
 
 # The  following mappings  put  the  unnamed register  after  the current  line,
 # treating its contents as linewise  (even if characterwise) AND perform another
@@ -168,21 +168,21 @@ nno <expr><unique> ]p brackets#putSetup(']p', '')
 #    - >p >P    add a level of indentation
 #    - <p <P    remove a level of indentation
 #    - =p =P    auto-indentation (respecting our indentation-relative options)
-nno <expr><unique> >P brackets#putSetup('[p', ">']")
-nno <expr><unique> >p brackets#putSetup(']p', ">']")
-nno <expr><unique> <P brackets#putSetup('[p', "<']")
-nno <expr><unique> <p brackets#putSetup(']p', "<']")
-nno <expr><unique> =P brackets#putSetup('[p', "=']")
-nno <expr><unique> =p brackets#putSetup(']p', "=']")
+nnoremap <expr><unique> >P brackets#putSetup('[p', ">']")
+nnoremap <expr><unique> >p brackets#putSetup(']p', ">']")
+nnoremap <expr><unique> <P brackets#putSetup('[p', "<']")
+nnoremap <expr><unique> <p brackets#putSetup(']p', "<']")
+nnoremap <expr><unique> =P brackets#putSetup('[p', "=']")
+nnoremap <expr><unique> =p brackets#putSetup(']p', "=']")
 
 # A simpler version of the same mappings would be:
 #
-#     nno >P [p>']
-#     nno >p ]p>']
-#     nno <P [p<']
-#     nno <p ]p<']
-#     nno =P [p=']
-#     nno =p ]p=']
+#     nnoremap >P [p>']
+#     nnoremap >p ]p>']
+#     nnoremap <P [p<']
+#     nnoremap <p ]p<']
+#     nnoremap =P [p=']
+#     nnoremap =p ]p=']
 #
 # But with these ones, we would lose the linewise conversion.
 
@@ -204,8 +204,8 @@ nno <expr><unique> =p brackets#putSetup(']p', "=']")
 # ignoring rare words and words for other regions (which is what we usually want).
 #}}}
 
-nno <unique> [s 5zh
-nno <unique> ]s 5zl
-#             │
-#             └ mnemonic: Scroll
+nnoremap <unique> [s 5zh
+nnoremap <unique> ]s 5zl
+#                  │
+#                  └ mnemonic: Scroll
 

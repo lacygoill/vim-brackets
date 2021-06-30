@@ -28,7 +28,7 @@ def brackets#diList( #{{{2
     # word under the cursor
     if search_cur_word
         # `silent!` because pressing `]I` on a unique word raises `E389`
-        output = execute('norm! ' .. (start_at_cursor ? ']' : '[') .. normcmd, 'silent!')
+        output = execute('normal! ' .. (start_at_cursor ? ']' : '[') .. normcmd, 'silent!')
         title = (start_at_cursor ? ']' : '[') .. normcmd
 
     # the function was called by a custom Ex command
@@ -52,7 +52,7 @@ def brackets#diList( #{{{2
         endif
 
         output = execute(
-            (start_at_cursor ? '+,$' : '') .. excmd .. ' /' .. pat,
+            (start_at_cursor ? '+1,$' : '') .. excmd .. ' /' .. pat,
             'silent!')
         title = excmd .. ' /' .. pat
     endif
@@ -114,11 +114,11 @@ def brackets#diList( #{{{2
     # Populating the location list doesn't fire any event.
     # Fire `QuickFixCmdPost`, with the right pattern (*), to open the ll window.
     #
-    # (*) `lvimgrep`  is a  valid pattern (`:h  QuickFixCmdPre`), and  it begins
+    # (*) `lvimgrep`  is a  valid pattern (`:help  QuickFixCmdPre`), and  it begins
     # with a `l`.   The autocmd that we  use to automatically open  a qf window,
     # relies on  the name  of the  command (how its  name begins),  to determine
     # whether it must open the ll or qfl window.
-    do <nomodeline> QuickFixCmdPost lwindow
+    doautocmd <nomodeline> QuickFixCmdPost lwindow
     if &buftype != 'quickfix'
         return
     endif
@@ -305,15 +305,15 @@ enddef
 def brackets#rulePut(below = true) #{{{2
     append('.', ["\x01", '---', "\x01", "\x01"])
     if &filetype != 'markdown'
-        :+,+4 CommentToggle
+        :.+1,.+4 CommentToggle
     endif
-    sil keepj keepp :+,+4 s/\s*\%x01$//e
+    silent keepjumps keeppatterns :.+1,.+4 substitute/\s*\%x01$//e
     if &filetype != 'markdown'
-        exe 'sil norm! V3k=3jA '
+        execute 'silent normal! V3k=3jA '
     endif
     if !below
-        :-4 m .
-        exe 'norm! ' .. (&filetype == 'markdown' ? '' : '==') .. 'k'
+        :-4 move .
+        execute 'normal! ' .. (&filetype == 'markdown' ? '' : '==') .. 'k'
     endif
     startinsert!
 enddef
@@ -349,12 +349,12 @@ def MvLine(_) #{{{2
     #     VGzf
     #     zv
     #     j
-    #     :m + | norm! ==
+    #     :move + | normal! ==
     #     5 lines indented ✘ it should be just one˜
     #
-    # Maybe we could use  `norm! zv` to open the folds, but  it would be tedious
+    # Maybe we could use `normal! zv` to open the folds, but it would be tedious
     # and error-prone in the future.  Every time  we would add a new command, we
-    # would have  to remember  to use  `norm! zv`.   It's better  to temporarily
+    # would have  to remember to use  `normal! zv`.  It's better  to temporarily
     # disable folding entirely.
     #
     # Remember:
@@ -396,15 +396,15 @@ def MvLine(_) #{{{2
             # As a workaround, we don't move the line itself, but its direct
             # neighbor.
             #}}}
-            exe ':-' .. cnt .. ',- m . | :-' .. cnt
+            execute ':.-' .. cnt .. ',.-1 move . | :.-' .. cnt
         else
-            # `sil!` suppresses `E16` when reaching the end of the buffer
-            exe 'sil! :+,+1+' .. (cnt - 1) .. ' m - | :+'
+            # `silent!` suppresses `E16` when reaching the end of the buffer
+            execute 'silent! :.+1,.+1+' .. (cnt - 1) .. ' move .-1 | :.+1'
         endif
 
         # indent the line
         if &filetype != 'markdown' && &filetype != ''
-            sil norm! ==
+            silent normal! ==
         endif
     catch
         Catch()
@@ -444,7 +444,7 @@ def Put(_) #{{{2
     # And we want the exact message we would  have, if we were to try to put the
     # register without our mapping.
     #
-    # That's the whole purpose of the next `:norm`:
+    # That's the whole purpose of the next `:normal`:
     #
     #     Vim(normal):E353: Nothing in register "˜
     #     Vim(normal):E32: No file name˜
@@ -453,7 +453,7 @@ def Put(_) #{{{2
     #}}}
     if getreg(put_info.register, true, true) == []
         try
-            exe 'norm! "' .. put_info.register .. 'p'
+            execute 'normal! "' .. put_info.register .. 'p'
         catch
             Catch()
             return
@@ -510,7 +510,7 @@ def Put(_) #{{{2
         getreginfo(reg_to_use)->extend({regtype: 'l'})->setreg(reg_to_use)
 
         # put the register (`put_info.where` can be `]p` or `[p`)
-        exe 'norm! "' .. reg_to_use .. cnt .. put_info.where .. put_info.how_to_indent
+        execute 'normal! "' .. reg_to_use .. cnt .. put_info.where .. put_info.how_to_indent
 
         # make sure the cursor is on the first non-whitespace
         search('\S', 'cW')
@@ -588,7 +588,7 @@ def PutLine(_) #{{{2
         # That's what `#compute()` does.
         #}}}
         if &filetype == 'markdown' && lines[0] =~ '^[#=-]'
-            sil! fold#lazy#compute()
+            silent! fold#lazy#compute()
         endif
     catch
         Catch()
@@ -599,6 +599,6 @@ enddef
 # Util {{{1
 def Error(msg: string) #{{{2
     echohl ErrorMsg
-    echom msg
+    echomsg msg
     echohl NONE
 enddef

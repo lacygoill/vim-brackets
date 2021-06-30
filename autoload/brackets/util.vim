@@ -7,8 +7,8 @@ def brackets#util#openFold(lhs: string)
     endif
     if lhs =~ '^[[\]][lL]$'
        && maparg('j', 'n', false, true)->get('rhs', '') =~ 'move_and_open_fold'
-        norm! zM
+        normal! zM
     endif
-    norm! zv
+    normal! zv
 enddef
 
