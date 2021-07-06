@@ -1,8 +1,5 @@
 vim9script noclear
 
-if exists('loaded') | finish | endif
-var loaded = true
-
 # Init {{{1
 
 import Catch from 'lg.vim'
@@ -19,16 +16,16 @@ const LHS2CMD: dict<list<string>> = {
 }
 
 const PATTERNS: dict<string> = {
-    function:       '^\C\s*\%(fu\%[nction]\|\%(export\s*\)\=def\)!\=\s\+',
-    endfunction:    '^\C\s*\%(endf\%[unction]\|enddef\)\%(\s\|"\|$\)',
-    sh_function:    '^\s*\S\+\s*()\s*{\%(\s*#\s*{{' .. '{\d*\s*\)\=$',
-    sh_endfunction: '^}$',
+    def:            '^\C\s*\%(fu\%[nction]\|\%(export\s*\)\=def\)!\=\s\+',
+    enddef:         '^\C\s*\%(endf\%[unction]\|enddef\)\%(\s\|"\|$\)',
+    sh-func-start:  '^\s*\S\+\s*()\s*{\%(\s*#\s*{{' .. '{\d*\s*\)\=$',
+    sh-func-end:    '^}$',
     ref:            '\[.\{-1,}\](\zs.\{-1,})',
     path:           '\f*/\&\%(\%(^\|\s\|`\)\)\@1<=[./~]\f\+',
     url:            '\C\%(https\=\|ftps\=\|www\)://\|!\=\[.\{-}\]\%((.\{-})\|\[.\{-}\]\)',
-    concealed_url:  '\[.\{-}\zs\](.\{-})',
+    concealed-url:  '\[.\{-}\zs\](.\{-})',
     codespan:       '`.\{-1,}`',
-    shell_prompt:   '^٪',
+    shell-prompt:   '^٪',
 }
 
 # Interface {{{1
@@ -161,7 +158,7 @@ def brackets#move#cnewer(lhs: string) #{{{2
     endtry
 enddef
 
-def brackets#move#regex(kwd: string, is_fwd: bool): string #{{{2
+def brackets#move#regex(kwd: string, is_fwd = true): string #{{{2
     #                       ┌ necessary to get the full  name of the mode, otherwise in
     #                       │ operator-pending mode, we would get 'n' instead of 'no'
     #                       │

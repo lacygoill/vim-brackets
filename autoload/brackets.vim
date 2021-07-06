@@ -1,12 +1,8 @@
 vim9script noclear
 
-if exists('loaded') | finish | endif
-var loaded = true
-
 import {
     Catch,
     GetSelectionText,
-    IsVim9,
 } from 'lg.vim'
 
 # Interface {{{1
@@ -124,7 +120,7 @@ def brackets#diList( #{{{2
     endif
 
     # hide location
-    qf#setMatches('brackets:di_list', 'Conceal', 'location')
+    qf#setMatches('brackets:di-list', 'Conceal', 'location')
     qf#createMatches()
 enddef
 
@@ -241,7 +237,7 @@ enddef
 
 def WhatIsAround(arg_dir: string): list<string>
     return readdir(arg_dir)
-        ->map((_, v: string): string => arg_dir .. '/' .. v)
+        ->map((_, v: string) => arg_dir .. '/' .. v)
 enddef
 
 def brackets#putSetup(where: string, how_to_indent: string): string #{{{2
@@ -280,9 +276,7 @@ enddef
 
 def brackets#ruleMotion(below = true) #{{{2
     var cnt: number = v:count1
-    var cml: string = IsVim9()
-        ? '#'
-        : '\V' .. &l:commentstring->matchstr('\S*\ze\s*%s')->escape('\') .. '\m'
+    var cml: string = &l:commentstring->matchstr('\S*\ze\s*%s')->escape('\') .. '\m'
     var flags: string = (below ? '' : 'b') .. 'W'
     var pat: string
     var stopline: number
@@ -300,6 +294,16 @@ def brackets#ruleMotion(below = true) #{{{2
             search(pat, flags, stopline)
         endif
     endfor
+    # Necessary when we're in a submode.{{{
+    #
+    # As an example:
+    #
+    #     submode#enter('test', 'n', 'r', ']-', '<Cmd>call search("^---$")<CR>')
+    #
+    # Press `]-` in  a buffer containing a  `---` line, and you  should see that
+    # the statusline does not reflect the new cursor position.
+    #}}}
+    redrawstatus
 enddef
 
 def brackets#rulePut(below = true) #{{{2
@@ -325,42 +329,6 @@ def MvLine(_) #{{{2
     # disabling the folds may alter the view, so save it first
     var view: dict<number> = winsaveview()
 
-    # Why do you disable folding?{{{
-    #
-    # We're going to do 2 things:
-    #
-    #    1. move a / several line(s)
-    #    2. update its / their indentation
-    #
-    # If we're inside a fold, the `:move` command will close it.
-    # Why?
-    # Because of patch  `7.4.700`.  It solves one problem related  to folds, and
-    # creates a new one:
-    # https://github.com/vim/vim/commit/d5f6933d5c57ea6f79bbdeab6c426cf66a393f33
-    #
-    # Then, it gets worse: because the fold is now closed, the indentation
-    # command will indent the whole fold, instead of the line(s) on which we
-    # were operating.
-    #
-    # MWE:
-    #
-    #     $ echo "fold\nfoo\nbar\nbaz\n" >/tmp/file && vim -Nu NONE /tmp/file
-    #     :set foldmethod=marker
-    #     VGzf
-    #     zv
-    #     j
-    #     :move + | normal! ==
-    #     5 lines indented ✘ it should be just one˜
-    #
-    # Maybe we could use `normal! zv` to open the folds, but it would be tedious
-    # and error-prone in the future.  Every time  we would add a new command, we
-    # would have  to remember to use  `normal! zv`.  It's better  to temporarily
-    # disable folding entirely.
-    #
-    # Remember:
-    # Because of a quirk of Vim's implementation, always temporarily disable
-    # 'foldenable' before moving lines which could be in a fold.
-    #}}}
     var foldenable_save: bool = &l:foldenable
     var winid: number = win_getid()
     var bufnr: number = bufnr('%')
@@ -502,7 +470,7 @@ def Put(_) #{{{2
             && &filetype == 'markdown'
             && synID('.', col('.'), true)->synIDattr('name') =~ '^markdown.*CodeBlock$'
             getreg('o', true, true)
-                ->map((_, v: string): string => v != '' ? v .. '~' : v)
+                ->map((_, v: string) => v != '' ? v .. '~' : v)
                 ->setreg('o', 'l')
         endif
 
@@ -525,9 +493,7 @@ enddef
 def PutLine(_) #{{{2
     var cnt: number = v:count1
     var line: string = getline('.')
-    var cml: string = IsVim9()
-        ? '#'
-        : '\V' .. &l:commentstring->matchstr('\S*\ze\s*%s')->escape('\') .. '\m'
+    var cml: string = &l:commentstring->matchstr('\S*\ze\s*%s')->escape('\') .. '\m'
 
     var is_first_line_in_diagram: bool = line =~ '^\s*\%(' .. cml .. '\)\=├[─┐┘ ├]*$'
     var is_in_diagram: bool = line =~ '^\s*\%(' .. cml .. '\)\=\s*[│┌┐└┘├┤]'
