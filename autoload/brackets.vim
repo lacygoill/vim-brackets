@@ -280,7 +280,7 @@ def brackets#ruleMotion(below = true) #{{{2
     var flags: string = (below ? '' : 'b') .. 'W'
     var pat: string
     var stopline: number
-    for i: number in range(1, cnt)
+    for _ in range(1, cnt)
         if &filetype == 'markdown'
             pat = '^---$'
             stopline = search('^#', flags .. 'n')

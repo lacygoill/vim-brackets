@@ -45,7 +45,7 @@ def brackets#move#next(lhs: string) #{{{2
         echohl NONE
         return
     endif
-    for i: number in range(cnt)
+    for _ in range(cnt)
         var argidx: number = argidx()
         if lhs == ']a' && argidx == argc - 1
             first
@@ -98,7 +98,7 @@ def brackets#move#cnext(lhs: string) #{{{2
     var cmd2: string
     [cmd1, cmd2] = LHS2CMD[lhs]
 
-    for i: number in range(cnt)
+    for _ in range(cnt)
         try
             execute cmd1
         # no entry in the qfl
