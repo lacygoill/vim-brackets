@@ -66,7 +66,7 @@ def brackets#diList( #{{{2
     # complex list based on filenames.
     var filename: string = ''
     var ll_entries: list<dict<any>>
-    for line in lines
+    for line: string in lines
         # A line in the output of `:ilist` and `dlist` can be a filename.
         # It happens when there are matches in other included files.
         # It's how `:ilist` / `:dlist`tells us in which files are the
@@ -280,7 +280,7 @@ def brackets#ruleMotion(below = true) #{{{2
     var flags: string = (below ? '' : 'b') .. 'W'
     var pat: string
     var stopline: number
-    for i in range(1, cnt)
+    for i: number in range(1, cnt)
         if &filetype == 'markdown'
             pat = '^---$'
             stopline = search('^#', flags .. 'n')
