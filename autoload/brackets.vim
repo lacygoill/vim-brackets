@@ -294,16 +294,6 @@ def brackets#ruleMotion(below = true) #{{{2
             search(pat, flags, stopline)
         endif
     endfor
-    # Necessary when we're in a submode.{{{
-    #
-    # As an example:
-    #
-    #     submode#enter('test', 'n', 'r', ']-', '<Cmd>call search("^---$")<CR>')
-    #
-    # Press `]-` in  a buffer containing a  `---` line, and you  should see that
-    # the statusline does not reflect the new cursor position.
-    #}}}
-    redrawstatus
 enddef
 
 def brackets#rulePut(below = true) #{{{2
