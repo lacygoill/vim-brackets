@@ -143,12 +143,13 @@ def brackets#move#cnewer(lhs: string) #{{{2
         # message from last list + message from first list = hit-enter prompt
         redraw
         try
-            execute {
+            var cmd: string = {
                 '<q': ':' .. getqflist({nr: '$'}).nr .. 'chistory',
                 '>q': ':1 chistory',
                 '<l': ':' .. getloclist(0, {nr: '$'}).nr .. 'lhistory',
                 '>l': ':1 lhistory',
             }[lhs]
+            execute cmd
         # the qf stack is empty
         # E16: Invalid range
         catch /^Vim\%((\a\+)\)\=:\%(E16\|E776\):/
